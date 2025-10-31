@@ -1,0 +1,91 @@
+.tabsContainer {
+  background: #fafafa;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 0 16px;
+}
+
+.tabsList {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  max-width: 200px;
+  position: relative;
+}
+
+.tab:hover {
+  background: #f0f0f0;
+}
+
+.tab.active {
+  background: #fff;
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.tabIcon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.tabLabel {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 2px;
+  color: #999;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: #ff4d4f;
+  color: white;
+  opacity: 1;
+}
+
+/* 当标签页不可关闭时隐藏关闭按钮 */
+.tab:not(:hover) .closeButton {
+  opacity: 0;
+}
+
+.tab:hover .closeButton {
+  opacity: 0.7;
+}
+
+/* 只有一个标签页时隐藏所有关闭按钮 */
+/* 只有一个标签页时隐藏所有关闭按钮 */
+.tabsList > :only-child .closeButton {
+  display: none;
+}

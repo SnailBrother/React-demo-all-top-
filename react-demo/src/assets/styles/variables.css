@@ -1,0 +1,60 @@
+/* CSS Custom Properties for Design System */
+:root {
+  /* Colors */
+  --colors-primary: #1890ff;
+  --colors-primary-hover: #40a9ff;
+  --colors-primary-active: #096dd9;
+  --colors-success: #52c41a;
+  --colors-warning: #faad14;
+  --colors-error: #ff4d4f;
+  --colors-text: rgba(0, 0, 0, 0.85);
+  --colors-text-secondary: rgba(0, 0, 0, 0.45);
+  --colors-border: #d9d9d9;
+  --colors-background: #ffffff;
+  --colors-background-secondary: #fafafa;
+  
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-base: 1.5715;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  /* Border Radius */
+  --border-radius-sm: 2px;
+  --border-radius-base: 6px;
+  --border-radius-lg: 8px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Transitions */
+  --transition-base: all 0.2s ease-in-out;
+  --transition-colors: color 0.2s, background-color 0.2s, border-color 0.2s;
+  --transition-transform: transform 0.2s;
+  
+  /* Z-index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal: 1040;
+  --z-popover: 1050;
+  --z-tooltip: 1060;
+}
