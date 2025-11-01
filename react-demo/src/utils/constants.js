@@ -1,4 +1,4 @@
-// Application constants
+// //src/utils/jsconstants
 export const APP_CONFIG = {
   NAME: 'React DEMO',
   VERSION: '1.0.0',

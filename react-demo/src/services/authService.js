@@ -1,94 +1,57 @@
 //  src/services/authService.js  
 //认证服务 模拟用户登录、注册、退出等认证相关操作
-import { apiClient } from '../utils';
-
-// Mock user database (in real app, this would be API calls)
-const mockUsers = [
-  {
-    id: 1,
-    username: 'demo',
-    email: 'demo@example.com',
-    password: '123456'
-  }
-];
-
-// Simulate API delay
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+import { apiClient } from '../utils/api';
 
 export const authService = {
-
-  // 模拟登录 API 调用
-    // 验证用户名密码，返回用户信息和 token
   async login(email, password) {
-    await delay(1000); // Simulate API call
+  console.log('Login attempt with:', { email });
+  
+  try {
+    const response = await apiClient.post('/auth/login', {
+      email,
+      password
+    });
     
-    const user = mockUsers.find(u => u.email === email && u.password === password);
+    console.log('Login response:', response);
     
-    if (user) {
-      return {
-        success: true,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email
-        },
-        token: 'mock-jwt-token-' + Date.now()
-      };
-    } else {
-      return {
-        success: false,
-        message: '邮箱或密码错误'
-      };
+    if (!response.success) {
+      throw new Error(response.message || '登录失败');
     }
-  },
+    
+    return response;
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw error;
+  }
+},
 
-
-   // 模拟注册 API 调用
-    // 检查邮箱是否已存在，创建新用户
   async register(username, email, password) {
-    await delay(1000); // Simulate API call
-    
-    const existingUser = mockUsers.find(u => u.email === email);
-    
-    if (existingUser) {
-      return {
-        success: false,
-        message: '该邮箱已被注册'
-      };
-    }
-    
-    const newUser = {
-      id: mockUsers.length + 1,
+    const response = await apiClient.post('/auth/register', {
       username,
       email,
       password
-    };
+    });
     
-    mockUsers.push(newUser);
+    if (!response.success) {
+      throw new Error(response.message);
+    }
     
-    return {
-      success: true,
-      message: '注册成功，请登录'
-    };
+    return response;
   },
 
-    // 模拟退出登录
   async logout() {
-    await delay(500);
+    // 清除本地存储的 token 和用户信息
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     return { success: true };
   },
 
-   // 模拟获取用户资料
   async getProfile() {
-    await delay(800);
-    
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('未授权');
+    try {
+      const response = await apiClient.get('/auth/profile');
+      return response.user;
+    } catch (error) {
+      throw new Error('获取用户信息失败');
     }
-    
-    // In real app, verify token and get user data from server
-    const userData = localStorage.getItem('user');
-    return userData ? JSON.parse(userData) : null;
   }
 };

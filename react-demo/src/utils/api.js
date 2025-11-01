@@ -1,13 +1,28 @@
-// src/utils/api.js
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+//src/utils/api.js
 
+//测试环境   二选一
+//const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://111.231.79.183:4200/api';
+//生产环境   二选一 
+const API_BASE_URL = '/api'; // 使用相对路径  正式发布
+
+ 
 class ApiClient {
   constructor() {
     this.baseURL = API_BASE_URL;
   }
 
+  
+
   async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+    // 确保 endpoint 以 / 开头
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${this.baseURL}${normalizedEndpoint}`;
+    
+    // 开发环境日志
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`API Request: ${url}`);
+    }
+
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -26,7 +41,14 @@ class ApiClient {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // 如果响应不是 JSON，使用默认错误信息
+        }
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
