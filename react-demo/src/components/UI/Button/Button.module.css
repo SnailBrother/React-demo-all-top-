@@ -1,62 +1,143 @@
+/* 基础按钮样式 */
 .button {
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.button:focus {
+  outline: none;
 }
 
 .button:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
+  transform: none !important;
 }
 
-/* Variants */
-.primary {
-  background-color: #1890ff;
-  color: white;
-}
-
-.primary:hover:not(:disabled) {
-  background-color: #40a9ff;
-}
-
-.secondary {
-  background-color: #f5f5f5;
-  color: #333;
-  border: 1px solid #d9d9d9;
-}
-
-.secondary:hover:not(:disabled) {
-  background-color: #e6f7ff;
-  border-color: #1890ff;
-}
-
-.danger {
-  background-color: #ff4d4f;
-  color: white;
-}
-
-.danger:hover:not(:disabled) {
-  background-color: #ff7875;
-}
-
-/* Sizes */
+/* 按钮尺寸 */
 .small {
-  padding: 4px 8px;
-  font-size: 12px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  min-height: 36px;
 }
 
 .medium {
-  padding: 8px 16px;
-  font-size: 14px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  min-height: 44px;
 }
 
 .large {
-  padding: 12px 24px;
-  font-size: 16px;
+  padding: 14px 28px;
+  font-size: 1.125rem;
+  min-height: 52px;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+/* 按钮变体 */
+.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.secondary {
+  background: #f8f9fa;
+  color: #333;
+  border: 2px solid #e1e5e9;
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: #667eea;
+  transform: translateY(-1px);
+}
+
+.secondary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.outline {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.outline:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.text {
+  background: none;
+  color: #667eea;
+  border: none;
+  padding: 8px 12px;
+}
+
+.text:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.1);
+  text-decoration: underline;
+}
+
+/* 加载状态 */
+.loading {
+  position: relative;
+  color: transparent;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 减少动画支持 */
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+  
+  .primary:hover:not(:disabled),
+  .secondary:hover:not(:disabled),
+  .outline:hover:not(:disabled) {
+    transform: none;
+  }
+  
+  .loading::after {
+    animation: none;
+  }
 }

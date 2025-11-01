@@ -1,51 +1,90 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Button from '../Button';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import Button from '../Button';  // 改为默认导入
 import styles from './Modal.module.css';
 
-const Modal = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children, 
-  showFooter = true,
+const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = 'medium',
+  showCloseButton = true,
+  footer,
   onConfirm,
   confirmText = '确认',
   cancelText = '取消',
-  confirmLoading = false
+  showFooter = true,
+  className = '',
 }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose?.();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  return ReactDOM.createPortal(
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose?.();
+    }
+  };
+
+  const modalContent = (
+    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+      <div className={`${styles.modal} ${styles[size]} ${className}`}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>{title}</h3>
-          <button className={styles.closeButton} onClick={onClose}>×</button>
+          <h2 className={styles.modalTitle}>{title}</h2>
+          {showCloseButton && (
+            <button
+              className={styles.closeButton}
+              onClick={onClose}
+              aria-label="关闭"
+            >
+              ×
+            </button>
+          )}
         </div>
         
-        <div className={styles.modalBody}>
-          {children}
-        </div>
+        <div className={styles.modalBody}>{children}</div>
         
         {showFooter && (
           <div className={styles.modalFooter}>
-            <Button variant="secondary" onClick={onClose}>
-              {cancelText}
-            </Button>
-            <Button 
-              variant="primary" 
-              onClick={onConfirm}
-              disabled={confirmLoading}
-            >
-              {confirmLoading ? '加载中...' : confirmText}
-            </Button>
+            {footer || (
+              <>
+                <Button variant="outline" onClick={onClose}>
+                  {cancelText}
+                </Button>
+                <Button variant="primary" onClick={onConfirm}>
+                  {confirmText}
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
-    </div>,
-    document.body
+    </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default Modal;

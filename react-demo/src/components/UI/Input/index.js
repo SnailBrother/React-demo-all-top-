@@ -2,26 +2,37 @@ import React from 'react';
 import styles from './Input.module.css';
 
 const Input = ({
+  label,
   type = 'text',
-  placeholder = '',
   value,
   onChange,
-  disabled = false,
+  placeholder = '',
   error = '',
-  label = '',
+  size = 'medium',
+  disabled = false,
+  required = false,
   className = '',
   ...props
 }) => {
+  const inputClass = `${styles.input} ${styles[size]} ${
+    error ? styles.inputError : ''
+  } ${disabled ? styles.disabled : ''} ${className}`;
+
   return (
-    <div className={`${styles.inputContainer} ${className}`}>
-      {label && <label className={styles.label}>{label}</label>}
+    <div className={styles.inputContainer}>
+      {label && (
+        <label className={styles.label}>
+          {label}
+          {required && <span style={{ color: '#ff4d4f' }}> *</span>}
+        </label>
+      )}
       <input
         type={type}
-        placeholder={placeholder}
         value={value}
         onChange={onChange}
+        placeholder={placeholder}
         disabled={disabled}
-        className={`${styles.input} ${error ? styles.error : ''}`}
+        className={inputClass}
         {...props}
       />
       {error && <span className={styles.errorMessage}>{error}</span>}

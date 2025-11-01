@@ -1,3 +1,5 @@
+//  src/services/authService.js  
+//认证服务 模拟用户登录、注册、退出等认证相关操作
 import { apiClient } from '../utils';
 
 // Mock user database (in real app, this would be API calls)
@@ -14,6 +16,9 @@ const mockUsers = [
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const authService = {
+
+  // 模拟登录 API 调用
+    // 验证用户名密码，返回用户信息和 token
   async login(email, password) {
     await delay(1000); // Simulate API call
     
@@ -37,6 +42,9 @@ export const authService = {
     }
   },
 
+
+   // 模拟注册 API 调用
+    // 检查邮箱是否已存在，创建新用户
   async register(username, email, password) {
     await delay(1000); // Simulate API call
     
@@ -64,11 +72,13 @@ export const authService = {
     };
   },
 
+    // 模拟退出登录
   async logout() {
     await delay(500);
     return { success: true };
   },
 
+   // 模拟获取用户资料
   async getProfile() {
     await delay(800);
     
