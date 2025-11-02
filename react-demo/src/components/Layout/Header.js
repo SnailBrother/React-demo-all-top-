@@ -7,6 +7,7 @@ import styles from './Layout.module.css';
 const Header = ({ title = "管理后台", onLogout }) => {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
+  console.log('Header user data:', user); // 调试信息
 
   return (
     <header className={`${styles.header} ${styles[theme]}`}> {/* 添加主题类名 */}
@@ -31,7 +32,7 @@ const Header = ({ title = "管理后台", onLogout }) => {
         {/* 用户信息 */}
         {user && (
           <span className={styles.userInfo}>
-            欢迎, {user.username}
+            欢迎, {user.name || user.username || user.email || '用户'}
           </span>
         )}
 

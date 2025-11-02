@@ -1,3 +1,4 @@
+//src/context/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authService } from '../services';
 
@@ -33,7 +34,8 @@ export const AuthProvider = ({ children }) => {
       if (response.success) {
         const userData = {
           id: response.user.id,
-          username: response.user.username,
+          name: response.user.name,  // 修改为 name
+          username: response.user.name,  // 为了兼容性，同时设置 username
           email: response.user.email,
           loginTime: new Date().toISOString()
         };
@@ -53,10 +55,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (username, email, password) => {
+  const register = async (name, email, password) => {
     setLoading(true);
     try {
-      const response = await authService.register(username, email, password);
+      const response = await authService.register(name, email, password);
       
       if (response.success) {
         return { success: true };
