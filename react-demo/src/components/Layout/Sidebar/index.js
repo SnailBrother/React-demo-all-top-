@@ -1,5 +1,6 @@
+//src/components/Layout/Sidebar/index.js
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useTheme } from '../../../context/ThemeContext';
 import styles from './Sidebar.module.css';
 
 const MenuItem = ({ 
@@ -8,9 +9,11 @@ const MenuItem = ({
   isCollapsed, 
   onClick 
 }) => {
+  const { theme } = useTheme();
+
   return (
     <div 
-      className={`${styles.menuItem} ${isActive ? styles.active : ''}`}
+      className={`${styles.menuItem} ${isActive ? styles.active : ''} ${styles[theme]}`}
       onClick={() => onClick(item)}
       title={isCollapsed ? item.label : ''}
     >
@@ -32,8 +35,10 @@ const Sidebar = ({
   collapsed = false,
   onToggle 
 }) => {
+  const { theme } = useTheme();
+
   return (
-    <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
+    <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${styles[theme]}`}>
       <div className={styles.sidebarHeader}>
         {!collapsed && <h3 className={styles.sidebarTitle}>首页</h3>}
         <button 
@@ -42,10 +47,10 @@ const Sidebar = ({
           title={collapsed ? '展开菜单' : '折叠菜单'}
         >
           {collapsed ? <svg className={styles.Icon} aria-hidden="true">
-                                    <use xlinkHref="#icon-zhankaizhedieyou"></use>
-                                </svg> : <svg className={styles.Icon} aria-hidden="true">
-                                    <use xlinkHref="#icon-zhankaizhediezuo"></use>
-                                </svg>}
+            <use xlinkHref="#icon-zhankaizhedieyou"></use>
+          </svg> : <svg className={styles.Icon} aria-hidden="true">
+            <use xlinkHref="#icon-zhankaizhediezuo"></use>
+          </svg>}
         </button>
       </div>
       

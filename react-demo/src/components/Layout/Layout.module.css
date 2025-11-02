@@ -1,17 +1,40 @@
+/* src/components/Layout/Layout.module.css */
 .layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* 浅色主题布局 */
+.layout.light {
+  background: #ffffff;
+  color: #212529;
+}
+
+.layout.light .mainContent {
+  background: #f8f9fa;
+}
+
+/* 深色主题布局 */
+.layout.dark {
+  background: #121212;
+  color: #e9ecef;
+}
+
+.layout.dark .mainContent {
+  background: #1e1e1e;
 }
 
 .header {
-  background-color: #1890ff;
+  background-color: var(--primary-color);
   color: white;
   padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   height: 60px;
   flex-shrink: 0;
 }
@@ -77,6 +100,100 @@
 .mainContent {
   flex: 1;
   padding: 24px;
-  background-color: #f5f5f5;
+  background-color: var(--bg-color);
   overflow-y: auto;
+  transition: background-color 0.3s ease;
+}
+
+.themeToggle {
+  border: none;
+  cursor: pointer;
+  margin-right: 5px;
+  background-color: transparent;
+}
+
+.themeIcon {
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+
+
+/* 头部操作区域 */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 用户信息 */
+.userInfo {
+  color: white;
+  font-size: 14px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* 主题切换按钮 */
+ 
+
+ 
+.themeIcon {
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+
+/* 浅色主题头部样式 */
+.header.light {
+  background-color: #007bff; /* 浅色主题的主色 */
+  color: white;
+}
+
+ 
+
+ 
+
+.header.light .userInfo {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.header.light .logoutButton {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.header.light .logoutButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 深色主题头部样式 */
+.header.dark {
+  background-color: #0d6efd; /* 深色主题的主色 */
+  color: white;
+}
+
+ 
+ 
+
+.header.dark .userInfo {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.header.dark .logoutButton {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.header.dark .logoutButton:hover {
+  background: rgba(255, 255, 255, 0.3);
 }

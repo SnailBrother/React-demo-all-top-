@@ -1,4 +1,6 @@
+//// src/components/UI/Tabs/index.js
 import React from 'react';
+import { useTheme } from '../../../context/ThemeContext'; // 导入主题hook
 import styles from './Tabs.module.css';
 
 const Tab = ({ 
@@ -8,6 +10,8 @@ const Tab = ({
   onClose, 
   closable = true 
 }) => {
+  const { theme } = useTheme();
+
   const handleClick = (e) => {
     e.preventDefault();
     onSelect(tab.key);
@@ -20,7 +24,7 @@ const Tab = ({
 
   return (
     <div 
-      className={`${styles.tab} ${isActive ? styles.active : ''}`}
+      className={`${styles.tab} ${isActive ? styles.active : ''} ${styles[theme]}`}
       onClick={handleClick}
     >
       <span className={styles.tabIcon}>{tab.icon}</span>
@@ -44,11 +48,13 @@ const Tabs = ({
   onTabChange, 
   onTabClose 
 }) => {
+  const { theme } = useTheme();
+  
   // 只有当有多个标签页时才允许关闭
   const canClose = tabs.length > 1;
 
   return (
-    <div className={styles.tabsContainer}>
+    <div className={`${styles.tabsContainer} ${styles[theme]}`}>
       <div className={styles.tabsList}>
         {tabs.map(tab => (
           <Tab

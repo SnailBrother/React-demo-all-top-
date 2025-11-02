@@ -1,60 +1,48 @@
-/* CSS Custom Properties for Design System */
+/* src/assets/styles/variables.css */
 :root {
-  /* Colors */
-  --colors-primary: #1890ff;
-  --colors-primary-hover: #40a9ff;
-  --colors-primary-active: #096dd9;
-  --colors-success: #52c41a;
-  --colors-warning: #faad14;
-  --colors-error: #ff4d4f;
-  --colors-text: rgba(0, 0, 0, 0.85);
-  --colors-text-secondary: rgba(0, 0, 0, 0.45);
-  --colors-border: #d9d9d9;
-  --colors-background: #ffffff;
-  --colors-background-secondary: #fafafa;
+  /* 浅色主题变量 */
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
   
-  /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-size-sm: 12px;
-  --font-size-base: 14px;
-  --font-size-lg: 16px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 24px;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --line-height-base: 1.5715;
+  --bg-color: #ffffff;
+  --surface-color: #f8f9fa;
+  --text-color: #212529;
+  --text-muted: #6c757d;
+  --border-color: #dee2e6;
   
-  /* Spacing */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-2xl: 48px;
+  --shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
+
+[data-theme="dark"] {
+  /* 深色主题变量 */
+  --primary-color: #0d6efd;        /* 稍深的蓝色 */
+  --secondary-color: #5a6268;
+  --success-color: #218838;
+  --danger-color: #c82333;
+  --warning-color: #e0a800;
+  --info-color: #138496;
   
-  /* Border Radius */
-  --border-radius-sm: 2px;
-  --border-radius-base: 6px;
-  --border-radius-lg: 8px;
+  --bg-color: #121212;
+  --surface-color: #1e1e1e;
+  --text-color: #e9ecef;
+  --text-muted: #adb5bd;
+  --border-color: #495057;
   
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  
-  /* Transitions */
-  --transition-base: all 0.2s ease-in-out;
-  --transition-colors: color 0.2s, background-color 0.2s, border-color 0.2s;
-  --transition-transform: transform 0.2s;
-  
-  /* Z-index */
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal: 1040;
-  --z-popover: 1050;
-  --z-tooltip: 1060;
+  --shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+}
+
+/* 确保所有元素使用CSS变量 */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }

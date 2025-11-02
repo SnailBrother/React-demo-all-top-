@@ -1,3 +1,4 @@
+//src/components/Layout/index.js
 import React from 'react';
 import Header from './Header';
 import styles from './Layout.module.css';

@@ -92,4 +92,13 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// 添加 useAuth hook - 这是缺少的部分
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
 export default AuthContext;

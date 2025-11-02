@@ -1,7 +1,10 @@
+ /* src/components/UI/Tabs/Tabs.module.css */
+/* Tabs 容器基础样式 */
 .tabsContainer {
-  background: #fafafa;
-  border-bottom: 1px solid #e8e8e8;
+  background: var(--surface-color);
+  border-bottom: 1px solid var(--border-color);
   padding: 0 16px;
+  transition: all 0.3s ease;
 }
 
 .tabsList {
@@ -11,13 +14,14 @@
   overflow-x: auto;
 }
 
+/* Tab 基础样式 */
 .tab {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #fff;
-  border: 1px solid #e8e8e8;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-bottom: none;
   border-radius: 6px 6px 0 0;
   cursor: pointer;
@@ -25,16 +29,18 @@
   min-width: 120px;
   max-width: 200px;
   position: relative;
+  color: var(--text-color);
 }
 
 .tab:hover {
-  background: #f0f0f0;
+  background: var(--surface-color);
 }
 
 .tab.active {
-  background: #fff;
-  border-color: #1890ff;
-  color: #1890ff;
+  background: var(--bg-color);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  font-weight: 500;
 }
 
 .tabIcon {
@@ -58,7 +64,7 @@
   cursor: pointer;
   padding: 2px;
   border-radius: 2px;
-  color: #999;
+  color: var(--text-muted);
   flex-shrink: 0;
   width: 16px;
   height: 16px;
@@ -70,7 +76,7 @@
 }
 
 .closeButton:hover {
-  background: #ff4d4f;
+  background: var(--danger-color);
   color: white;
   opacity: 1;
 }
@@ -85,7 +91,107 @@
 }
 
 /* 只有一个标签页时隐藏所有关闭按钮 */
-/* 只有一个标签页时隐藏所有关闭按钮 */
 .tabsList > :only-child .closeButton {
   display: none;
+}
+
+/* 浅色主题特定样式 */
+.tabsContainer.light {
+  background: #f8f9fa;
+  border-bottom-color: #e9ecef;
+}
+
+.tab.light {
+  background: #ffffff;
+  border-color: #e9ecef;
+  color: #495057;
+}
+
+.tab.light:hover {
+  background: #e9ecef;
+}
+
+.tab.light.active {
+  background: #ffffff;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.tab.light .closeButton {
+  color: #6c757d;
+}
+
+.tab.light .closeButton:hover {
+  background: #dc3545;
+  color: white;
+}
+
+/* 深色主题特定样式 */
+.tabsContainer.dark {
+  background: #1e1e1e;
+  border-bottom-color: #333;
+}
+
+.tab.dark {
+  background: #121212;
+  border-color: #333;
+  color: #e9ecef;
+}
+
+.tab.dark:hover {
+  background: #2d2d2d;
+}
+
+.tab.dark.active {
+  background: #121212;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.tab.dark .closeButton {
+  color: #adb5bd;
+}
+
+.tab.dark .closeButton:hover {
+  background: #c82333;
+  color: white;
+}
+
+/* 滚动条样式 */
+.tabsList::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabsList::-webkit-scrollbar-track {
+  background: var(--surface-color);
+}
+
+.tabsList::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.tabsList::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .tabsContainer {
+    padding: 0 8px;
+  }
+  
+  .tab {
+    min-width: 100px;
+    max-width: 150px;
+    padding: 6px 8px;
+  }
+  
+  .tabLabel {
+    font-size: 12px;
+  }
+  
+  .tabIcon {
+    font-size: 12px;
+  }
 }

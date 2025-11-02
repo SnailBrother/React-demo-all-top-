@@ -1,2 +1,2 @@
-export { AuthProvider, default as AuthContext } from './AuthContext';
-export { ThemeProvider, default as ThemeContext } from './ThemeContext';
+export { ThemeProvider, useTheme } from './ThemeContext';
+export { AuthProvider, useAuth } from './AuthContext';

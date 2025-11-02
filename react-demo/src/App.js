@@ -7,6 +7,7 @@ import AppRoutes from './routes';
 import './assets/styles/globals.css';
 import './assets/styles/variables.css';
 import './assets/styles/mixins.css';
+import styles from './App.module.css';
 
 function App() {
   return (
@@ -14,7 +15,7 @@ function App() {
       <AuthProvider>
         <MessageProvider>
           <Router>
-            <div className="App">
+            <div className={styles.app}>
               <AppRoutes />
             </div>
           </Router>
