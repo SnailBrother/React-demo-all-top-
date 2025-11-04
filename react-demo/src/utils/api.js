@@ -2,7 +2,7 @@
 
 //测试环境   二选一
 //const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://111.231.79.183:4200/api';
-//生产环境   二选一 
+////生产环境   二选一 
 const API_BASE_URL = '/api'; // 使用相对路径  正式发布
 
  

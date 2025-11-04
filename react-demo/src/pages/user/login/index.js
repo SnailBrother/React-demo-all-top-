@@ -55,7 +55,7 @@ const Login = () => {
             try {
                 await login(formData.email, formData.password);
                 // 登录成功后跳转
-                const from = location.state?.from?.pathname || '/dashboard';
+                const from = location.state?.from?.pathname || '/apps';
                 navigate(from, { replace: true });
             } catch (error) {
                 setErrors({ submit: error.message });

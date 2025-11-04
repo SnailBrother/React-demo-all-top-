@@ -1,16 +1,28 @@
-//src/components/Layout/Header.js
+// src/components/Layout/Header.js
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import styles from './Layout.module.css';
 
-const Header = ({ title = "管理后台", onLogout }) => {
+const Header = ({ title = "React-Demo" }) => {
   const { theme, toggleTheme } = useTheme();
-  const { user } = useAuth();
-  console.log('Header user data:', user); // 调试信息
+  const { user, logout } = useAuth(); // 直接从 AuthContext 获取 logout
+  const navigate = useNavigate();
+  
+  console.log('Header user data:', user);
+  console.log('Header logout function:', logout); // 调试 logout 函数
+
+  const handleSwitchAccount = () => {
+    console.log('切换账号按钮被点击');
+    if (logout) {
+      logout(); // 如果有 logout 函数就调用
+    }
+    navigate('/login', { replace: true });
+  };
 
   return (
-    <header className={`${styles.header} ${styles[theme]}`}> {/* 添加主题类名 */}
+    <header className={`${styles.header} ${styles[theme]}`}>
       <div className={styles.nav}>
         <h1 className={styles.title}>{title}</h1>
       </div>
@@ -32,16 +44,16 @@ const Header = ({ title = "管理后台", onLogout }) => {
         {/* 用户信息 */}
         {user && (
           <span className={styles.userInfo}>
-            欢迎, {user.name || user.username || user.email || '用户'}
+            {user.name || user.username || user.email || '用户'}
+            
           </span>
         )}
-
-        {/* 退出按钮 */}
-        {onLogout && (
-          <button onClick={onLogout} className={styles.logoutButton}>
-            退出登录
-          </button>
-        )}
+        <button
+              onClick={handleSwitchAccount}
+              className={styles.logoutButton}  
+            >
+              切换账号
+            </button>
       </div>
     </header>
   );
