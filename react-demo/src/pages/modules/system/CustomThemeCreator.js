@@ -1,31 +1,20 @@
-// components/ThemeSettings/SystemThemeSettings.js
- 
-// components/ThemeSettings/SystemThemeSettings.js
-// components/ThemeSettings/SystemThemeSettings.js
-import React, { useState, useEffect, useRef } from 'react';
+// src/components/pages/modules/system/CustomThemeCreator.js
+//自定义主题组件 
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../../context/ThemeContext';
 
-const SystemThemeSettings = () => {
-  const { 
-    theme, 
-    toggleTheme, 
-    changeTheme, 
-    settings, 
-    updateSettings, 
-    currentCustomTheme,
-    themes,
-    // 自定义主题相关函数
+const CustomThemeCreator = () => {
+  const {
     customThemes,
+    currentCustomTheme,
     saveCustomTheme,
     applyCustomTheme,
     deleteCustomTheme,
     updateCustomTheme,
+    settings,
     THEME_PRESETS
   } = useTheme();
-  
-  const fileRef = useRef(null);
-  
-  // 自定义主题相关状态
+
   const [themeName, setThemeName] = useState('');
   const [editingTheme, setEditingTheme] = useState(null);
   const [themeSettings, setThemeSettings] = useState({
@@ -57,38 +46,16 @@ const SystemThemeSettings = () => {
     }
   }, [editingTheme, customThemes, settings]);
 
-  // 工具函数
+  // 添加确认对话框函数
   const showConfirmDialog = (message) => {
     return window.confirm(message);
   };
 
+  // 添加提示函数
   const showAlert = (message) => {
     window.alert(message);
   };
 
-  // 背景图片处理
-  const onBgSelect = (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    
-    if (file.size > 5 * 1024 * 1024) {
-      showAlert('图片大小不能超过 5MB');
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = () => {
-      updateSettings({ backgroundImage: reader.result });
-    };
-    reader.onerror = () => {
-      showAlert('图片读取失败，请重试');
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const clearBg = () => updateSettings({ backgroundImage: '' });
-
-  // 自定义主题处理函数
   const handleSaveTheme = () => {
     if (!themeName.trim()) {
       showAlert('请输入主题名称');
@@ -144,8 +111,7 @@ const SystemThemeSettings = () => {
     }
   };
 
-  // 自定义主题编辑器组件（内嵌在同一个文件中）
-  const CustomThemeEditor = () => (
+  return (
     <div style={{ marginTop: 24, padding: 16, border: '1px solid var(--border-color)', borderRadius: 8 }}>
       <h3>🎨 自定义主题</h3>
       
@@ -289,131 +255,6 @@ const SystemThemeSettings = () => {
       )}
     </div>
   );
-
-  return (
-    <div style={{ maxWidth: 800, margin: '0 auto' }}>
-      <h2>🎨 主题设置</h2>
-      
-      {/* 当前主题状态 */}
-      {/* <div style={{ 
-        marginBottom: 24, 
-        padding: 16, 
-        background: 'var(--surface-color)', 
-        borderRadius: 8,
-        border: '1px solid var(--border-color)'
-      }}>
-        <strong>当前主题:</strong> {currentCustomTheme ? `自定义 - ${currentCustomTheme}` : theme}
-      </div> */}
-      
-      <div style={{ display: 'grid', gap: 16 }}>
-        {/* 预设主题选择 */}
-        <div style={{ padding: 16, border: '1px solid var(--border-color)', borderRadius: 8 }}>
-          <h3>预设主题</h3>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {themes.map(themeName => (
-              <button
-                key={themeName}
-                onClick={() => changeTheme(themeName)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: theme === themeName && !currentCustomTheme ? 'var(--color-primary)' : 'var(--surface-color)',
-                  color: theme === themeName && !currentCustomTheme ? 'white' : 'var(--text-color)',
-                  border: `1px solid var(--border-color)`,
-                  borderRadius: 4
-                }}
-              >
-                {themeName === 'light' ? '浅色' :
-                 themeName === 'dark' ? '深色' :
-                 themeName === 'female' ? '女性' :
-                 themeName === 'male' ? '男性' :
-                 themeName === 'middle' ? '中年' : themeName}
-              </button>
-            ))}
-            {/* <button 
-              onClick={toggleTheme}
-              style={{ padding: '8px 16px' }}
-            >
-              切换主题
-            </button> */}
-          </div>
-        </div>
-
-        {/* 基础设置 */}
-        {/* <div style={{ padding: 16, border: '1px solid var(--border-color)', borderRadius: 8 }}>
-          <h3>基础设置</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
-            <div>
-              <label htmlFor="primaryColor" style={{ display: 'block', marginBottom: 8 }}>
-                主色调：
-              </label>
-              <input
-                id="primaryColor"
-                type="color"
-                value={settings.primaryColor}
-                onChange={(e) => updateSettings({ primaryColor: e.target.value })}
-                style={{ width: '100%', height: 40 }}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="fontSize" style={{ display: 'block', marginBottom: 8 }}>
-                字体大小：
-              </label>
-              <select
-                id="fontSize"
-                value={settings.fontSize}
-                onChange={(e) => updateSettings({ fontSize: Number(e.target.value) })}
-                style={{ width: '100%', padding: 8 }}
-              >
-                <option value={12}>12px</option>
-                <option value={14}>14px</option>
-                <option value={16}>16px</option>
-                <option value={18}>18px</option>
-                <option value={20}>20px</option>
-              </select>
-            </div>
-          </div>
-        </div> */}
-
-        {/* 背景图片设置 */}
-        {/* <div style={{ padding: 16, border: '1px solid var(--border-color)', borderRadius: 8 }}>
-          <h3>背景图片</h3>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-            <button onClick={() => fileRef.current?.click()}>选择本地图片</button>
-            {settings.backgroundImage && (
-              <button onClick={clearBg}>清除背景</button>
-            )}
-            <input 
-              ref={fileRef} 
-              type="file" 
-              accept="image/*" 
-              onChange={onBgSelect} 
-              style={{ display: 'none' }} 
-            />
-          </div>
-          
-          {settings.backgroundImage && (
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>预览：</div>
-              <img 
-                src={settings.backgroundImage} 
-                alt="背景预览" 
-                style={{ 
-                  maxWidth: 300, 
-                  maxHeight: 200, 
-                  borderRadius: 8,
-                  border: '1px solid var(--border-color)'
-                }} 
-              />
-            </div>
-          )}
-        </div> */}
-
-        {/* 自定义主题编辑器 */}
-        <CustomThemeEditor />
-      </div>
-    </div>
-  );
 };
 
-export default SystemThemeSettings;
+export default CustomThemeCreator;
