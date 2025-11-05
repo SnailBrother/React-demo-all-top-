@@ -24,7 +24,7 @@ import OfficeDocs from '../pages/modules/office/Docs';
 import OfficeTasks from '../pages/modules/office/Tasks';
 import ChatConversations from '../pages/modules/chat/Conversations';
 import ChatContacts from '../pages/modules/chat/Contacts';
-import SystemThemeSettings from '../pages/modules/system/Theme';
+import SystemThemeSettings from '../pages/modules/system/SystemThemeSettings';
 import SystemProfile from '../pages/modules/system/Profile';
 import Login from '../pages/user/login';
 import Register from '../pages/user/register';

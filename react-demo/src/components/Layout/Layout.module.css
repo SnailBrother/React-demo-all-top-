@@ -19,8 +19,8 @@
 }
 
 .header {
-  background-color: var(--header-bg-color, var(--primary-color));
-  color: var(--header-text-color, #ffffff);
+  background-color: var(--backgroundColor);
+  color: var(--color);
   padding: 0 24px;
   display: flex;
   justify-content: space-between;
@@ -41,7 +41,7 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: var(--header-text-color, #ffffff);
+  color: var(--color);
 }
 
 .navLinks {
@@ -52,7 +52,7 @@
 .navButton {
   background: none;
   border: none;
-  color: var(--header-text-color, #ffffff);
+  color: var(--color);
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
@@ -64,9 +64,9 @@
 }
 
 .logoutButton {
-  background: var(--header-button-bg, rgba(255, 255, 255, 0.2));
+  background: var(--backgroundColor);
   border: 1px solid var(--header-button-bg, rgba(255, 255, 255, 0.3));
-  color: var(--header-text-color, #ffffff);
+  color: var(--color);
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
@@ -75,7 +75,7 @@
 }
 
 .logoutButton:hover {
-  background: var(--header-button-hover-bg, rgba(255, 255, 255, 0.3));
+  background: var(--backgroundColor);
   transform: translateY(-1px);
 }
 
@@ -95,7 +95,7 @@
 .mainContent {
   flex: 1;
   padding: 24px;
-  background-color: var(--bg-color);
+  background-color: var(--backgroundColor);
   overflow-y: auto;
   transition: background-color 0.3s ease;
 }
@@ -109,7 +109,7 @@
 
 /* 用户信息 */
 .userInfo {
-  color: var(--header-text-color, #ffffff);
+  color: var(--color);
   font-size: 14px;
   padding: 6px 12px;
   background: var(--header-button-bg, rgba(255, 255, 255, 0.1));

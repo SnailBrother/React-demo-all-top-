@@ -1,266 +1,176 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+// src/context/ThemeContext.js
+// src/context/ThemeContext.js
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
+// 默认主题配置
+const DEFAULT_THEME = {
+  color: '#000000FF',
+  backgroundColor: '#FFFFFFFF',
+  accentColor: '#0078D4FF',
+  secondaryColor: '#6C757DFF',
+  borderColor: '#DEE2E6FF',
+  borderRadius: '0.375rem',
+  hoverBackground: '#F8F9FAFF',
+  hoverBorderColor: '#0078D4FF',
+  activeBackground: '#E9ECEEFF',
+  hoverFontColor: '#000000FF',
+  fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  fontSize: '1rem',
+  shadow: '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)',
+  focusShadow: '0 0 0 0.2rem rgba(0,120,212,0.25)',
+  watermarkForeground: '#B3B5B6FF',
+  transition: 'all 0.15s ease-in-out',
+  opacityDisabled: '0.65'
+};
+
 export const ThemeProvider = ({ children }) => {
-  const THEME_PRESETS = {
-    light: { 
-      primaryColor: '#3b82f6', 
-      fontSize: 14,
-      bgColor: '#ffffff',
-      surfaceColor: '#f8f9fa',
-      textColor: '#212529',
-      textMuted: '#6c757d',
-      borderColor: '#dee2e6'
-    },
-    dark: { 
-      primaryColor: '#60a5fa', 
-      fontSize: 14,
-      bgColor: '#121212',
-      surfaceColor: '#1e1e1e',
-      textColor: '#e9ecef',
-      textMuted: '#adb5bd',
-      borderColor: '#495057'
-    },
-    female: { 
-      primaryColor: '#ec4899', 
-      fontSize: 15,
-      bgColor: '#fdf2f8',
-      surfaceColor: '#fce7f3',
-      textColor: '#831843',
-      textMuted: '#be185d',
-      borderColor: '#fbcfe8'
-    },
-    male: { 
-      primaryColor: '#2563eb', 
-      fontSize: 14,
-      bgColor: '#f0f9ff',
-      surfaceColor: '#e0f2fe',
-      textColor: '#0c4a6e',
-      textMuted: '#0369a1',
-      borderColor: '#bae6fd'
-    },
-    middle: { 
-      primaryColor: '#8b5e34', 
-      fontSize: 16,
-      bgColor: '#fefce8',
-      surfaceColor: '#fef9c3',
-      textColor: '#713f12',
-      textMuted: '#a16207',
-      borderColor: '#fde68a'
-    },
-  };
-
-  const [theme, setTheme] = useState('light');
-  const [settings, setSettings] = useState({
-    primaryColor: '#3b82f6',
-    fontSize: 14,
-    backgroundImage: '',
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center center',
-    bgColor: '#ffffff',
-    surfaceColor: '#f8f9fa',
-    textColor: '#212529',
-    textMuted: '#6c757d',
-    borderColor: '#dee2e6'
-  });
-
-  // 添加自定义主题状态
+  const [currentTheme, setCurrentTheme] = useState('default');
   const [customThemes, setCustomThemes] = useState({});
-  const [currentCustomTheme, setCurrentCustomTheme] = useState(null);
+  const [previewTheme, setPreviewTheme] = useState(null); // 实时预览主题
 
-  useEffect(() => {
-    // 从 localStorage 获取数据
-    const savedTheme = localStorage.getItem('theme');
-    const savedSettings = localStorage.getItem('themeSettings');
-    const savedCustomThemes = localStorage.getItem('customThemes');
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    
-    const initialTheme = savedTheme || systemTheme;
-    setTheme(initialTheme);
-    
-    if (savedSettings) {
-      try { 
-        const parsed = JSON.parse(savedSettings);
-        setSettings(prev => ({ ...prev, ...parsed }));
-      } catch {}
-    }
-    
-    if (savedCustomThemes) {
-      try {
-        setCustomThemes(JSON.parse(savedCustomThemes));
-      } catch {}
-    }
-    
-    // 应用主题到文档
-    document.documentElement.setAttribute('data-theme', initialTheme);
-    document.documentElement.classList.add(initialTheme);
-    applySettingsToDocument(savedSettings ? JSON.parse(savedSettings) : undefined);
-  }, []);
-
-  const applySettingsToDocument = (s) => {
-    const next = s || settings;
+  // 应用主题到 :root
+  const applyThemeToRoot = (theme) => {
     const root = document.documentElement;
     
-    // 应用 CSS 变量
-    root.style.setProperty('--color-primary', next.primaryColor);
-    root.style.setProperty('--font-size-base', `${next.fontSize}px`);
-    root.style.setProperty('--bg-color', next.bgColor);
-    root.style.setProperty('--surface-color', next.surfaceColor);
-    root.style.setProperty('--text-color', next.textColor);
-    root.style.setProperty('--text-muted', next.textMuted);
-    root.style.setProperty('--border-color', next.borderColor);
+    // 移除之前的自定义主题属性
+    root.removeAttribute('data-custom-theme');
     
-    // 应用背景图片
-    document.body.style.backgroundImage = next.backgroundImage ? `url(${next.backgroundImage})` : '';
-    document.body.style.backgroundSize = next.backgroundSize;
-    document.body.style.backgroundRepeat = next.backgroundRepeat;
-    document.body.style.backgroundPosition = next.backgroundPosition;
-  };
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    setCurrentCustomTheme(null); // 切换预设主题时清除自定义主题
-    localStorage.setItem('theme', newTheme);
-    
-    // 更新文档主题
-    document.documentElement.setAttribute('data-theme', newTheme);
-    document.documentElement.classList.remove(theme);
-    document.documentElement.classList.add(newTheme);
-    
-    // 应用预设
-    const preset = THEME_PRESETS[newTheme];
-    if (preset) {
-      updateSettings(preset);
+    if (theme === 'default') {
+      // 应用默认主题
+      root.setAttribute('data-theme', 'default');
+      Object.keys(DEFAULT_THEME).forEach(key => {
+        const cssVarName = `--${key}`;
+        root.style.setProperty(cssVarName, DEFAULT_THEME[key]);
+      });
+    } else if (typeof theme === 'string' && customThemes[theme]) {
+      // 应用已保存的自定义主题
+      root.setAttribute('data-custom-theme', theme);
+      const themeData = customThemes[theme];
+      Object.keys(themeData).forEach(key => {
+        if (key !== 'name' && key !== 'createdAt' && key !== 'updatedAt') {
+          const cssVarName = `--${key}`;
+          root.style.setProperty(cssVarName, themeData[key]);
+        }
+      });
+    } else if (typeof theme === 'object') {
+      // 实时预览主题
+      root.setAttribute('data-preview-theme', 'true');
+      Object.keys(theme).forEach(key => {
+        const cssVarName = `--${key}`;
+        root.style.setProperty(cssVarName, theme[key]);
+      });
     }
   };
 
-  const changeTheme = (newTheme) => {
-    if (newTheme !== theme) {
-      setTheme(newTheme);
-      setCurrentCustomTheme(null); // 切换预设主题时清除自定义主题
-      localStorage.setItem('theme', newTheme);
+  // 实时预览主题
+  const previewThemeSettings = (themeSettings) => {
+    setPreviewTheme(themeSettings);
+    applyThemeToRoot(themeSettings);
+  };
+
+  // 取消预览，恢复当前主题
+  const cancelPreview = () => {
+    setPreviewTheme(null);
+    applyThemeToRoot(currentTheme === 'default' ? 'default' : customThemes[currentTheme]);
+  };
+
+  // 初始化应用默认主题
+  useEffect(() => {
+    applyThemeToRoot('default');
+    
+    // 加载保存的自定义主题
+    const savedThemes = localStorage.getItem('customThemes');
+    if (savedThemes) {
+      setCustomThemes(JSON.parse(savedThemes));
+    }
+  }, []);
+
+  // 保存自定义主题
+  const saveCustomTheme = (name, settings) => {
+    const newTheme = {
+      ...settings,
+      name,
+      createdAt: new Date().toISOString()
+    };
+    
+    const updatedThemes = {
+      ...customThemes,
+      [name]: newTheme
+    };
+    
+    setCustomThemes(updatedThemes);
+    localStorage.setItem('customThemes', JSON.stringify(updatedThemes));
+    
+    // 保存后应用该主题
+    applyCustomTheme(name);
+  };
+
+  // 应用自定义主题
+  const applyCustomTheme = (name) => {
+    setCurrentTheme(name);
+    setPreviewTheme(null);
+    if (name === 'default') {
+      applyThemeToRoot('default');
+    } else if (customThemes[name]) {
+      applyThemeToRoot(customThemes[name]);
+    }
+  };
+
+  // 更新自定义主题
+  const updateCustomTheme = (name, settings) => {
+    if (customThemes[name]) {
+      const updatedThemes = {
+        ...customThemes,
+        [name]: {
+          ...settings,
+          name,
+          updatedAt: new Date().toISOString()
+        }
+      };
       
-      // 更新文档主题
-      document.documentElement.setAttribute('data-theme', newTheme);
-      document.documentElement.classList.remove(theme);
-      document.documentElement.classList.add(newTheme);
+      setCustomThemes(updatedThemes);
+      localStorage.setItem('customThemes', JSON.stringify(updatedThemes));
       
-      // 应用预设（如果存在）
-      const preset = THEME_PRESETS[newTheme];
-      if (preset) {
-        updateSettings(preset);
+      // 如果当前正在使用这个主题，重新应用
+      if (currentTheme === name) {
+        applyThemeToRoot(updatedThemes[name]);
       }
     }
   };
 
-  const updateSettings = (partial) => {
-    setSettings(prev => {
-      const next = { ...prev, ...partial };
-      localStorage.setItem('themeSettings', JSON.stringify(next));
-      // 应用到文档
-      setTimeout(() => applySettingsToDocument(next), 0);
-      return next;
-    });
-  };
-
-  // 自定义主题相关方法
-  const saveCustomTheme = (themeName, themeData) => {
-    const newTheme = {
-      name: themeName,
-      settings: { ...themeData },
-      createdAt: new Date().toISOString(),
-      isCustom: true
-    };
+  // 删除自定义主题
+  const deleteCustomTheme = (name) => {
+    const updatedThemes = { ...customThemes };
+    delete updatedThemes[name];
     
-    setCustomThemes(prev => ({
-      ...prev,
-      [themeName]: newTheme
-    }));
+    setCustomThemes(updatedThemes);
+    localStorage.setItem('customThemes', JSON.stringify(updatedThemes));
     
-    localStorage.setItem('customThemes', JSON.stringify({
-      ...customThemes,
-      [themeName]: newTheme
-    }));
-    
-    setCurrentCustomTheme(themeName);
-    applyCustomThemeSettings(themeData);
-    return newTheme;
-  };
-
-  const applyCustomTheme = (themeName) => {
-    if (customThemes[themeName]) {
-      setCurrentCustomTheme(themeName);
-      applyCustomThemeSettings(customThemes[themeName].settings);
-      // 更新主设置但不保存到预设
-      setSettings(prev => ({ ...prev, ...customThemes[themeName].settings }));
+    // 如果删除的是当前主题，回退到默认主题
+    if (currentTheme === name) {
+      applyCustomTheme('default');
     }
   };
 
-  const deleteCustomTheme = (themeName) => {
-    setCustomThemes(prev => {
-      const newThemes = { ...prev };
-      delete newThemes[themeName];
-      localStorage.setItem('customThemes', JSON.stringify(newThemes));
-      return newThemes;
-    });
-    
-    if (currentCustomTheme === themeName) {
-      setCurrentCustomTheme(null);
-      // 回退到 light 主题
-      changeTheme('light');
-    }
-  };
-
-  const updateCustomTheme = (themeName, updatedSettings) => {
-    setCustomThemes(prev => {
-      const updated = {
-        ...prev,
-        [themeName]: {
-          ...prev[themeName],
-          settings: { ...prev[themeName].settings, ...updatedSettings }
-        }
-      };
-      localStorage.setItem('customThemes', JSON.stringify(updated));
-      return updated;
-    });
-
-    // 如果当前正在应用这个主题，立即更新
-    if (currentCustomTheme === themeName) {
-      applyCustomThemeSettings(updatedSettings);
-      setSettings(prev => ({ ...prev, ...updatedSettings }));
-    }
-  };
-
-  const applyCustomThemeSettings = (themeSettings) => {
-    const root = document.documentElement;
-    root.style.setProperty('--color-primary', themeSettings.primaryColor);
-    root.style.setProperty('--font-size-base', `${themeSettings.fontSize}px`);
-    root.style.setProperty('--bg-color', themeSettings.bgColor);
-    root.style.setProperty('--surface-color', themeSettings.surfaceColor);
-    root.style.setProperty('--text-color', themeSettings.textColor);
-    root.style.setProperty('--text-muted', themeSettings.textMuted);
-    root.style.setProperty('--border-color', themeSettings.borderColor);
+  // 重置为默认主题
+  const resetToDefault = () => {
+    applyCustomTheme('default');
   };
 
   const value = {
-    theme,
-    toggleTheme,
-    changeTheme,
-    isDark: theme === 'dark',
-    settings,
-    updateSettings,
-    themes: ['light', 'dark', 'female', 'male', 'middle'],
-    // 自定义主题相关
+    currentTheme,
     customThemes,
-    currentCustomTheme,
+    previewTheme,
+    themeSettings: DEFAULT_THEME,
     saveCustomTheme,
     applyCustomTheme,
-    deleteCustomTheme,
     updateCustomTheme,
-    THEME_PRESETS
+    deleteCustomTheme,
+    previewThemeSettings,
+    cancelPreview,
+    resetToDefault
   };
 
   return (
@@ -270,7 +180,6 @@ export const ThemeProvider = ({ children }) => {
   );
 };
 
-// 自定义 Hook
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
@@ -278,5 +187,3 @@ export const useTheme = () => {
   }
   return context;
 };
-
-export default ThemeContext;

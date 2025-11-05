@@ -1,0 +1,420 @@
+/* SystemThemeSettings.module.css */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--background-color);
+  color: var(--color);
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--color);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.previewBadge {
+  background: var(--accent-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.currentLabel {
+  color: var(--secondary-color);
+  font-size: 14px;
+}
+
+.currentName {
+  font-weight: 600;
+  color: var(--accent-color);
+  font-size: 16px;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 30px;
+}
+
+.section {
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: var(--color);
+  font-weight: 600;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* 颜色网格 */
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.colorItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.colorItem label {
+  font-size: 14px;
+  color: var(--secondary-color);
+  font-weight: 500;
+}
+
+.colorPicker {
+  width: 100%;
+}
+
+.colorPicker :global(.ant-color-picker-trigger) {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+/* 设置网格 */
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.settingItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settingItem label {
+  font-size: 14px;
+  color: var(--secondary-color);
+  font-weight: 500;
+}
+
+.select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--background-color);
+  color: var(--color);
+  font-size: 14px;
+  height: 40px;
+}
+
+.select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+/* 预设按钮 */
+.presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.presetBtn {
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--background-color);
+  color: var(--color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.presetBtn:hover {
+  background: var(--hover-background);
+  border-color: var(--hover-border-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* 保存区域 */
+.saveSection {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.nameInput {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--background-color);
+  color: var(--color);
+  font-size: 14px;
+  height: 40px;
+}
+
+.nameInput:focus {
+  border-color: #0078d4;
+  outline: none;
+  box-shadow: #0078d4;
+}
+
+.saveActions {
+  display: flex;
+  gap: 8px;
+  background-color: #ff4d4f;
+}
+
+/* 按钮样式 */
+.btnPrimary, .btnOutline {
+  padding: 10px 20px;
+  border: 1px solid;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnPrimary {
+  background: #0078d4;
+  color: white;
+  border-color: #0078d4;
+}
+
+.btnPrimary:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+}
+
+.btnOutline {
+  background: transparent;
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.btnOutline:hover {
+  background: var(--accent-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* 侧边栏 */
+.sidebar {
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+  box-shadow: var(--shadow);
+}
+
+.sidebarTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: var(--color);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--secondary-color);
+}
+
+.empty p {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.empty small {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* 主题列表 */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: var(--background-color);
+}
+
+.item:hover {
+  border-color: var(--hover-border-color);
+  box-shadow: var(--shadow);
+}
+
+.itemActive {
+  border-color: var(--accent-color);
+  background: var(--active-background);
+  box-shadow: 0 0 0 1px var(--accent-color);
+}
+
+.itemInfo {
+  flex: 1;
+}
+
+.itemName {
+  font-weight: 600;
+  color: var(--color);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.itemDate {
+  font-size: 12px;
+  color: var(--secondary-color);
+}
+
+.itemActions {
+  display: flex;
+  gap: 6px;
+}
+
+.actionBtn {
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--background-color);
+  color: var(--color);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.actionBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.actionBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actionActive {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.actionEdit {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.actionEdit:hover {
+  background: var(--accent-color);
+  color: white;
+}
+
+.actionDelete {
+  color: #ff4d4f;
+  border-color: #ff4d4f;
+}
+
+.actionDelete:hover {
+  background: #ff4d4f;
+  color: white;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .colorGrid,
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .saveSection {
+    flex-direction: column;
+  }
+  
+  .presets {
+    grid-template-columns: 1fr;
+  }
+  
+  .itemActions {
+    flex-direction: column;
+  }
+}
+
+/* Ant Design ColorPicker 自定义样式 */
+.colorPicker :global(.ant-color-picker-color-block) {
+  border-radius: 4px;
+}
+
+.colorPicker :global(.ant-color-picker-trigger-text) {
+  font-size: 12px;
+  color: var(--secondary-color);
+}

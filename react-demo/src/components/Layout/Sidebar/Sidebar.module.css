@@ -35,7 +35,7 @@
 }
 
 .toggleButton {
-  background: var(--primary-color);
+  background: var(--backgroundColor);
   border: none;
   color: white;
   cursor: pointer;
