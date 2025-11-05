@@ -1,0 +1,82 @@
+/* src/components/UI/BottomNav.module.css */
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bottomNavItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  min-height: 60px;
+}
+
+.bottomNavItem:hover {
+  background: #f8f9fa;
+}
+
+.bottomNavItem.active {
+  color: #007bff;
+}
+
+.bottomNavItem.active .bottomNavIcon {
+  transform: translateY(-2px);
+}
+
+.bottomNavIcon {
+  font-size: 20px;
+  margin-bottom: 4px;
+  transition: transform 0.2s ease;
+}
+
+.bottomNavLabel {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .bottomNav {
+    padding: 6px 0;
+  }
+  
+  .bottomNavItem {
+    min-height: 56px;
+    padding: 6px;
+  }
+  
+  .bottomNavIcon {
+    font-size: 18px;
+  }
+  
+  .bottomNavLabel {
+    font-size: 11px;
+  }
+}
+
+/* 大屏优化 */
+@media (min-width: 1024px) {
+  .bottomNav {
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: 20px 20px 0 0;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+  }
+}

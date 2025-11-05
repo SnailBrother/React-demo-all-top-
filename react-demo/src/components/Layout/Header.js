@@ -10,7 +10,7 @@ const Header = ({ title = "React-Demo" }) => {
   const { theme, toggleTheme, currentCustomTheme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  
+
   console.log('Header user data:', user);
   console.log('Header logout function:', logout);
   console.log('Current theme:', theme, 'Custom theme:', currentCustomTheme);
@@ -23,26 +23,33 @@ const Header = ({ title = "React-Demo" }) => {
     navigate('/login', { replace: true });
   };
 
+  const handleBackToHome = () => {
+    console.log('返回首页按钮被点击');
+    navigate('/apps', { replace: true });
+  };
+
   // 获取当前主题显示名称
   const getThemeDisplayName = () => {
     if (currentCustomTheme) {
       return `自定义 - ${currentCustomTheme}`;
     }
-    
+
     const themeNames = {
       light: '浅色',
-      dark: '深色', 
+      dark: '深色',
       female: '女性',
       male: '男性',
       middle: '中年'
     };
-    
+
     return themeNames[theme] || theme;
   };
 
   return (
     <header className={`${styles.header} ${styles[theme]}`}>
       <div className={styles.nav}>
+
+
         <h1 className={styles.title}>{title}</h1>
         {/* <span style={{ 
           fontSize: '12px', 
@@ -72,17 +79,26 @@ const Header = ({ title = "React-Demo" }) => {
             </svg>
           )}
         </button>
-
+        {/* 返回首页按钮 */}
+        <button
+          onClick={handleBackToHome}
+          className={styles.backButton}
+          title="返回首页"
+        >
+          <svg className={styles.backIcon} aria-hidden="true">
+            <use xlinkHref="#icon-home"></use>
+          </svg>
+        </button>
         {/* 用户信息 */}
         {user && (
           <span className={styles.userInfo}>
             {user.name || user.username || user.email || '用户'}
           </span>
         )}
-        
+
         <button
           onClick={handleSwitchAccount}
-          className={styles.logoutButton}  
+          className={styles.logoutButton}
         >
           切换账号
         </button>

@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Sidebar from '../../components/Layout/Sidebar';
+import BottomNav from '../../components/UI/BottomNav'; // 需要创建这个组件
 import Tabs from '../../components/UI/Tabs';
 import KeepAliveOutlet from '../../components/KeepAliveOutlet';
 
@@ -36,12 +37,21 @@ const moduleMenus = {
   ],
 };
 
+// 定义哪些模块使用底部导航
+const bottomNavModules = ['music', 'chat']; // 音乐和聊天模块使用底部导航
+
 const ModuleLayout = ({ moduleKey, onLogout }) => {
   const menuItems = moduleMenus[moduleKey] || [];
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [tabs, setTabs] = useState([]);
+
+  // 判断当前模块是否使用底部导航
+  const useBottomNav = useMemo(() => 
+    bottomNavModules.includes(moduleKey), 
+    [moduleKey]
+  );
 
   // 根据当前路由和菜单项初始化或更新 tabs
   useEffect(() => {
@@ -71,7 +81,6 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
 
   const handleMenuClick = useCallback((menuItem) => {
     navigate(menuItem.path);
-    // 导航后会自动触发上面的 useEffect，更新 tabs
   }, [navigate]);
 
   const handleTabChange = useCallback((tabKey) => {
@@ -83,7 +92,7 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
 
   const handleTabClose = useCallback((tabKey) => {
     if (tabs.length <= 1) return;
-    
+
     setTabs(prev => {
       const newTabs = prev.filter(t => t.key !== tabKey);
       if (tabKey === activeTab) {
@@ -104,17 +113,33 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
     setSidebarCollapsed(prev => !prev);
   }, []);
 
-  const sidebar = (
-    <Sidebar
-      menuItems={menuItems}
-      activeKey={activeTab}
-      onMenuClick={handleMenuClick}
-      collapsed={sidebarCollapsed}
-      onToggle={toggleSidebar}
-    />
-  );
+  // 渲染导航组件
+  const renderNavigation = () => {
+    if (useBottomNav) {
+      // 底部导航布局
+      return (
+        <BottomNav
+          menuItems={menuItems}
+          activeKey={activeTab}
+          onMenuClick={handleMenuClick}
+        />
+      );
+    } else {
+      // 侧边栏布局
+      return (
+        <Sidebar
+          menuItems={menuItems}
+          activeKey={activeTab}
+          onMenuClick={handleMenuClick}
+          collapsed={sidebarCollapsed}
+          onToggle={toggleSidebar}
+        />
+      );
+    }
+  };
 
-  const tabsComponent = (
+  // 对于底部导航的模块，不显示 tabs
+  const tabsComponent = useBottomNav ? null : (
     <Tabs
       tabs={tabs}
       activeKey={activeTab}
@@ -124,7 +149,12 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
   );
 
   return (
-    <Layout sidebar={sidebar} tabs={tabsComponent} onLogout={onLogout}>
+    <Layout 
+      sidebar={!useBottomNav ? renderNavigation() : null}
+      bottomNav={useBottomNav ? renderNavigation() : null}
+      tabs={tabsComponent} 
+      onLogout={onLogout}
+    >
       <KeepAliveOutlet />
     </Layout>
   );

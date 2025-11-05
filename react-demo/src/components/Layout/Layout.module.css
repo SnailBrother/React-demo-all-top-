@@ -141,6 +141,22 @@
   fill: var(--header-text-color, #ffffff);
 }
 
+.backButton {
+  border: none;
+  cursor: pointer;
+  background-color: var(--header-button-bg, rgba(255, 255, 255, 0.2));
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.backIcon {
+   width: 1.5em;
+  height: 1.5em;
+  fill: var(--header-text-color, #ffffff);
+}
 /* 移除所有固定的主题样式，让 CSS 变量控制一切 */
 .header.light,
 .header.dark,
