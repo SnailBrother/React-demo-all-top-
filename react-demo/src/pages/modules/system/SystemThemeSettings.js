@@ -1,6 +1,4 @@
 // components/ThemeSettings/SystemThemeSettings.js
- 
-// components/ThemeSettings/SystemThemeSettings.js
 import React, { useState, useEffect } from 'react';
 import { ColorPicker, message } from 'antd';
 import { useTheme } from '../../../context/ThemeContext';
@@ -72,23 +70,30 @@ const SystemThemeSettings = () => {
   const [themeName, setThemeName] = useState('');
   const [editingTheme, setEditingTheme] = useState(null);
   const [customThemeSettings, setCustomThemeSettings] = useState({
-    color: '#000000FF',
-    backgroundColor: '#c12222',
-    accentColor: '#0078D4FF',
-    secondaryColor: '#6C757DFF',
-    borderColor: '#DEE2E6FF',
-    borderRadius: '0.375rem',
-    hoverBackground: '#F8F9FAFF',
-    hoverBorderColor: '#0078D4FF',
-    activeBackground: '#E9ECEEFF',
-    hoverFontColor: '#000000FF',
-    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    fontSize: '1rem',
-    shadow: '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)',
-    focusShadow: '0 0 0 0.2rem rgba(0,120,212,0.25)',
-    watermarkForeground: '#B3B5B6FF',
-    transition: 'all 0.15s ease-in-out',
-    opacityDisabled: '0.65'
+    // 背景色
+    'background-color': '#FFFFFFFF',
+    'secondary-background-color': '#F8F9FAFF',
+    'hover_background-color': '#E9ECEEFF',
+    'focus_background-color': '#DEE2E6FF',
+    
+    // 字体颜色
+    'font-color': '#000000FF',
+    'secondary-font-color': '#6C757DFF',
+    'hover_font-color': '#0078D4FF',
+    'focus_font-color': '#0056B3FF',
+    'watermark-font-color': '#B3B5B6FF',
+    'font-family': 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    
+    // 边框颜色
+    'border_color': '#DEE2E6FF',
+    'secondary-border_color': '#E9ECEEFF',
+    'hover_border_color': '#0078D4FF',
+    'focus_border_color': '#0056B3FF',
+    
+    // 阴影颜色
+    'shadow_color': '#00000019',
+    'hover_shadow_color': '#00000026',
+    'focus_shadow_color': '#0078D440'
   });
 
   // 初始化设置
@@ -101,23 +106,30 @@ const SystemThemeSettings = () => {
       previewThemeSettings(themeData);
     } else {
       setCustomThemeSettings({
-        color: '#000000FF',
-        backgroundColor: '#FFFFFFFF',
-        accentColor: '#0078D4FF',
-        secondaryColor: '#6C757DFF',
-        borderColor: '#DEE2E6FF',
-        borderRadius: '0.375rem',
-        hoverBackground: '#F8F9FAFF',
-        hoverBorderColor: '#0078D4FF',
-        activeBackground: '#E9ECEEFF',
-        hoverFontColor: '#000000FF',
-        fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-        fontSize: '1rem',
-        shadow: '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)',
-        focusShadow: '0 0 0 0.2rem rgba(0,120,212,0.25)',
-        watermarkForeground: '#B3B5B6FF',
-        transition: 'all 0.15s ease-in-out',
-        opacityDisabled: '0.65'
+        // 背景色
+        'background-color': '#FFFFFFFF',
+        'secondary-background-color': '#F8F9FAFF',
+        'hover_background-color': '#E9ECEEFF',
+        'focus_background-color': '#DEE2E6FF',
+        
+        // 字体颜色
+        'font-color': '#000000FF',
+        'secondary-font-color': '#6C757DFF',
+        'hover_font-color': '#0078D4FF',
+        'focus_font-color': '#0056B3FF',
+        'watermark-font-color': '#B3B5B6FF',
+        'font-family': 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        
+        // 边框颜色
+        'border_color': '#DEE2E6FF',
+        'secondary-border_color': '#E9ECEEFF',
+        'hover_border_color': '#0078D4FF',
+        'focus_border_color': '#0056B3FF',
+        
+        // 阴影颜色
+        'shadow_color': '#00000019',
+        'hover_shadow_color': '#00000026',
+        'focus_shadow_color': '#0078D440'
       });
     }
   }, [editingTheme, customThemes]);
@@ -192,32 +204,32 @@ const SystemThemeSettings = () => {
   const applyPreset = (presetName) => {
     const presets = {
       light: {
-        color: '#000000FF',
-        backgroundColor: '#FFFFFFFF',
-        accentColor: '#0078D4FF',
-        borderColor: '#DEE2E6FF',
-        hoverBackground: '#F8F9FAFF'
+        'background-color': '#FFFFFFFF',
+        'secondary-background-color': '#F8F9FAFF',
+        'hover_background-color': '#E9ECEEFF',
+        'font-color': '#000000FF',
+        'secondary-font-color': '#6C757DFF',
+        'border_color': '#DEE2E6FF',
+        'shadow_color': '#00000019'
       },
       dark: {
-        color: '#FFFFFFFF',
-        backgroundColor: '#1A1A1AFF',
-        accentColor: '#0D6EFDFF',
-        borderColor: '#495057FF',
-        hoverBackground: '#2D2D2DFF'
+        'background-color': '#1A1A1AFF',
+        'secondary-background-color': '#2D2D2DFF',
+        'hover_background-color': '#3D3D3DFF',
+        'font-color': '#FFFFFFFF',
+        'secondary-font-color': '#B3B3B3FF',
+        'border_color': '#495057FF',
+        'shadow_color': '#00000080'
       },
       blue: {
-        color: '#000000FF',
-        backgroundColor: '#F0F8FFFF',
-        accentColor: '#0066CCFF',
-        borderColor: '#B3D9FFFF',
-        hoverBackground: '#E6F2FFFF'
-      },
-      transparent: {
-        color: '#000000FF',
-        backgroundColor: '#FFFFFF80',
-        accentColor: '#0078D4FF',
-        borderColor: '#DEE2E680',
-        hoverBackground: '#F8F9FA80'
+        'background-color': '#F0F8FFFF',
+        'secondary-background-color': '#E6F2FFFF',
+        'hover_background-color': '#D4EBFFFF',
+        'font-color': '#003366FF',
+        'secondary-font-color': '#0066CCFF',
+        'border_color': '#B3D9FFFF',
+        'hover_border_color': '#0066CCFF',
+        'shadow_color': '#0066CC26'
       }
     };
 
@@ -268,21 +280,21 @@ const SystemThemeSettings = () => {
       <div className={styles.content}>
         {/* 左侧：主题编辑器 */}
         <div className={styles.editor}>
-          {/* 基础颜色设置 */}
+          {/* 背景颜色设置 */}
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <svg className={styles.icon} aria-hidden="true">
                 <use xlinkHref="#icon-beijingyanse"></use>
               </svg>
-              基础颜色
+              背景颜色
             </h2>
 
             <div className={styles.colorGrid}>
               <div className={styles.colorItem}>
-                <label>文字颜色</label>
+                <label>主常规背景</label>
                 <ColorPicker
-                  value={customThemeSettings.color}
-                  onChange={handleColorChange('color')}
+                  value={customThemeSettings['background-color']}
+                  onChange={handleColorChange('background-color')}
                   showText
                   className={styles.colorPicker}
                   size="large"
@@ -290,10 +302,10 @@ const SystemThemeSettings = () => {
               </div>
 
               <div className={styles.colorItem}>
-                <label>背景颜色</label>
+                <label>次常规背景</label>
                 <ColorPicker
-                  value={customThemeSettings.backgroundColor}
-                  onChange={handleColorChange('backgroundColor')}
+                  value={customThemeSettings['secondary-background-color']}
+                  onChange={handleColorChange('secondary-background-color')}
                   showText
                   className={styles.colorPicker}
                   size="large"
@@ -301,10 +313,10 @@ const SystemThemeSettings = () => {
               </div>
 
               <div className={styles.colorItem}>
-                <label>主题色</label>
+                <label>悬浮背景</label>
                 <ColorPicker
-                  value={customThemeSettings.accentColor}
-                  onChange={handleColorChange('accentColor')}
+                  value={customThemeSettings['hover_background-color']}
+                  onChange={handleColorChange('hover_background-color')}
                   showText
                   className={styles.colorPicker}
                   size="large"
@@ -312,13 +324,75 @@ const SystemThemeSettings = () => {
               </div>
 
               <div className={styles.colorItem}>
-                <label>次要颜色</label>
+                <label>按下背景</label>
                 <ColorPicker
-                  value={customThemeSettings.secondaryColor}
-                  onChange={handleColorChange('secondaryColor')}
+                  value={customThemeSettings['focus_background-color']}
+                  onChange={handleColorChange('focus_background-color')}
                   showText
                   className={styles.colorPicker}
                   size="large"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 字体颜色设置 */}
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <svg className={styles.icon} aria-hidden="true">
+                <use xlinkHref="#icon-ziti"></use>
+              </svg>
+              字体颜色
+            </h2>
+
+            <div className={styles.colorGrid}>
+              <div className={styles.colorItem}>
+                <label>常规颜色</label>
+                <ColorPicker
+                  value={customThemeSettings['font-color']}
+                  onChange={handleColorChange('font-color')}
+                  showText
+                  className={styles.colorPicker}
+                />
+              </div>
+
+              <div className={styles.colorItem}>
+                <label>次常规颜色</label>
+                <ColorPicker
+                  value={customThemeSettings['secondary-font-color']}
+                  onChange={handleColorChange('secondary-font-color')}
+                  showText
+                  className={styles.colorPicker}
+                />
+              </div>
+
+              <div className={styles.colorItem}>
+                <label>悬浮颜色</label>
+                <ColorPicker
+                  value={customThemeSettings['hover_font-color']}
+                  onChange={handleColorChange('hover_font-color')}
+                  showText
+                  className={styles.colorPicker}
+                />
+              </div>
+
+              <div className={styles.colorItem}>
+                <label>按下颜色</label>
+                <ColorPicker
+                  value={customThemeSettings['focus_font-color']}
+                  onChange={handleColorChange('focus_font-color')}
+                  showText
+                  className={styles.colorPicker}
+                />
+              </div>
+
+              <div className={styles.colorItem}>
+                <label>水印颜色</label>
+                <ColorPicker
+                  value={customThemeSettings['watermark-font-color']}
+                  onChange={handleColorChange('watermark-font-color')}
+                  showText
+                  className={styles.colorPicker}
                 />
               </div>
             </div>
@@ -330,92 +404,87 @@ const SystemThemeSettings = () => {
               <svg className={styles.icon} aria-hidden="true">
                 <use xlinkHref="#icon-biankuangyanse"></use>
               </svg>
-              边框设置
-            </h2>
-
-            <div className={styles.settingsGrid}>
-              <div className={styles.settingItem}>
-                <label>边框颜色</label>
-                <ColorPicker
-                  value={customThemeSettings.borderColor}
-                  onChange={handleColorChange('borderColor')}
-                  showText
-                  className={styles.colorPicker}
-                />
-              </div>
-
-              <div className={styles.settingItem}>
-                <label>悬浮边框</label>
-                <ColorPicker
-                  value={customThemeSettings.hoverBorderColor}
-                  onChange={handleColorChange('hoverBorderColor')}
-                  showText
-                  className={styles.colorPicker}
-                />
-              </div>
-
-              <div className={styles.settingItem}>
-                <label>圆角大小</label>
-                <select
-                  value={customThemeSettings.borderRadius}
-                  onChange={(e) => handleSettingChange('borderRadius', e.target.value)}
-                  className={styles.select}
-                >
-                  <option value="0">直角</option>
-                  <option value="0.25rem">小圆角</option>
-                  <option value="0.375rem">中等圆角</option>
-                  <option value="0.5rem">大圆角</option>
-                  <option value="1rem">超大圆角</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* 交互状态 */}
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>
-              <svg className={styles.icon} aria-hidden="true">
-                <use xlinkHref="#icon-xuanzhong"></use>
-              </svg>
-              交互状态
+              边框颜色
             </h2>
 
             <div className={styles.colorGrid}>
               <div className={styles.colorItem}>
-                <label>悬浮背景</label>
+                <label>常规颜色</label>
                 <ColorPicker
-                  value={customThemeSettings.hoverBackground}
-                  onChange={handleColorChange('hoverBackground')}
+                  value={customThemeSettings['border_color']}
+                  onChange={handleColorChange('border_color')}
                   showText
                   className={styles.colorPicker}
                 />
               </div>
 
               <div className={styles.colorItem}>
-                <label>悬浮文字</label>
+                <label>次常规颜色</label>
                 <ColorPicker
-                  value={customThemeSettings.hoverFontColor}
-                  onChange={handleColorChange('hoverFontColor')}
+                  value={customThemeSettings['secondary-border_color']}
+                  onChange={handleColorChange('secondary-border_color')}
                   showText
                   className={styles.colorPicker}
                 />
               </div>
 
               <div className={styles.colorItem}>
-                <label>激活背景</label>
+                <label>悬浮颜色</label>
                 <ColorPicker
-                  value={customThemeSettings.activeBackground}
-                  onChange={handleColorChange('activeBackground')}
+                  value={customThemeSettings['hover_border_color']}
+                  onChange={handleColorChange('hover_border_color')}
                   showText
                   className={styles.colorPicker}
                 />
               </div>
 
               <div className={styles.colorItem}>
-                <label>水印颜色</label>
+                <label>按下颜色</label>
                 <ColorPicker
-                  value={customThemeSettings.watermarkForeground}
-                  onChange={handleColorChange('watermarkForeground')}
+                  value={customThemeSettings['focus_border_color']}
+                  onChange={handleColorChange('focus_border_color')}
+                  showText
+                  className={styles.colorPicker}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 阴影设置 */}
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <svg className={styles.icon} aria-hidden="true">
+                <use xlinkHref="#icon-yinying"></use>
+              </svg>
+              阴影颜色
+            </h2>
+
+            <div className={styles.colorGrid}>
+              <div className={styles.colorItem}>
+                <label>常规阴影</label>
+                <ColorPicker
+                  value={customThemeSettings['shadow_color']}
+                  onChange={handleColorChange('shadow_color')}
+                  showText
+                  className={styles.colorPicker}
+                />
+              </div>
+
+              <div className={styles.colorItem}>
+                <label>悬浮阴影</label>
+                <ColorPicker
+                  value={customThemeSettings['hover_shadow_color']}
+                  onChange={handleColorChange('hover_shadow_color')}
+                  showText
+                  className={styles.colorPicker}
+                />
+              </div>
+
+              <div className={styles.colorItem}>
+                <label>按下阴影</label>
+                <ColorPicker
+                  value={customThemeSettings['focus_shadow_color']}
+                  onChange={handleColorChange('focus_shadow_color')}
                   showText
                   className={styles.colorPicker}
                 />
@@ -436,8 +505,8 @@ const SystemThemeSettings = () => {
               <div className={styles.settingItem}>
                 <label>字体家族</label>
                 <select
-                  value={customThemeSettings.fontFamily}
-                  onChange={(e) => handleSettingChange('fontFamily', e.target.value)}
+                  value={customThemeSettings['font-family']}
+                  onChange={(e) => handleSettingChange('font-family', e.target.value)}
                   className={styles.select}
                 >
                   <option value="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">系统字体</option>
@@ -446,21 +515,6 @@ const SystemThemeSettings = () => {
                   <option value="'SimSun', serif">宋体</option>
                   <option value="'KaiTi', serif">楷体</option>
                   <option value="'SimHei', sans-serif">黑体</option>
-                </select>
-              </div>
-
-              <div className={styles.settingItem}>
-                <label>字体大小</label>
-                <select
-                  value={customThemeSettings.fontSize}
-                  onChange={(e) => handleSettingChange('fontSize', e.target.value)}
-                  className={styles.select}
-                >
-                  <option value="0.875rem">小 (14px)</option>
-                  <option value="1rem">标准 (16px)</option>
-                  <option value="1.125rem">大 (18px)</option>
-                  <option value="1.25rem">更大 (20px)</option>
-                  <option value="1.5rem">特大 (24px)</option>
                 </select>
               </div>
             </div>
@@ -493,12 +547,6 @@ const SystemThemeSettings = () => {
                 onClick={() => applyPreset('blue')}
               >
                 蓝色主题
-              </button>
-              <button 
-                className={styles.presetBtn}
-                onClick={() => applyPreset('transparent')}
-              >
-                透明主题
               </button>
             </div>
           </div>

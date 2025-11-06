@@ -1,34 +1,40 @@
 // src/context/ThemeContext.js
-// src/context/ThemeContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
-// 默认主题配置
+// 默认主题配置 - 使用新的变量名
 const DEFAULT_THEME = {
-  color: '#000000FF',
-  backgroundColor: '#FFFFFFFF',
-  accentColor: '#0078D4FF',
-  secondaryColor: '#6C757DFF',
-  borderColor: '#DEE2E6FF',
-  borderRadius: '0.375rem',
-  hoverBackground: '#F8F9FAFF',
-  hoverBorderColor: '#0078D4FF',
-  activeBackground: '#E9ECEEFF',
-  hoverFontColor: '#000000FF',
-  fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  fontSize: '1rem',
-  shadow: '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)',
-  focusShadow: '0 0 0 0.2rem rgba(0,120,212,0.25)',
-  watermarkForeground: '#B3B5B6FF',
-  transition: 'all 0.15s ease-in-out',
-  opacityDisabled: '0.65'
+  // 背景色
+  'background-color': '#FFFFFFFF',
+  'secondary-background-color': '#F8F9FAFF',
+  'hover_background-color': '#E9ECEEFF',
+  'focus_background-color': '#DEE2E6FF',
+  
+  // 字体颜色
+  'font-color': '#000000FF',
+  'secondary-font-color': '#6C757DFF',
+  'hover_font-color': '#0078D4FF',
+  'focus_font-color': '#0056B3FF',
+  'watermark-font-color': '#B3B5B6FF',
+  'font-family': 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  
+  // 边框颜色
+  'border_color': '#DEE2E6FF',
+  'secondary-border_color': '#E9ECEEFF',
+  'hover_border_color': '#0078D4FF',
+  'focus_border_color': '#0056B3FF',
+  
+  // 阴影颜色
+  'shadow_color': '#00000019',
+  'hover_shadow_color': '#00000026',
+  'focus_shadow_color': '#0078D440'
 };
 
 export const ThemeProvider = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState('default');
   const [customThemes, setCustomThemes] = useState({});
-  const [previewTheme, setPreviewTheme] = useState(null); // 实时预览主题
+  const [previewTheme, setPreviewTheme] = useState(null);
 
   // 应用主题到 :root
   const applyThemeToRoot = (theme) => {
@@ -36,6 +42,7 @@ export const ThemeProvider = ({ children }) => {
     
     // 移除之前的自定义主题属性
     root.removeAttribute('data-custom-theme');
+    root.removeAttribute('data-preview-theme');
     
     if (theme === 'default') {
       // 应用默认主题

@@ -9,18 +9,11 @@
   transition: all 0.3s ease;
 }
 
-/* 移除固定的主题样式，使用 CSS 变量 */
-.layout.light,
-.layout.dark,
-.layout.female,
-.layout.male,
-.layout.middle {
-  /* 这些样式现在通过 CSS 变量控制 */
-}
+ 
 
 .header {
-  background-color: var(--backgroundColor);
-  color: var(--color);
+  background-color: var(--background-color);
+  color: var(--font-color);
   padding: 0 24px;
   display: flex;
   justify-content: space-between;
@@ -41,7 +34,7 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: var(--color);
+  color: var(--font-color);
 }
 
 .navLinks {
