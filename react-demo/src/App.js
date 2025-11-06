@@ -10,8 +10,9 @@ import styles from './App.module.css';
 
 function App() {
   return (
+     <AuthProvider>
     <ThemeProvider>
-      <AuthProvider>
+     
         <MessageProvider>
           <Router>
             <div className={styles.app}>
@@ -19,8 +20,9 @@ function App() {
             </div>
           </Router>
         </MessageProvider>
-      </AuthProvider>
+     
     </ThemeProvider>
+     </AuthProvider>
   );
 }
 

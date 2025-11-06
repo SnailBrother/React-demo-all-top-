@@ -42,7 +42,7 @@ const Header = ({ title = "React-Demo" }) => {
         {/* 用户信息 */}
         {user && (
           <Span     >
-            {user.name || user.username || user.email || '用户'}
+            {user.username || user.email || '用户'}
           </Span>
         )}
 

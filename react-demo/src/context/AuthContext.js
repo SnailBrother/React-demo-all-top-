@@ -47,8 +47,8 @@ export const AuthProvider = ({ children }) => {
       if (response.success) {
         const userData = {
           id: response.user.id,
-          name: response.user.name,      // 用户姓名
-          username: response.user.name,  // 为了兼容，同时设置username
+          username: response.user.username,      // 用户姓名
+         
           email: response.user.email,
           loginTime: new Date().toISOString()  // 登录时间
         };
@@ -70,10 +70,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   //注册功能
-  const register = async (name, email, password) => {
+  const register = async (username, email, password) => {
     setLoading(true);
     try {
-      const response = await authService.register(name, email, password);
+      const response = await authService.register(username, email, password);
 
       if (response.success) {
         return { success: true };// 注册成功
