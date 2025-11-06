@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ColorPicker, message } from 'antd';
 import { useTheme } from '../../../context/ThemeContext';
 import styles from './SystemThemeSettings.module.css';
+import Button from '../../../components/UI/Button';
 
 // 辅助函数：确保颜色为8位带透明度的格式
 const ensure8DigitHex = (color) => {
@@ -584,12 +585,16 @@ const SystemThemeSettings = () => {
                     </button>
                   </>
                 ) : (
-                  <button 
-                    className={styles.btnPrimary}
-                    onClick={handleSaveTheme}
+                  <Button 
+                    
+                    onClick={handleSaveTheme} 
+                     variant="secondary"
+          size="small"
                   >
-                    保存新主题
-                  </button>
+                    保存
+                  </Button>
+
+                   
                 )}
               </div>
             </div>

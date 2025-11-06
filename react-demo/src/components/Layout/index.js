@@ -8,7 +8,7 @@ const Layout = ({
   children, 
   sidebar, 
   tabs,
-  bottomNav, // 新增底部导航 prop
+  bottomNav,
   showHeader = true, 
   onLogout 
 }) => {

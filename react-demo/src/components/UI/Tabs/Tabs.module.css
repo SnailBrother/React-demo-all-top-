@@ -1,12 +1,14 @@
- /* src/components/UI/Tabs/Tabs.module.css */
-/* Tabs 容器基础样式 */
+/* src/components/UI/Tabs/Tabs.module.css */
+
+/* 标签页容器主样式 - 包含所有标签的容器 */
 .tabsContainer {
-  background: var(--surface-color);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--background-color);
+  border-bottom: 1px solid var(--border_color);
   padding: 0 16px;
   transition: all 0.3s ease;
 }
 
+/* 标签页列表容器 - 水平排列所有标签 */
 .tabsList {
   display: flex;
   align-items: center;
@@ -14,14 +16,13 @@
   overflow-x: auto;
 }
 
-/* Tab 基础样式 */
+/* 单个标签页基础样式 */
 .tab {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border_color);
   border-bottom: none;
   border-radius: 6px 6px 0 0;
   cursor: pointer;
@@ -29,25 +30,32 @@
   min-width: 120px;
   max-width: 200px;
   position: relative;
-  color: var(--text-color);
+  color: var(--font-color);
+  background: var(--secondary-background-color);
 }
 
+/* 标签页悬停状态 */
 .tab:hover {
-  background: var(--surface-color);
+  background: var(--hover_background-color);
+  color: var(--hover_font-color);
+  border-color: var(--hover_border_color);
 }
 
+/* 标签页激活/选中状态 */
 .tab.active {
-  background: var(--bg-color);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+  background: var(--background-color);
+  border-color: var(--hover_border_color);
+  color: var(--hover_font-color);
   font-weight: 500;
 }
 
+/* 标签页图标样式 */
 .tabIcon {
   font-size: 14px;
   flex-shrink: 0;
 }
 
+/* 标签页文字标签样式 */
 .tabLabel {
   flex: 1;
   font-size: 13px;
@@ -57,6 +65,7 @@
   text-overflow: ellipsis;
 }
 
+/* 关闭按钮基础样式 */
 .closeButton {
   background: none;
   border: none;
@@ -64,7 +73,7 @@
   cursor: pointer;
   padding: 2px;
   border-radius: 2px;
-  color: var(--text-muted);
+  color: var(--secondary-font-color);
   flex-shrink: 0;
   width: 16px;
   height: 16px;
@@ -75,17 +84,19 @@
   transition: all 0.2s ease;
 }
 
+/* 关闭按钮悬停状态 */
 .closeButton:hover {
-  background: var(--danger-color);
+  background: var(--danger-color, #dc3545);
   color: white;
   opacity: 1;
 }
 
-/* 当标签页不可关闭时隐藏关闭按钮 */
+/* 非悬停状态下隐藏关闭按钮 */
 .tab:not(:hover) .closeButton {
   opacity: 0;
 }
 
+/* 悬停状态下显示关闭按钮 */
 .tab:hover .closeButton {
   opacity: 0.7;
 }
@@ -95,102 +106,51 @@
   display: none;
 }
 
-/* 浅色主题特定样式 */
-.tabsContainer.light {
-  background: #f8f9fa;
-  border-bottom-color: #e9ecef;
-}
+/* ========== 滚动条样式 ========== */
 
-.tab.light {
-  background: #ffffff;
-  border-color: #e9ecef;
-  color: #495057;
-}
-
-.tab.light:hover {
-  background: #e9ecef;
-}
-
-.tab.light.active {
-  background: #ffffff;
-  border-color: #007bff;
-  color: #007bff;
-}
-
-.tab.light .closeButton {
-  color: #6c757d;
-}
-
-.tab.light .closeButton:hover {
-  background: #dc3545;
-  color: white;
-}
-
-/* 深色主题特定样式 */
-.tabsContainer.dark {
-  background: #1e1e1e;
-  border-bottom-color: #333;
-}
-
-.tab.dark {
-  background: #121212;
-  border-color: #333;
-  color: #e9ecef;
-}
-
-.tab.dark:hover {
-  background: #2d2d2d;
-}
-
-.tab.dark.active {
-  background: #121212;
-  border-color: #007bff;
-  color: #007bff;
-}
-
-.tab.dark .closeButton {
-  color: #adb5bd;
-}
-
-.tab.dark .closeButton:hover {
-  background: #c82333;
-  color: white;
-}
-
-/* 滚动条样式 */
+/* 标签列表滚动条 */
 .tabsList::-webkit-scrollbar {
   height: 4px;
 }
 
+/* 标签列表滚动条轨道 */
 .tabsList::-webkit-scrollbar-track {
-  background: var(--surface-color);
+  background: var(--secondary-background-color);
 }
 
+/* 标签列表滚动条滑块 */
 .tabsList::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--border_color);
   border-radius: 2px;
 }
 
+/* 标签列表滚动条滑块悬停状态 */
 .tabsList::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--secondary-font-color);
 }
 
-/* 响应式设计 */
+/* ========== 响应式设计 ========== */
+
+/* 平板和移动设备适配 */
 @media (max-width: 768px) {
+  /* 移动端 - 减少容器内边距 */
   .tabsContainer {
     padding: 0 8px;
   }
   
+  /* 移动端 - 调整标签页尺寸 */
   .tab {
     min-width: 100px;
     max-width: 150px;
     padding: 6px 8px;
   }
   
+  /* 移动端 - 缩小文字大小 */
   .tabLabel {
     font-size: 12px;
   }
   
+  /* 移动端 - 缩小图标大小 */
   .tabIcon {
     font-size: 12px;
   }

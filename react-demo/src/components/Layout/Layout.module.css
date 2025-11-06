@@ -1,75 +1,17 @@
 /* src/components/Layout/Layout.module.css */
+
 /* src/components/Layout/Layout.module.css */
 .layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-color);
-  color: var(--text-color);
+  background: var(--background-color);
+  color: var(--font-color);
   transition: all 0.3s ease;
 }
 
- 
-
-.header {
-  background-color: var(--background-color);
-  color: var(--font-color);
-  padding: 0 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: var(--shadow);
-  height: 60px;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-}
-
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-}
-
-.title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--font-color);
-}
-
-.navLinks {
-  display: flex;
-  gap: 16px;
-}
-
-.navButton {
-  background: none;
-  border: none;
-  color: var(--color);
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.navButton:hover {
-  background: var(--header-hover-bg, rgba(255, 255, 255, 0.1));
-}
-
-.logoutButton {
-  background: var(--backgroundColor);
-  border: 1px solid var(--header-button-bg, rgba(255, 255, 255, 0.3));
-  color: var(--color);
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 14px;
-}
-
-.logoutButton:hover {
-  background: var(--backgroundColor);
-  transform: translateY(-1px);
+.layout.withBottomNav {
+  padding-bottom: 60px; /* 为底部导航留出空间 */
 }
 
 .mainLayout {
@@ -85,76 +27,24 @@
   overflow: hidden;
 }
 
+.contentArea.withBottomNav {
+  padding-bottom: 60px;
+}
+
 .mainContent {
   flex: 1;
   padding: 24px;
-  background-color: var(--backgroundColor);
+  background-color: var(--background-color);
   overflow-y: auto;
   transition: background-color 0.3s ease;
 }
 
-/* 头部操作区域 */
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-/* 用户信息 */
-.userInfo {
-  color: var(--color);
-  font-size: 14px;
-  padding: 6px 12px;
-  background: var(--header-button-bg, rgba(255, 255, 255, 0.1));
-  border-radius: 4px;
-  border: 1px solid var(--header-button-bg, rgba(255, 255, 255, 0.2));
-}
-
-/* 主题切换按钮 */
-.themeToggle {
-  border: none;
-  cursor: pointer;
-  background-color: var(--header-button-bg, rgba(255, 255, 255, 0.2));
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.themeToggle:hover {
-  background: var(--header-button-hover-bg, rgba(255, 255, 255, 0.3));
-  transform: translateY(-1px);
-}
-
-.themeIcon {
-  width: 1.5em;
-  height: 1.5em;
-  fill: var(--header-text-color, #ffffff);
-}
-
-.backButton {
-  border: none;
-  cursor: pointer;
-  background-color: var(--header-button-bg, rgba(255, 255, 255, 0.2));
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.backIcon {
-   width: 1.5em;
-  height: 1.5em;
-  fill: var(--header-text-color, #ffffff);
-}
-/* 移除所有固定的主题样式，让 CSS 变量控制一切 */
-.header.light,
-.header.dark,
-.header.female,
-.header.male,
-.header.middle {
-  /* 这些样式现在通过 CSS 变量自动应用 */
+.bottomNavContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--background-color);
+  border-top: 1px solid var(--border_color);
 }

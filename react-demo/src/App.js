@@ -5,7 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { MessageProvider } from './components/UI/Message';
 import AppRoutes from './routes';
-//import './assets/styles/variables.css';
+import './assets/styles/variables.css';
 import styles from './App.module.css';
 
 function App() {

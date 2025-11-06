@@ -1,10 +1,11 @@
-/* src/components/UI/Button/Button.module.css */
+/* src/components/UI/Span/Span.module.css */
+
 
 /* #region start 基础样式 */
-.button {
+.span {
   border-radius: var(--border-radius);
   cursor: pointer;
-  font-weight: 500;
+  font-weight: var(--font-weight);
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
@@ -12,7 +13,7 @@
   gap: var(--gap);
   text-decoration: none;
   /* 移除其他文本装饰线 */
-  padding: var(--padding);
+  padding: 0px 8px;;
   font-size: var(--font-size);
   min-height: var(--min-height);
   background: var(--background-color);
@@ -23,17 +24,18 @@
 /* #endregion end */
 
 /* #region start 悬浮样式 */
-.button:hover:not(:disabled) {
+.span:hover:not(:disabled) {
   background: var(--hover_background-color);
   border-color: var(--hover_border_color);
   color: var(--hover_font-color);
   transform: translateY(-1px);
+ 
 }
 
 /* #endregion end */
 
 /* #region start 选用，获得焦点样式 */
-.button:active:not(:disabled) {
+.span:active:not(:disabled) {
   background: var(--focus_background-color);
   border-color: var(--focus_border_color);
   color: var(--focus_font-color);
@@ -50,18 +52,6 @@
 
 /* #endregion end */
 
-/* #region start 阴影样式 */
-.button {
-  /* 基础阴影：水平偏移 垂直偏移 模糊半径 颜色 */
-  box-shadow: var(--shadow-default);
-}
 
-.button:hover:not(:disabled) {
-  box-shadow: var(--shadow-hover);
-}
 
-.button:active:not(:disabled) {
-  box-shadow: var(--shadow-focus);
-}
 
-/* #endregion end */

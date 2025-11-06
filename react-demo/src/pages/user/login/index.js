@@ -140,6 +140,7 @@ const Login = () => {
                         variant="primary"
                         size="large"
                         fullWidth
+                         style={{ width: '100%' }}  
                         loading={loading}
                         className={styles.loginButton}
                     >

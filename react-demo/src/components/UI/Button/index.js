@@ -1,36 +1,34 @@
 // src/components/UI/Button/index.js
+// src/components/UI/Button/index.js
 import React from 'react';
 import styles from './Button.module.css';
 
-const Button = ({ 
-  children, 
-  type = 'button', 
-  variant = 'primary', 
-  size = 'medium',
-  disabled = false,
-  loading = false,
-  fullWidth = false,
+const Button = ({
+  children,
+  variant, // 按钮变体（样式类型）
+  size,    // 不设置默认值
   onClick,
+  disabled = false,
+  type = 'button',
   className = '',
-  ...props 
+  ...props
 }) => {
-  const buttonClass = `${styles.button} ${styles[variant]} ${styles[size]} ${
-    fullWidth ? styles.fullWidth : ''
-  } ${loading ? styles.loading : ''} ${className}`;
-  
   return (
     <button
       type={type}
-      className={buttonClass}
-      disabled={disabled || loading}
+      className={`${styles.button} ${
+        variant ? styles[variant] : ''
+      } ${
+        size ? styles[size] : ''
+      } ${className}`}
       onClick={onClick}
+      disabled={disabled}
       {...props}
     >
-      {loading ? '加载中...' : children}
+      {children}
     </button>
   );
 };
 
-// 同时提供命名导出和默认导出
 export { Button };
 export default Button;

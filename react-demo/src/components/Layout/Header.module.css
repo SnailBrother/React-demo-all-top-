@@ -1,0 +1,28 @@
+/* src/components/Layout/Header.module.css */
+.header {
+  background-color: var(--background-color);
+  color: var(--font-color);
+  padding: var(--padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  height: 60px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid var(--border_color);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--font-color);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+ 
