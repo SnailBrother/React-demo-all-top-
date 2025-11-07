@@ -1,12 +1,13 @@
 // src/context/ThemeContext.js
+// src/context/ThemeContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { apiClient } from '../utils';
 
 const ThemeContext = createContext();
 
-// 默认主题配置 - 作为后备值
-const FALLBACK_THEME = {
+// 默认主题配置 - 统一在这里管理
+const DEFAULT_THEME = {
   // 背景色
   'background-color': '#FFFFFFFF',
   'secondary-background-color': '#F8F9FAFF',
@@ -169,7 +170,7 @@ export const ThemeProvider = ({ children }) => {
     if (activeTheme) {
       return transformDbThemeToCss(activeTheme);
     }
-    return FALLBACK_THEME;
+    return DEFAULT_THEME;
   }, [previewTheme, activeTheme, transformDbThemeToCss]);
 
   // 获取用户所有主题
@@ -354,11 +355,11 @@ export const ThemeProvider = ({ children }) => {
     root.removeAttribute('data-preview-theme');
     
     if (theme === 'default') {
-      // 应用默认主题（后备主题）
+      // 应用默认主题
       root.setAttribute('data-theme', 'default');
-      Object.keys(FALLBACK_THEME).forEach(key => {
+      Object.keys(DEFAULT_THEME).forEach(key => {
         const cssVarName = `--${key}`;
-        root.style.setProperty(cssVarName, FALLBACK_THEME[key]);
+        root.style.setProperty(cssVarName, DEFAULT_THEME[key]);
       });
       console.log('应用默认主题');
     } else if (typeof theme === 'object') {
@@ -433,7 +434,7 @@ export const ThemeProvider = ({ children }) => {
     
     // 主题设置
     themeSettings: getCurrentThemeSettings(),
-    fallbackTheme: FALLBACK_THEME,
+    defaultTheme: DEFAULT_THEME, // 暴露默认主题
     
     // 操作函数
     fetchUserAllThemes,

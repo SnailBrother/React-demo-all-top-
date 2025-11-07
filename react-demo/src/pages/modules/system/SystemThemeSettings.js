@@ -1,5 +1,6 @@
 // components/ThemeSettings/SystemThemeSettings.js
 // src/components/ThemeSettings/SystemThemeSettings.js
+// src/components/ThemeSettings/SystemThemeSettings.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { ColorPicker, message } from 'antd';
 import { useTheme } from '../../../context/ThemeContext';
@@ -77,33 +78,13 @@ const DB_FIELD_TO_CSS_VAR = {
   focus_shadow_color: 'focus_shadow_color'
 };
 
-// 默认主题设置
-const DEFAULT_THEME_SETTINGS = {
-  'background-color': '#FFFFFFFF',
-  'secondary-background-color': '#F8F9FAFF',
-  'hover_background-color': '#E9ECEEFF',
-  'focus_background-color': '#DEE2E6FF',
-  'font-color': '#000000FF',
-  'secondary-font-color': '#6C757DFF',
-  'hover_font-color': '#0078D4FF',
-  'focus_font-color': '#0056B3FF',
-  'watermark-font-color': '#B3B5B6FF',
-  'font-family': 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  'border_color': '#DEE2E6FF',
-  'secondary-border_color': '#E9ECEEFF',
-  'hover_border_color': '#0078D4FF',
-  'focus_border_color': '#0056B3FF',
-  'shadow_color': '#00000019',
-  'hover_shadow_color': '#00000026',
-  'focus_shadow_color': '#0078D440'
-};
-
 const SystemThemeSettings = () => {
   const {
     allThemes,
     activeTheme,
     previewTheme,
     themeSettings,
+    defaultTheme, // 从 ThemeContext 获取默认主题
     loading: themeLoading,
     fetchUserAllThemes,
     setActiveThemeById,
@@ -120,7 +101,7 @@ const SystemThemeSettings = () => {
 
   const [themeName, setThemeName] = useState('');
   const [editingTheme, setEditingTheme] = useState(null);
-  const [customThemeSettings, setCustomThemeSettings] = useState({ ...DEFAULT_THEME_SETTINGS });
+  const [customThemeSettings, setCustomThemeSettings] = useState({ ...defaultTheme });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -139,12 +120,12 @@ const SystemThemeSettings = () => {
           setCustomThemeSettings(cssTheme);
         } else {
           // 否则使用默认主题
-          setCustomThemeSettings({ ...DEFAULT_THEME_SETTINGS });
+          setCustomThemeSettings({ ...defaultTheme });
         }
       } catch (error) {
         console.error('初始化主题失败:', error);
         message.error('加载主题失败');
-        setCustomThemeSettings({ ...DEFAULT_THEME_SETTINGS });
+        setCustomThemeSettings({ ...defaultTheme });
       } finally {
         setLoading(false);
       }
@@ -267,10 +248,10 @@ const SystemThemeSettings = () => {
       setCustomThemeSettings(cssTheme);
       previewThemeSettings(cssTheme);
     } else {
-      setCustomThemeSettings({ ...DEFAULT_THEME_SETTINGS });
+      setCustomThemeSettings({ ...defaultTheme });
       cancelPreview();
     }
-  }, [activeTheme, transformDbThemeToCss, previewThemeSettings, cancelPreview]);
+  }, [activeTheme, transformDbThemeToCss, previewThemeSettings, cancelPreview, defaultTheme]);
 
   // 删除主题
   const handleDeleteTheme = useCallback(async (themeId, themeName) => {
@@ -291,9 +272,9 @@ const SystemThemeSettings = () => {
   const handleCreateNewTheme = useCallback(() => {
     setEditingTheme(null);
     setThemeName('');
-    setCustomThemeSettings({ ...DEFAULT_THEME_SETTINGS });
-    previewThemeSettings({ ...DEFAULT_THEME_SETTINGS });
-  }, [previewThemeSettings]);
+    setCustomThemeSettings({ ...defaultTheme });
+    previewThemeSettings({ ...defaultTheme });
+  }, [defaultTheme, previewThemeSettings]);
 
   // 处理设置变化
   const handleSettingChange = useCallback((key, value) => {
