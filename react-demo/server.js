@@ -290,37 +290,40 @@ app.get('/api/auth/profile', async (req, res) => {
 
 // ==================== 主题设置相关API ====================
 
-// 1. 获取用户的活动主题
+// 1. 获取用户的活动主题（修正版）
 app.get('/api/UserThemeSettings/active', async (req, res) => {
     const { email, username } = req.query;
     
     console.log('获取活动主题请求:', { email, username });
     
+    // 验证必需参数
+    if (!email || !username) {
+        return res.status(400).json({
+            success: false,
+            message: '邮箱和用户名均为必需参数'
+        });
+    }
+    
     try {
         await poolConnect;
         
-        let query = `
+        const query = `
             SELECT * FROM reactDemoApp.dbo.UserThemeSettings 
-            WHERE is_active = 1
+            WHERE is_active = 1 
+            AND email = @email 
+            AND username = @username
         `;
-        const request = pool.request();
         
-        if (email) {
-            query += ' AND email = @email';
-            request.input('email', sql.NVarChar, email);
-        }
-        if (username) {
-            query += ' AND username = @username';
-            request.input('username', sql.NVarChar, username);
-        }
-        
-        const result = await request.query(query);
+        const result = await pool.request()
+            .input('email', sql.NVarChar, email)
+            .input('username', sql.NVarChar, username)
+            .query(query);
         
         if (result.recordset.length === 0) {
             return res.json({
                 success: true,
                 theme: null,
-                message: '未找到活动主题'
+                message: '未找到当前用户的活动主题'
             });
         }
         
@@ -338,12 +341,20 @@ app.get('/api/UserThemeSettings/active', async (req, res) => {
     }
 });
 
-// 2. 设置活动主题（核心接口）
+// 2. 设置活动主题（也需要相应调整查询条件）
 app.put('/api/UserThemeSettings/setActive/:id', async (req, res) => {
     const { id } = req.params;
     const { email, username } = req.body;
     
     console.log('设置活动主题请求:', { id, email, username });
+    
+    // 验证必需参数
+    if (!email || !username) {
+        return res.status(400).json({
+            success: false,
+            message: '邮箱和用户名均为必需参数'
+        });
+    }
     
     try {
         await poolConnect;
@@ -352,7 +363,7 @@ app.put('/api/UserThemeSettings/setActive/:id', async (req, res) => {
         await transaction.begin();
         
         try {
-            // 第一步：停用该用户的所有主题
+            // 第一步：停用该用户的所有主题（严格匹配邮箱和用户名）
             await transaction.request()
                 .input('email', sql.NVarChar, email)
                 .input('username', sql.NVarChar, username)
@@ -362,13 +373,17 @@ app.put('/api/UserThemeSettings/setActive/:id', async (req, res) => {
                     WHERE email = @email AND username = @username
                 `);
             
-            // 第二步：激活指定的主题
+            // 第二步：激活指定的主题（同时验证主题属于该用户）
             const result = await transaction.request()
                 .input('id', sql.Int, id)
+                .input('email', sql.NVarChar, email)
+                .input('username', sql.NVarChar, username)
                 .query(`
                     UPDATE reactDemoApp.dbo.UserThemeSettings 
                     SET is_active = 1 
-                    WHERE id = @id
+                    WHERE id = @id 
+                    AND email = @email 
+                    AND username = @username
                     
                     SELECT * FROM reactDemoApp.dbo.UserThemeSettings 
                     WHERE id = @id
@@ -378,7 +393,7 @@ app.put('/api/UserThemeSettings/setActive/:id', async (req, res) => {
                 await transaction.rollback();
                 return res.status(404).json({
                     success: false,
-                    message: '主题不存在'
+                    message: '主题不存在或不属于当前用户'
                 });
             }
             

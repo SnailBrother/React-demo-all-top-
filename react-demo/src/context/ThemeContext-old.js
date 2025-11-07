@@ -172,112 +172,45 @@ export const ThemeProvider = ({ children }) => {
     }
     return DEFAULT_THEME;
   }, [previewTheme, activeTheme, transformDbThemeToCss]);
-// 应用主题到 :root
-  const applyThemeToRoot = useCallback((theme) => {
-    const root = document.documentElement;
-    
-    // 移除之前的自定义主题属性
-    root.removeAttribute('data-custom-theme');
-    root.removeAttribute('data-preview-theme');
-    
-    if (theme === 'default') {
-      // 应用默认主题
-      root.setAttribute('data-theme', 'default');
-      Object.keys(DEFAULT_THEME).forEach(key => {
-        const cssVarName = `--${key}`;
-        root.style.setProperty(cssVarName, DEFAULT_THEME[key]);
-      });
-      console.log('应用默认主题');
-    } else if (typeof theme === 'object') {
-      // 应用数据库主题
-      const cssTheme = transformDbThemeToCss(theme);
-      if (cssTheme) {
-        root.setAttribute('data-custom-theme', theme.theme_name || 'custom');
-        Object.keys(cssTheme).forEach(key => {
-          const cssVarName = `--${key}`;
-          root.style.setProperty(cssVarName, cssTheme[key]);
-        });
-        console.log('应用数据库主题:', theme.theme_name);
-      }
-    }
-  }, [transformDbThemeToCss]);
+
   // 获取用户所有主题
-  // 获取用户所有主题 - (最终修复版)
   const fetchUserAllThemes = useCallback(async () => {
-    // 步骤 1: 身份验证检查 (保持不变)
     if (!isAuthenticated || !user) {
       console.log('用户未登录，无法获取主题');
       setAllThemes([]);
-      // 确保在未登录时应用系统默认主题
-      applyThemeToRoot('default'); 
       return;
     }
 
     try {
-      // 步骤 2: 调用API获取数据 (保持不变)
+      console.log('开始获取用户所有主题...', { email: user.email, username: user.username });
       const response = await themeService.getUserAllThemes(user.email, user.username);
+      console.log('用户所有主题响应:', response);
       
       if (response && response.success && Array.isArray(response.themes)) {
-        const fetchedThemes = response.themes;
+        setAllThemes(response.themes);
         
-        // --- 核心逻辑修正 ---
-        // 我们不再假设 fetchedThemes 只包含当前用户的数据，
-        // 而是在每一步查找时都进行严格的身份匹配。
-
-        // 步骤 3: 严格查找当前用户的活动主题
-        const activeThemeForCurrentUser = fetchedThemes.find(theme => 
-          theme.is_active && 
-          theme.email === user.email && 
-          theme.username === user.username
-        );
-
-        if (activeThemeForCurrentUser) {
-          // 如果找到了，应用它并更新所有状态
-          setAllThemes(fetchedThemes);
-          setActiveTheme(activeThemeForCurrentUser);
-          applyThemeToRoot(activeThemeForCurrentUser);
-          console.log('找到并应用了当前用户的活动主题:', activeThemeForCurrentUser.theme_name);
-          return; // 任务完成
+        // 查找活动主题
+        const active = response.themes.find(theme => theme.is_active);
+        if (active) {
+          setActiveTheme(active);
+          applyThemeToRoot(active);
+          console.log('找到活动主题:', active.theme_name);
+        } else {
+          setActiveTheme(null);
+          applyThemeToRoot('default');
+          console.log('未找到活动主题，使用默认主题');
         }
-
-        // 步骤 4: 如果没有活动主题，严格查找当前用户的个人默认主题
-        const defaultThemeForCurrentUser = fetchedThemes.find(theme => 
-          theme.is_default && 
-          theme.email === user.email && 
-          theme.username === user.username
-        );
-
-        if (defaultThemeForCurrentUser) {
-          // 如果找到了，应用它并更新状态
-          setAllThemes(fetchedThemes);
-          // 注意：我们将用户的默认主题设置为当前的“活动”状态
-          setActiveTheme(defaultThemeForCurrentUser); 
-          applyThemeToRoot(defaultThemeForCurrentUser);
-          console.log('未找到活动主题，但应用了当前用户的个人默认主题:', defaultThemeForCurrentUser.theme_name);
-          return; // 任务完成
-        }
-
-        // 步骤 5: 如果连个人默认都没有，才回退到系统全局默认
-        setAllThemes(fetchedThemes);
-        setActiveTheme(null);
-        applyThemeToRoot('default');
-        console.log('当前用户既无活动主题也无个人默认主题，使用系统全局默认');
-        
       } else {
-        // API返回数据格式异常或失败
-        console.warn('获取主题API返回异常:', response);
+        console.warn('API 返回数据格式异常:', response);
         setAllThemes([]);
         setActiveTheme(null);
-        applyThemeToRoot('default');
       }
     } catch (error) {
-      // API调用本身发生错误
       console.error('获取用户主题失败:', error);
       setAllThemes([]);
       setActiveTheme(null);
-      applyThemeToRoot('default');
     }
-  }, [isAuthenticated, user, applyThemeToRoot]); // 依赖项已优化
+  }, [isAuthenticated, user]);
 
   // 获取用户活动主题
   const fetchActiveTheme = useCallback(async () => {
@@ -372,7 +305,35 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [isAuthenticated, user, transformCssToDbTheme, fetchUserAllThemes]);
 
-  
+  // 应用主题到 :root
+  const applyThemeToRoot = useCallback((theme) => {
+    const root = document.documentElement;
+    
+    // 移除之前的自定义主题属性
+    root.removeAttribute('data-custom-theme');
+    root.removeAttribute('data-preview-theme');
+    
+    if (theme === 'default') {
+      // 应用默认主题
+      root.setAttribute('data-theme', 'default');
+      Object.keys(DEFAULT_THEME).forEach(key => {
+        const cssVarName = `--${key}`;
+        root.style.setProperty(cssVarName, DEFAULT_THEME[key]);
+      });
+      console.log('应用默认主题');
+    } else if (typeof theme === 'object') {
+      // 应用数据库主题
+      const cssTheme = transformDbThemeToCss(theme);
+      if (cssTheme) {
+        root.setAttribute('data-custom-theme', theme.theme_name || 'custom');
+        Object.keys(cssTheme).forEach(key => {
+          const cssVarName = `--${key}`;
+          root.style.setProperty(cssVarName, cssTheme[key]);
+        });
+        console.log('应用数据库主题:', theme.theme_name);
+      }
+    }
+  }, [transformDbThemeToCss]);
   // 更新主题
 // src/context/ThemeContext.js
 // 更新主题
