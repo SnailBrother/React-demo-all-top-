@@ -1,4 +1,5 @@
 // src/context/AuthContext.js
+// src/context/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { apiClient } from '../utils';
 
@@ -7,94 +8,24 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [userTheme, setUserTheme] = useState(null); // 新增：存储用户主题
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    const savedTheme = localStorage.getItem('userTheme'); // 获取保存的主题
 
     if (token && userData) {
       try {
         setUser(JSON.parse(userData));
-        if (savedTheme) {
-          setUserTheme(JSON.parse(savedTheme)); // 恢复主题
-        }
       } catch (error) {
         console.error('解析用户数据出错:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        localStorage.removeItem('userTheme');
       }
     }
 
     setLoading(false);
   }, []);
 
-  // 新增：获取用户主题的函数
-  const fetchUserTheme = async (email, username) => {
-    try {
-      const response = await apiClient.get('/api/UserThemeSettings', {
-        params: { email, username, theme_name: '默认主题' }
-      });
-
-      console.log('主题响应数据:', response);
-
-      if (response && response.theme) {
-        const themeData = response.theme;
-        setUserTheme(themeData);
-        localStorage.setItem('userTheme', JSON.stringify(themeData));
-        return themeData;
-      } else {
-        console.log('未找到用户主题设置，使用默认主题');
-        return null;
-      }
-    } catch (error) {
-      console.error('获取用户主题失败:', error);
-      return null;
-    }
-  };
-
-  // 新增：应用主题到根元素
-  const applyThemeToRoot = (theme) => {
-    if (!theme) return;
-    
-    const root = document.documentElement;
-    
-    // 数据库字段名到CSS变量名的映射
-    const DB_FIELD_TO_CSS_VAR = {
-      background_color: 'background-color',
-      secondary_background_color: 'secondary-background-color',
-      hover_background_color: 'hover_background-color',
-      focus_background_color: 'focus_background-color',
-      font_color: 'font-color',
-      secondary_font_color: 'secondary-font-color',
-      hover_font_color: 'hover_font-color',
-      focus_font_color: 'focus_font-color',
-      watermark_font_color: 'watermark-font-color',
-      font_family: 'font-family',
-      border_color: 'border_color',
-      secondary_border_color: 'secondary-border_color',
-      hover_border_color: 'hover_border_color',
-      focus_border_color: 'focus_border_color',
-      shadow_color: 'shadow_color',
-      hover_shadow_color: 'hover_shadow_color',
-      focus_shadow_color: 'focus_shadow_color'
-    };
-
-    // 应用主题变量
-    Object.keys(DB_FIELD_TO_CSS_VAR).forEach(dbField => {
-      const cssVar = DB_FIELD_TO_CSS_VAR[dbField];
-      if (theme[dbField] !== undefined && theme[dbField] !== null) {
-        const cssVarName = `--${cssVar}`;
-        root.style.setProperty(cssVarName, theme[dbField]);
-      }
-    });
-
-    console.log('主题应用成功');
-  };
-
-  // 修改登录函数，在登录成功后获取并应用主题
   const login = async (email, password) => {
     setLoading(true);
     try {
@@ -136,16 +67,6 @@ export const AuthProvider = ({ children }) => {
       }
       
       localStorage.setItem('user', JSON.stringify(userData));
-
-      // 新增：登录成功后获取用户主题
-      console.log('开始获取用户主题...');
-      const theme = await fetchUserTheme(userData.email, userData.username);
-      if (theme) {
-        applyThemeToRoot(theme);
-        console.log('用户主题加载并应用成功');
-      } else {
-        console.log('使用默认主题');
-      }
 
       return { success: true };
 
@@ -197,29 +118,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 退出登录 - 清除主题
+  // 退出登录
   const logout = () => {
     setUser(null);
-    setUserTheme(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    localStorage.removeItem('userTheme');
-    
-    // 重置CSS变量
-    const root = document.documentElement;
-    root.removeAttribute('style'); // 清除所有内联样式
   };
 
   // 提供上下文值
   const value = {
     user,
-    userTheme, // 新增：提供用户主题
     login,
     register,
     logout,
     loading,
-    isAuthenticated: !!user,
-    refreshTheme: () => user && fetchUserTheme(user.email, user.username) // 新增：刷新主题函数
+    isAuthenticated: !!user
   };
 
   return (
