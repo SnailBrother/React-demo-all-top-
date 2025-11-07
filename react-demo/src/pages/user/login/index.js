@@ -1,4 +1,4 @@
-//  src/pages/user/login/index.js
+// src/pages/user/login/index.js
 import React, { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -54,7 +54,7 @@ const Login = () => {
         if (validateForm()) {
             try {
                 await login(formData.email, formData.password);
-                // 登录成功后跳转
+                // 登录成功后跳转 - 主题已经在 AuthContext 中加载并应用
                 const from = location.state?.from?.pathname || '/apps';
                 navigate(from, { replace: true });
             } catch (error) {
@@ -140,7 +140,7 @@ const Login = () => {
                         variant="primary"
                         size="large"
                         fullWidth
-                         style={{ width: '100%' }}  
+                        style={{ width: '100%' }}  
                         loading={loading}
                         className={styles.loginButton}
                     >

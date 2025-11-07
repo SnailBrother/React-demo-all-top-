@@ -1,4 +1,5 @@
-//src/utils/api.js
+//src/utils/api.js 
+//apiClient 返回 不是Axios 风格的响应
 
 //测试环境   二选一
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://111.231.79.183:4200/api';

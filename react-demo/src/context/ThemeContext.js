@@ -1,11 +1,11 @@
 // src/context/ThemeContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { apiClient } from '../utils'; // 根据你的错误信息，使用 apiClient
+import { apiClient } from '../utils';
 
 const ThemeContext = createContext();
 
-// 默认主题配置 - 作为后备值
+// 默认主题配置 - 作为后备值（只在获取不到用户主题时使用）
 const FALLBACK_THEME = {
   // 背景色
   'background-color': '#FFFFFFFF',
@@ -54,15 +54,15 @@ const DB_FIELD_TO_CSS_VAR = {
   focus_shadow_color: 'focus_shadow_color'
 };
 
-// 主题服务函数 - 直接定义在文件中
+// 主题服务函数
 const themeService = {
   // 获取用户主题设置
   async getUserTheme(email, username, themeName = '默认主题') {
     try {
-      const response = await apiClient.get('/api/UserThemeSettings', {
+      const response = await apiClient.get('/UserThemeSettings', {
         params: { email, username, theme_name: themeName }
       });
-      return response.data;
+      return response;
     } catch (error) {
       throw error;
     }
@@ -71,8 +71,8 @@ const themeService = {
   // 保存用户主题设置
   async saveUserTheme(themeData) {
     try {
-      const response = await apiClient.post('/api/UserThemeSettings', themeData);
-      return response.data;
+      const response = await apiClient.post('/UserThemeSettings', themeData);
+      return response;
     } catch (error) {
       throw error;
     }
@@ -82,7 +82,7 @@ const themeService = {
   async updateUserTheme(id, themeData) {
     try {
       const response = await apiClient.put(`/api/UserThemeSettings/${id}`, themeData);
-      return response.data;
+      return response;
     } catch (error) {
       throw error;
     }
@@ -91,10 +91,10 @@ const themeService = {
   // 获取用户的所有主题
   async getUserAllThemes(email, username) {
     try {
-      const response = await apiClient.get('/api/UserThemeSettings/all', {
+      const response = await apiClient.get('/UserThemeSettings/all', {
         params: { email, username }
       });
-      return response.data;
+      return response;
     } catch (error) {
       throw error;
     }
@@ -104,7 +104,7 @@ const themeService = {
   async deleteUserTheme(id) {
     try {
       const response = await apiClient.delete(`/api/UserThemeSettings/${id}`);
-      return response.data;
+      return response;
     } catch (error) {
       throw error;
     }
@@ -115,7 +115,7 @@ export const ThemeProvider = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState('default');
   const [customThemes, setCustomThemes] = useState({});
   const [previewTheme, setPreviewTheme] = useState(null);
-  const [defaultTheme, setDefaultTheme] = useState(FALLBACK_THEME);
+  const [userDefaultTheme, setUserDefaultTheme] = useState(null); // 改为 null，表示未获取
   const [loading, setLoading] = useState(true);
   
   const { user, isAuthenticated } = useAuth();
@@ -148,32 +148,48 @@ export const ThemeProvider = ({ children }) => {
     return dbTheme;
   };
 
+  // 获取当前应该使用的主题
+  const getCurrentThemeSettings = () => {
+    // 如果用户有自定义主题，优先使用用户主题
+    if (userDefaultTheme) {
+      return userDefaultTheme;
+    }
+    // 如果没有获取到用户主题，使用后备主题
+    return FALLBACK_THEME;
+  };
+
   // 获取用户默认主题
   const fetchUserDefaultTheme = async () => {
     if (!isAuthenticated || !user) {
-      setDefaultTheme(FALLBACK_THEME);
+      console.log('用户未登录，使用后备主题');
+      setUserDefaultTheme(null); // 设置为 null，表示使用后备主题
       setLoading(false);
       return;
     }
 
     try {
+      console.log('开始获取用户主题...', { email: user.email, username: user.username });
       const response = await themeService.getUserTheme(user.email, user.username);
+      console.log('用户主题响应:', response);
       
-      if (response.success && response.theme) {
+      if (response && response.success && response.theme) {
         const cssTheme = transformDbThemeToCss(response.theme);
-        setDefaultTheme(cssTheme);
+        console.log('转换后的CSS主题:', cssTheme);
+        setUserDefaultTheme(cssTheme);
         
         // 如果当前是默认主题，立即应用
         if (currentTheme === 'default') {
           applyThemeToRoot(cssTheme);
         }
       } else {
-        // 如果没有找到主题，使用后备主题
-        setDefaultTheme(FALLBACK_THEME);
+        // 如果没有找到主题，设置为 null 表示使用后备主题
+        console.log('未找到用户主题设置，将使用后备主题');
+        setUserDefaultTheme(null);
       }
     } catch (error) {
       console.error('获取用户主题失败:', error);
-      setDefaultTheme(FALLBACK_THEME);
+      // 获取失败时使用后备主题
+      setUserDefaultTheme(null);
     } finally {
       setLoading(false);
     }
@@ -210,12 +226,14 @@ export const ThemeProvider = ({ children }) => {
     root.removeAttribute('data-preview-theme');
     
     if (theme === 'default') {
-      // 应用默认主题（从数据库获取或后备主题）
+      // 应用默认主题（用户主题或后备主题）
       root.setAttribute('data-theme', 'default');
-      Object.keys(defaultTheme).forEach(key => {
+      const themeToApply = getCurrentThemeSettings();
+      Object.keys(themeToApply).forEach(key => {
         const cssVarName = `--${key}`;
-        root.style.setProperty(cssVarName, defaultTheme[key]);
+        root.style.setProperty(cssVarName, themeToApply[key]);
       });
+      console.log('应用默认主题:', themeToApply);
     } else if (typeof theme === 'string' && customThemes[theme]) {
       // 应用已保存的自定义主题
       root.setAttribute('data-custom-theme', theme);
@@ -271,6 +289,10 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchUserDefaultTheme();
+    } else {
+      // 用户退出登录时，重置为主题
+      setUserDefaultTheme(null);
+      applyThemeToRoot('default');
     }
   }, [isAuthenticated, user]);
 
@@ -350,7 +372,7 @@ export const ThemeProvider = ({ children }) => {
   const updateDefaultTheme = async (settings) => {
     const result = await saveUserDefaultThemeToDb(settings);
     if (result.success) {
-      setDefaultTheme(settings);
+      setUserDefaultTheme(settings);
       if (currentTheme === 'default') {
         applyThemeToRoot(settings);
       }
@@ -362,9 +384,10 @@ export const ThemeProvider = ({ children }) => {
     currentTheme,
     customThemes,
     previewTheme,
-    defaultTheme,
+    userDefaultTheme, // 暴露用户主题
+    fallbackTheme: FALLBACK_THEME, // 暴露后备主题
     loading,
-    themeSettings: defaultTheme, // 使用从数据库获取的主题
+    themeSettings: getCurrentThemeSettings(), // 使用当前应该使用的主题
     saveCustomTheme,
     applyCustomTheme,
     updateCustomTheme,
@@ -373,7 +396,8 @@ export const ThemeProvider = ({ children }) => {
     cancelPreview,
     resetToDefault,
     updateDefaultTheme,
-    refreshDefaultTheme: fetchUserDefaultTheme
+    refreshDefaultTheme: fetchUserDefaultTheme,
+    hasUserTheme: !!userDefaultTheme // 新增：是否有用户主题
   };
 
   return (

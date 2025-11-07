@@ -1,4 +1,4 @@
-//  src/pages/user/register/index.js
+// src/pages/user/register/index.js
 import React, { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';

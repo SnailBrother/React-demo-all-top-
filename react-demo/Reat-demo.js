@@ -718,7 +718,74 @@ app.delete('/api/UserThemeSettings/:id', async (req, res) => {
     }
 });
 
+// 在后端 app.js 中添加以下接口：
 
+// 停用用户的所有主题
+app.post('/api/UserThemeSettings/deactivate-all', async (req, res) => {
+    const { username, email } = req.body;
+    
+    try {
+      await poolConnect;
+      
+      const result = await pool.request()
+        .input('username', sql.NVarChar, username)
+        .input('email', sql.NVarChar, email)
+        .query(`
+          UPDATE reactDemoApp.dbo.UserThemeSettings 
+          SET is_active = 0 
+          WHERE username = @username AND email = @email
+        `);
+      
+      res.json({
+        success: true,
+        message: '所有主题已停用',
+        affected: result.rowsAffected[0]
+      });
+      
+    } catch (err) {
+      console.error('停用主题错误:', err);
+      res.status(500).json({
+        success: false,
+        message: '停用主题失败'
+      });
+    }
+  });
+  
+  // 激活指定主题
+  app.put('/api/UserThemeSettings/:id/activate', async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+      await poolConnect;
+      
+      const result = await pool.request()
+        .input('id', sql.Int, id)
+        .query(`
+          UPDATE reactDemoApp.dbo.UserThemeSettings 
+          SET is_active = 1 
+          WHERE id = @id
+        `);
+      
+      if (result.rowsAffected[0] === 0) {
+        return res.status(404).json({
+          success: false,
+          message: '主题不存在'
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: '主题激活成功'
+      });
+      
+    } catch (err) {
+      console.error('激活主题错误:', err);
+      res.status(500).json({
+        success: false,
+        message: '激活主题失败'
+      });
+    }
+  });
 
 
 // Socket.io 连接处理

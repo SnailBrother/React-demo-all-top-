@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ColorPicker, message } from 'antd';
 import { useTheme } from '../../../context/ThemeContext';
+import { useAuth } from '../../../context/AuthContext'; // 导入 AuthContext
 import styles from './SystemThemeSettings.module.css';
 import Button from '../../../components/UI/Button';
 
@@ -54,90 +55,137 @@ const get8DigitHexFromColor = (color) => {
   return '#FFFFFFFF';
 };
 
+// 数据库字段名到CSS变量名的映射
+const DB_FIELD_TO_CSS_VAR = {
+  background_color: 'background-color',
+  secondary_background_color: 'secondary-background-color',
+  hover_background_color: 'hover_background-color',
+  focus_background_color: 'focus_background-color',
+  font_color: 'font-color',
+  secondary_font_color: 'secondary-font-color',
+  hover_font_color: 'hover_font-color',
+  focus_font_color: 'focus_font-color',
+  watermark_font_color: 'watermark-font-color',
+  font_family: 'font-family',
+  border_color: 'border_color',
+  secondary_border_color: 'secondary-border_color',
+  hover_border_color: 'hover_border_color',
+  focus_border_color: 'focus_border_color',
+  shadow_color: 'shadow_color',
+  hover_shadow_color: 'hover_shadow_color',
+  focus_shadow_color: 'focus_shadow_color'
+};
+
+// 从数据库主题数据转换为CSS变量格式
+const transformDbThemeToCss = (dbTheme) => {
+  const cssTheme = {};
+  
+  Object.keys(DB_FIELD_TO_CSS_VAR).forEach(dbField => {
+    const cssVar = DB_FIELD_TO_CSS_VAR[dbField];
+    if (dbTheme[dbField] !== undefined && dbTheme[dbField] !== null) {
+      cssTheme[cssVar] = dbTheme[dbField];
+    }
+  });
+  
+  return cssTheme;
+};
+
+// 从CSS变量格式转换为数据库字段格式
+const transformCssToDbTheme = (cssTheme) => {
+  const dbTheme = {};
+  
+  Object.keys(DB_FIELD_TO_CSS_VAR).forEach(dbField => {
+    const cssVar = DB_FIELD_TO_CSS_VAR[dbField];
+    if (cssTheme[cssVar] !== undefined) {
+      dbTheme[dbField] = cssTheme[cssVar];
+    }
+  });
+  
+  return dbTheme;
+};
+
 const SystemThemeSettings = () => {
   const {
     currentTheme,
     customThemes,
     previewTheme,
+    themeSettings, // 从 ThemeContext 获取当前主题设置
+    userDefaultTheme, // 用户数据库主题
+    updateDefaultTheme, // 更新默认主题到数据库
     saveCustomTheme,
     applyCustomTheme,
     deleteCustomTheme,
     updateCustomTheme,
     previewThemeSettings,
     cancelPreview,
-    resetToDefault
+    resetToDefault,
+    loading: themeLoading
   } = useTheme();
+
+  const { user, userTheme, refreshTheme } = useAuth(); // 从 AuthContext 获取用户和主题
 
   const [themeName, setThemeName] = useState('');
   const [editingTheme, setEditingTheme] = useState(null);
-  const [customThemeSettings, setCustomThemeSettings] = useState({
-    // 背景色
-    'background-color': '#FFFFFFFF',
-    'secondary-background-color': '#F8F9FAFF',
-    'hover_background-color': '#E9ECEEFF',
-    'focus_background-color': '#DEE2E6FF',
-    
-    // 字体颜色
-    'font-color': '#000000FF',
-    'secondary-font-color': '#6C757DFF',
-    'hover_font-color': '#0078D4FF',
-    'focus_font-color': '#0056B3FF',
-    'watermark-font-color': '#B3B5B6FF',
-    'font-family': 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    
-    // 边框颜色
-    'border_color': '#DEE2E6FF',
-    'secondary-border_color': '#E9ECEEFF',
-    'hover_border_color': '#0078D4FF',
-    'focus_border_color': '#0056B3FF',
-    
-    // 阴影颜色
-    'shadow_color': '#00000019',
-    'hover_shadow_color': '#00000026',
-    'focus_shadow_color': '#0078D440'
-  });
+  const [customThemeSettings, setCustomThemeSettings] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  // 初始化设置
+  // 初始化设置 - 使用从数据库获取的用户主题
   useEffect(() => {
-    if (editingTheme && customThemes[editingTheme]) {
-      const themeData = customThemes[editingTheme];
-      setCustomThemeSettings(themeData);
-      setThemeName(editingTheme);
-      // 编辑时立即预览
-      previewThemeSettings(themeData);
-    } else {
-      setCustomThemeSettings({
-        // 背景色
-        'background-color': '#FFFFFFFF',
-        'secondary-background-color': '#F8F9FAFF',
-        'hover_background-color': '#E9ECEEFF',
-        'focus_background-color': '#DEE2E6FF',
-        
-        // 字体颜色
-        'font-color': '#000000FF',
-        'secondary-font-color': '#6C757DFF',
-        'hover_font-color': '#0078D4FF',
-        'focus_font-color': '#0056B3FF',
-        'watermark-font-color': '#B3B5B6FF',
-        'font-family': 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-        
-        // 边框颜色
-        'border_color': '#DEE2E6FF',
-        'secondary-border_color': '#E9ECEEFF',
-        'hover_border_color': '#0078D4FF',
-        'focus_border_color': '#0056B3FF',
-        
-        // 阴影颜色
-        'shadow_color': '#00000019',
-        'hover_shadow_color': '#00000026',
-        'focus_shadow_color': '#0078D440'
-      });
-    }
-  }, [editingTheme, customThemes]);
+    const initializeThemeSettings = async () => {
+      setLoading(true);
+      
+      try {
+        // 如果有编辑中的主题，使用编辑主题
+        if (editingTheme && customThemes[editingTheme]) {
+          const themeData = customThemes[editingTheme];
+          setCustomThemeSettings(themeData);
+          setThemeName(editingTheme);
+          previewThemeSettings(themeData);
+        } 
+        // 如果用户有数据库主题，优先使用数据库主题
+        else if (userTheme) {
+          console.log('使用数据库用户主题:', userTheme);
+          const cssTheme = transformDbThemeToCss(userTheme);
+          setCustomThemeSettings(cssTheme);
+          setThemeName('');
+          setEditingTheme(null);
+          previewThemeSettings(cssTheme);
+        }
+        // 否则使用当前主题设置
+        else if (currentTheme === 'default') {
+          console.log('使用默认主题设置:', themeSettings);
+          setCustomThemeSettings(themeSettings);
+          setThemeName('');
+          setEditingTheme(null);
+        } else {
+          // 使用当前应用的自定义主题
+          const currentThemeData = customThemes[currentTheme];
+          if (currentThemeData) {
+            setCustomThemeSettings(currentThemeData);
+            setThemeName(currentTheme);
+          } else {
+            // 回退到默认主题设置
+            setCustomThemeSettings(themeSettings);
+            setThemeName('');
+          }
+        }
+      } catch (error) {
+        console.error('初始化主题设置失败:', error);
+        // 使用后备主题设置
+        setCustomThemeSettings(themeSettings);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeThemeSettings();
+  }, [editingTheme, customThemes, currentTheme, themeSettings, userTheme]);
 
   // 实时预览主题变化
   useEffect(() => {
-    previewThemeSettings(customThemeSettings);
+    if (Object.keys(customThemeSettings).length > 0) {
+      previewThemeSettings(customThemeSettings);
+    }
   }, [customThemeSettings]);
 
   // 处理颜色变化
@@ -149,7 +197,7 @@ const SystemThemeSettings = () => {
     }));
   };
 
-  const handleSaveTheme = () => {
+  const handleSaveTheme = async () => {
     if (!themeName.trim()) {
       message.error('请输入主题名称');
       return;
@@ -161,15 +209,59 @@ const SystemThemeSettings = () => {
     }
 
     if (editingTheme) {
+      // 更新自定义主题
       updateCustomTheme(editingTheme, customThemeSettings);
       setEditingTheme(null);
       message.success('主题更新成功！');
     } else {
+      // 保存新自定义主题
       saveCustomTheme(themeName, customThemeSettings);
       message.success('主题保存成功！');
     }
     
     setThemeName('');
+  };
+
+  // 保存为默认主题（更新数据库）
+  const handleSaveAsDefault = async () => {
+    try {
+      if (!user) {
+        message.error('用户未登录');
+        return;
+      }
+
+      const dbTheme = transformCssToDbTheme(customThemeSettings);
+      const themeData = {
+        username: user.username,
+        email: user.email,
+        theme_name: '默认主题',
+        ...dbTheme
+      };
+
+      // 使用 apiClient 直接调用 API
+      const response = await fetch('http://111.231.79.183:4200/api/UserThemeSettings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(themeData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.success('默认主题更新成功！');
+        // 刷新主题
+        if (refreshTheme) {
+          await refreshTheme();
+        }
+      } else {
+        message.error(result.message || '更新默认主题失败');
+      }
+    } catch (error) {
+      console.error('保存默认主题失败:', error);
+      message.error('保存默认主题失败');
+    }
   };
 
   const startEditing = (name) => {
@@ -243,6 +335,10 @@ const SystemThemeSettings = () => {
     }
   };
 
+  if (themeLoading || loading) {
+    return <div className={styles.loading}>加载主题设置中...</div>;
+  }
+
   return (
     <div className={styles.container}>
       {/* 顶部标题和状态 */}
@@ -253,11 +349,13 @@ const SystemThemeSettings = () => {
           </svg>
           主题设置
           {previewTheme && <span className={styles.previewBadge}>预览模式</span>}
+          {userTheme && <span className={styles.dbBadge}>数据库主题</span>}
         </h1>
         <div className={styles.current}>
           <span className={styles.currentLabel}>当前主题:</span>
           <span className={styles.currentName}>
             {currentTheme === 'default' ? '默认主题' : currentTheme}
+            {userTheme && currentTheme === 'default' && ' (数据库)'}
           </span>
           {previewTheme && (
             <button 
@@ -585,16 +683,24 @@ const SystemThemeSettings = () => {
                     </button>
                   </>
                 ) : (
-                  <Button 
-                    
-                    onClick={handleSaveTheme} 
-                     variant="secondary"
-          size="small"
-                  >
-                    保存
-                  </Button>
-
-                   
+                  <>
+                    <Button 
+                      onClick={handleSaveTheme} 
+                      variant="secondary"
+                      size="small"
+                    >
+                      保存为自定义主题
+                    </Button>
+                    {currentTheme === 'default' && user && (
+                      <Button 
+                        onClick={handleSaveAsDefault}
+                        variant="primary"
+                        size="small"
+                      >
+                        更新默认主题
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

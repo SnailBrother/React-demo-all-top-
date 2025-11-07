@@ -1,107 +1,225 @@
-//src/context/AuthContext.js
-//这个代码创建了一个完整的认证管理系统，管理用户登录状态并在整个应用中共享！
+// src/context/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
-//createContext创建上下文，useState管理状态，useContext使用上下文，useEffect处理副作用
-import { authService } from '../services';
-//导入认证服务：authService是处理登录注册API调用的服务
-const AuthContext = createContext();
-//创建上下文：AuthContext就像一个全局的"共享数据箱"
+import { apiClient } from '../utils';
 
-//AuthProvider是一个包装组件，为所有子组件提供认证功能
+const AuthContext = createContext();
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);// 存储用户信息 存储当前登录用户的信息（未登录时为null）
-  const [loading, setLoading] = useState(true); // 加载状态 表示是否正在加载或处理认证
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [userTheme, setUserTheme] = useState(null); // 新增：存储用户主题
 
   useEffect(() => {
-    // 检查用户是否已登录
-    // useEffect在组件首次渲染时执行（因为依赖数组[]为空）
-
-    //从本地存储检查是否有token和用户数据
-
-    //如果有数据就设置用户状态，否则保持null
-
-    //最后设置loading为false表示初始化完成
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
+    const savedTheme = localStorage.getItem('userTheme'); // 获取保存的主题
 
     if (token && userData) {
       try {
-        setUser(JSON.parse(userData));  // 将字符串转为对象
+        setUser(JSON.parse(userData));
+        if (savedTheme) {
+          setUserTheme(JSON.parse(savedTheme)); // 恢复主题
+        }
       } catch (error) {
         console.error('解析用户数据出错:', error);
-        // 清除无效数据
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('userTheme');
       }
     }
 
-    setLoading(false);// 加载完成
+    setLoading(false);
   }, []);
 
-
-  const login = async (email, password) => {
-    setLoading(true);  // 开始加载
+  // 新增：获取用户主题的函数
+  const fetchUserTheme = async (email, username) => {
     try {
-      const response = await authService.login(email, password);
+      const response = await apiClient.get('/api/UserThemeSettings', {
+        params: { email, username, theme_name: '默认主题' }
+      });
 
-      if (response.success) {
-        const userData = {
-          id: response.user.id,
-          username: response.user.username,      // 用户姓名
-         
-          email: response.user.email,
-          loginTime: new Date().toISOString()  // 登录时间
-        };
+      console.log('主题响应数据:', response);
 
-        setUser(userData);  // 更新用户状态
-        // 保存到本地存储
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(userData));
-
-        return { success: true };
+      if (response && response.theme) {
+        const themeData = response.theme;
+        setUserTheme(themeData);
+        localStorage.setItem('userTheme', JSON.stringify(themeData));
+        return themeData;
       } else {
-        throw new Error(response.message || '登录失败');
+        console.log('未找到用户主题设置，使用默认主题');
+        return null;
       }
     } catch (error) {
-      throw error;  // 抛出错误给调用者
-    } finally {
-      setLoading(false);  // 无论成功失败都停止加载
+      console.error('获取用户主题失败:', error);
+      return null;
     }
   };
 
-  //注册功能
-  const register = async (username, email, password) => {
+  // 新增：应用主题到根元素
+  const applyThemeToRoot = (theme) => {
+    if (!theme) return;
+    
+    const root = document.documentElement;
+    
+    // 数据库字段名到CSS变量名的映射
+    const DB_FIELD_TO_CSS_VAR = {
+      background_color: 'background-color',
+      secondary_background_color: 'secondary-background-color',
+      hover_background_color: 'hover_background-color',
+      focus_background_color: 'focus_background-color',
+      font_color: 'font-color',
+      secondary_font_color: 'secondary-font-color',
+      hover_font_color: 'hover_font-color',
+      focus_font_color: 'focus_font-color',
+      watermark_font_color: 'watermark-font-color',
+      font_family: 'font-family',
+      border_color: 'border_color',
+      secondary_border_color: 'secondary-border_color',
+      hover_border_color: 'hover_border_color',
+      focus_border_color: 'focus_border_color',
+      shadow_color: 'shadow_color',
+      hover_shadow_color: 'hover_shadow_color',
+      focus_shadow_color: 'focus_shadow_color'
+    };
+
+    // 应用主题变量
+    Object.keys(DB_FIELD_TO_CSS_VAR).forEach(dbField => {
+      const cssVar = DB_FIELD_TO_CSS_VAR[dbField];
+      if (theme[dbField] !== undefined && theme[dbField] !== null) {
+        const cssVarName = `--${cssVar}`;
+        root.style.setProperty(cssVarName, theme[dbField]);
+      }
+    });
+
+    console.log('主题应用成功');
+  };
+
+  // 修改登录函数，在登录成功后获取并应用主题
+  const login = async (email, password) => {
     setLoading(true);
     try {
-      const response = await authService.register(username, email, password);
+      // 登录API调用
+      const responseData = await apiClient.post('/auth/login', {
+        email,
+        password
+      });
 
-      if (response.success) {
-        return { success: true };// 注册成功
-      } else {
-        throw new Error(response.message || '注册失败');
+      console.log('登录响应数据:', responseData);
+
+      if (!responseData) {
+        throw new Error('登录响应数据为空');
       }
+
+      // 创建用户数据
+      const userData = {
+        id: responseData.id || responseData.user?.id || Date.now(),
+        username: responseData.username || responseData.user?.username || email.split('@')[0],
+        email: responseData.email || responseData.user?.email || email,
+        loginTime: new Date().toISOString()
+      };
+
+      setUser(userData);
+      
+      // 获取token
+      const token = responseData.token || 
+                   responseData.accessToken || 
+                   responseData.access_token ||
+                   responseData.authToken ||
+                   responseData.user?.token;
+                 
+      if (token) {
+        localStorage.setItem('token', token);
+        console.log('保存的token:', token);
+      } else {
+        console.warn('未找到token字段，使用模拟token');
+        localStorage.setItem('token', 'mock-token-' + Date.now());
+      }
+      
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      // 新增：登录成功后获取用户主题
+      console.log('开始获取用户主题...');
+      const theme = await fetchUserTheme(userData.email, userData.username);
+      if (theme) {
+        applyThemeToRoot(theme);
+        console.log('用户主题加载并应用成功');
+      } else {
+        console.log('使用默认主题');
+      }
+
+      return { success: true };
+
     } catch (error) {
-      throw error;
+      console.error('登录错误:', error);
+      
+      let errorMessage = '登录失败';
+      
+      if (error.message && error.message.includes('HTTP error')) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = error.message || '登录失败';
+      }
+      
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  //退出登录
-  const logout = () => {
-    setUser(null);  // 清空用户状态
-    localStorage.removeItem('token');  // 清除本地存储
-    localStorage.removeItem('user');
+  // 注册功能
+  const register = async (username, email, password) => {
+    setLoading(true);
+    try {
+      const responseData = await apiClient.post('/auth/register', {
+        username,
+        email,
+        password
+      });
+
+      console.log('注册响应数据:', responseData);
+
+      return { success: true };
+
+    } catch (error) {
+      console.error('注册错误:', error);
+      
+      let errorMessage = '注册失败';
+      
+      if (error.message && error.message.includes('HTTP error')) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = error.message || '注册失败';
+      }
+      
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  //提供上下文值
+  // 退出登录 - 清除主题
+  const logout = () => {
+    setUser(null);
+    setUserTheme(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userTheme');
+    
+    // 重置CSS变量
+    const root = document.documentElement;
+    root.removeAttribute('style'); // 清除所有内联样式
+  };
+
+  // 提供上下文值
   const value = {
-    user,           // 当前用户信息
-    login,          // 登录函数
-    register,       // 注册函数
-    logout,         // 退出函数
-    loading,        // 加载状态
-    isAuthenticated: !!user  // 是否已认证（双感叹号转为布尔值）
+    user,
+    userTheme, // 新增：提供用户主题
+    login,
+    register,
+    logout,
+    loading,
+    isAuthenticated: !!user,
+    refreshTheme: () => user && fetchUserTheme(user.email, user.username) // 新增：刷新主题函数
   };
 
   return (
@@ -111,9 +229,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// 添加 useAuth hook -  使用认证的Hook 
-// 这是一个自定义Hook，让组件可以方便地访问认证功能
-// 检查是否在Provider内部使用，如果不是就报错
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
