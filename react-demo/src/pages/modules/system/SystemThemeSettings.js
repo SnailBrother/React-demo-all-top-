@@ -118,28 +118,20 @@ const SystemThemeSettings = () => {
   }, []);
 
   // 监听活动主题变化
-  useEffect(() => {
-    if (activeTheme && !editingTheme && !creatingNew) {
-      const cssTheme = transformDbThemeToCss(activeTheme);
-      setCustomThemeSettings(cssTheme);
-    }
-  }, [activeTheme, editingTheme, creatingNew, transformDbThemeToCss]);
+// src/components/ThemeSettings/SystemThemeSettings.js
 
-  // 监听编辑主题变化
-// 监听编辑主题变化（已修复）
+// 监听活动主题变化 (修改后的版本)
+// 职责单一：当活动主题本身变化时，更新颜色设置。
+// 仅当不在编辑或创建模式下，才同步UI。
 useEffect(() => {
-  // 这个效果只应该在 editingTheme ID 变化时执行一次，以设置初始编辑状态
-  if (editingTheme) {
-    const themeToEdit = userThemes.find(t => t.id === editingTheme);
-    if (themeToEdit) {
-      // 设置编辑器和主题名称的初始值
-      setCustomThemeSettings(transformDbThemeToCss(themeToEdit));
-      setNewThemeName(themeToEdit.theme_name);
-    }
+  if (activeTheme && !editingTheme && !creatingNew) {
+    setCustomThemeSettings(transformDbThemeToCss(activeTheme));
   }
-  // 注意：依赖项数组中只保留 editingTheme 和 userThemes。
-  // 这可以确保此效果仅在开始编辑新主题时运行，而不会在每次颜色更改时运行。
-}, [editingTheme, userThemes, transformDbThemeToCss]);
+  // 依赖项只保留 activeTheme。
+  // 这确保了只有在 activeTheme 对象本身变化时，我们才考虑重置颜色选择器。
+}, [activeTheme, transformDbThemeToCss]);
+
+ 
 
   // 实时预览主题变化
   useEffect(() => {
@@ -172,14 +164,17 @@ useEffect(() => {
   }, [setActiveThemeById]);
 
   // 开始编辑主题
+ // 开始编辑主题 (修改后的版本)
   const startEditing = useCallback((themeId) => {
-    setEditingTheme(themeId);
-    setCreatingNew(false);
-    const theme = userThemes.find(t => t.id === themeId);
-    if (theme) {
-      setNewThemeName(theme.theme_name);
+    const themeToEdit = userThemes.find(t => t.id === themeId);
+    if (themeToEdit) {
+      setEditingTheme(themeId);
+      setCreatingNew(false);
+      // 直接在这里设置编辑器的初始状态
+      setNewThemeName(themeToEdit.theme_name);
+      setCustomThemeSettings(transformDbThemeToCss(themeToEdit));
     }
-  }, [userThemes]);
+  }, [userThemes, transformDbThemeToCss]); // 确保依赖项正确
 
   // 取消编辑
   const cancelEditing = useCallback(() => {

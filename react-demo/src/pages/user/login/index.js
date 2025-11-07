@@ -1,5 +1,5 @@
 // src/pages/user/login/index.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // 添加 useEffect
 import { useAuth } from '../../../hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/UI'; 
@@ -14,6 +14,22 @@ const Login = () => {
     });
     const [errors, setErrors] = useState({});
     const { login, loading } = useAuth();
+
+    // 添加 useEffect 来接收注册页面传递的邮箱
+    useEffect(() => {
+        if (location.state?.email) {
+            setFormData(prev => ({
+                ...prev,
+                email: location.state.email
+            }));
+        }
+        
+        // 如果有注册成功的消息，可以显示给用户
+        if (location.state?.message) {
+            // 这里可以添加一个提示消息显示
+            console.log(location.state.message); // 或者使用 message 组件显示
+        }
+    }, [location.state]);
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
