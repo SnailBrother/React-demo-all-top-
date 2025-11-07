@@ -57,7 +57,8 @@ const DB_FIELD_TO_CSS_VAR = {
 
 // 主题服务函数
 const themeService = {
-  // 获取用户的活动主题
+
+  // 获取用户的活动主题 - 添加这个缺失的方法
   async getActiveUserTheme(email, username) {
     try {
       const response = await apiClient.get('/UserThemeSettings/active', {
@@ -68,7 +69,6 @@ const themeService = {
       throw error;
     }
   },
-
   // 获取用户的所有主题
   async getUserAllThemes(email, username) {
     try {
@@ -305,47 +305,6 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [isAuthenticated, user, transformCssToDbTheme, fetchUserAllThemes]);
 
-  // 更新主题
-  const updateThemeById = useCallback(async (themeId, themeSettings) => {
-    try {
-      const dbTheme = transformCssToDbTheme(themeSettings);
-      const response = await themeService.updateUserTheme(themeId, dbTheme);
-      
-      if (response && response.success) {
-        // 刷新主题列表
-        await fetchUserAllThemes();
-        return { success: true };
-      } else {
-        throw new Error(response?.message || '更新主题失败');
-      }
-    } catch (error) {
-      console.error('更新主题失败:', error);
-      throw error;
-    }
-  }, [transformCssToDbTheme, fetchUserAllThemes]);
-
-  // 删除主题
-  const deleteThemeById = useCallback(async (themeId) => {
-    try {
-      const response = await themeService.deleteUserTheme(themeId);
-      
-      if (response && response.success) {
-        // 如果删除的是活动主题，需要重新获取活动主题
-        if (activeTheme && activeTheme.id === themeId) {
-          await fetchActiveTheme();
-        }
-        // 刷新主题列表
-        await fetchUserAllThemes();
-        return { success: true };
-      } else {
-        throw new Error(response?.message || '删除主题失败');
-      }
-    } catch (error) {
-      console.error('删除主题失败:', error);
-      throw error;
-    }
-  }, [activeTheme, fetchActiveTheme, fetchUserAllThemes]);
-
   // 应用主题到 :root
   const applyThemeToRoot = useCallback((theme) => {
     const root = document.documentElement;
@@ -375,6 +334,58 @@ export const ThemeProvider = ({ children }) => {
       }
     }
   }, [transformDbThemeToCss]);
+  // 更新主题
+// src/context/ThemeContext.js
+// 更新主题
+const updateThemeById = useCallback(async (themeId, updateData) => {
+  try {
+    // 直接使用传递的 updateData，它已经包含了 theme_name 和其他字段
+    const response = await themeService.updateUserTheme(themeId, updateData);
+    
+    if (response && response.success) {
+      // 刷新主题列表
+      await fetchUserAllThemes();
+      
+      // 如果更新的是当前活动主题，更新 activeTheme
+      if (activeTheme && activeTheme.id === themeId) {
+        const updatedTheme = response.theme || { ...activeTheme, ...updateData };
+        setActiveTheme(updatedTheme);
+        applyThemeToRoot(updatedTheme);
+      }
+      
+      return { success: true };
+    } else {
+      throw new Error(response?.message || '更新主题失败');
+    }
+  } catch (error) {
+    console.error('更新主题失败:', error);
+    throw error;
+  }
+}, [fetchUserAllThemes, activeTheme, applyThemeToRoot]);
+
+  // 删除主题
+  const deleteThemeById = useCallback(async (themeId) => {
+    try {
+      const response = await themeService.deleteUserTheme(themeId);
+      
+      if (response && response.success) {
+        // 如果删除的是活动主题，需要重新获取活动主题
+        if (activeTheme && activeTheme.id === themeId) {
+          await fetchActiveTheme();
+        }
+        // 刷新主题列表
+        await fetchUserAllThemes();
+        return { success: true };
+      } else {
+        throw new Error(response?.message || '删除主题失败');
+      }
+    } catch (error) {
+      console.error('删除主题失败:', error);
+      throw error;
+    }
+  }, [activeTheme, fetchActiveTheme, fetchUserAllThemes]);
+
+  
 
   // 实时预览主题
   const previewThemeSettings = useCallback((themeSettings) => {

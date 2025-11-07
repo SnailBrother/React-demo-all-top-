@@ -113,7 +113,7 @@ const SystemThemeSettings = () => {
         if (isAuthenticated && user) {
           await fetchUserAllThemes();
         }
-        
+
         // 如果有活动主题，使用活动主题初始化编辑器
         if (activeTheme) {
           const cssTheme = transformDbThemeToCss(activeTheme);
@@ -161,7 +161,7 @@ const SystemThemeSettings = () => {
       const timer = setTimeout(() => {
         previewThemeSettings(customThemeSettings);
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
   }, [customThemeSettings, loading, previewThemeSettings]);
@@ -203,24 +203,32 @@ const SystemThemeSettings = () => {
   }, [themeName, isAuthenticated, user, customThemeSettings, createNewTheme, fetchUserAllThemes]);
 
   // 更新主题
-  const handleUpdateTheme = useCallback(async () => {
-    if (!editingTheme) return;
+// 更新主题
+const handleUpdateTheme = useCallback(async () => {
+  if (!editingTheme) return;
 
-    setSaving(true);
-    try {
-      await updateThemeById(editingTheme, customThemeSettings);
-      message.success('主题更新成功！');
-      setEditingTheme(null);
-      setThemeName('');
-      // 重新加载主题列表
-      await fetchUserAllThemes();
-    } catch (error) {
-      console.error('更新主题失败:', error);
-      message.error(error.message || '更新主题失败');
-    } finally {
-      setSaving(false);
-    }
-  }, [editingTheme, customThemeSettings, updateThemeById, fetchUserAllThemes]);
+  setSaving(true);
+  try {
+    // 构建更新数据，包含主题名和转换为数据库字段格式
+    const dbTheme = transformCssToDbTheme(customThemeSettings);
+    const updateData = {
+      ...dbTheme,
+      theme_name: themeName // 确保包含主题名
+    };
+    
+    await updateThemeById(editingTheme, updateData);
+    message.success('主题更新成功！');
+    setEditingTheme(null);
+    setThemeName('');
+    // 重新加载主题列表
+    await fetchUserAllThemes();
+  } catch (error) {
+    console.error('更新主题失败:', error);
+    message.error(error.message || '更新主题失败');
+  } finally {
+    setSaving(false);
+  }
+}, [editingTheme, themeName, customThemeSettings, updateThemeById, fetchUserAllThemes, transformCssToDbTheme]);
 
   // 应用主题
   const handleApplyTheme = useCallback(async (themeId) => {
@@ -234,9 +242,17 @@ const SystemThemeSettings = () => {
   }, [setActiveThemeById]);
 
   // 开始编辑主题
+ 
   const startEditing = useCallback((themeId) => {
     setEditingTheme(themeId);
-  }, []);
+    const theme = allThemes.find(t => t.id === themeId);
+    if (theme) {
+      setThemeName(theme.theme_name); // 确保设置正确的主题名
+      const cssTheme = transformDbThemeToCss(theme);
+      setCustomThemeSettings(cssTheme);
+      previewThemeSettings(cssTheme);
+    }
+  }, [allThemes, transformDbThemeToCss, previewThemeSettings]);
 
   // 取消编辑
   const cancelEditing = useCallback(() => {
@@ -386,7 +402,7 @@ const SystemThemeSettings = () => {
             {activeTheme && activeTheme.is_active && ' (活动)'}
           </span>
           {previewTheme && (
-            <Button 
+            <Button
               onClick={cancelPreview}
               variant="secondary"
               size="small"
@@ -394,7 +410,7 @@ const SystemThemeSettings = () => {
               取消预览
             </Button>
           )}
-          <Button 
+          <Button
             onClick={handleRefreshThemes}
             variant="secondary"
             size="small"
@@ -402,7 +418,7 @@ const SystemThemeSettings = () => {
           >
             刷新列表
           </Button>
-          <Button 
+          <Button
             onClick={handleCreateNewTheme}
             variant="primary"
             size="small"
@@ -423,6 +439,7 @@ const SystemThemeSettings = () => {
               </svg>
               主题信息
             </h2>
+
             <div className={styles.themeInfo}>
               <div className={styles.settingItem}>
                 <label>主题名称</label>
@@ -445,6 +462,7 @@ const SystemThemeSettings = () => {
                 )}
               </div>
             </div>
+
           </div>
 
           {/* 背景颜色设置 */}
@@ -697,21 +715,21 @@ const SystemThemeSettings = () => {
             </h2>
 
             <div className={styles.presets}>
-              <Button 
+              <Button
                 onClick={() => applyPreset('light')}
                 variant="secondary"
                 size="small"
               >
                 浅色主题
               </Button>
-              <Button 
+              <Button
                 onClick={() => applyPreset('dark')}
                 variant="secondary"
                 size="small"
               >
                 深色主题
               </Button>
-              <Button 
+              <Button
                 onClick={() => applyPreset('blue')}
                 variant="secondary"
                 size="small"
@@ -733,7 +751,7 @@ const SystemThemeSettings = () => {
             <div className={styles.saveActions}>
               {editingTheme ? (
                 <div className={styles.editActions}>
-                  <Button 
+                  <Button
                     onClick={handleUpdateTheme}
                     variant="primary"
                     size="large"
@@ -742,7 +760,7 @@ const SystemThemeSettings = () => {
                   >
                     {saving ? '更新中...' : '更新主题'}
                   </Button>
-                  <Button 
+                  <Button
                     onClick={cancelEditing}
                     variant="secondary"
                     size="large"
@@ -752,7 +770,7 @@ const SystemThemeSettings = () => {
                 </div>
               ) : (
                 <div className={styles.createActions}>
-                  <Button 
+                  <Button
                     onClick={handleSaveTheme}
                     variant="primary"
                     size="large"
@@ -784,7 +802,7 @@ const SystemThemeSettings = () => {
               <div className={styles.loginTip}>请登录后管理主题</div>
             )}
           </div>
-          
+
           {allThemes.length === 0 ? (
             <div className={styles.empty}>
               <p>{isAuthenticated ? '暂无主题' : '请登录后查看主题'}</p>
@@ -815,7 +833,7 @@ const SystemThemeSettings = () => {
                     >
                       {theme.is_active ? '已应用' : '应用'}
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => startEditing(theme.id)}
                       variant="secondary"
                       size="small"

@@ -575,16 +575,17 @@ app.put('/api/UserThemeSettings/:id', async (req, res) => {
         request.input('id', sql.Int, id);
         
         Object.keys(updates).forEach(key => {
+            // 允许更新 theme_name，移除对 theme_name 的限制
             if (key !== 'id' && key !== 'username' && key !== 'email') {
-                setClause.push(`${key} = @${key}`);
-                // 根据字段类型处理
-                if (key === 'is_active') {
-                    request.input(key, sql.Bit, updates[key]);
-                } else {
-                    request.input(key, sql.NVarChar, updates[key]);
-                }
+              setClause.push(`${key} = @${key}`);
+              // 根据字段类型处理
+              if (key === 'is_active') {
+                request.input(key, sql.Bit, updates[key]);
+              } else {
+                request.input(key, sql.NVarChar, updates[key]);
+              }
             }
-        });
+          });
         
         if (setClause.length === 0) {
             return res.status(400).json({
