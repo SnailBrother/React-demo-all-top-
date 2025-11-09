@@ -19,8 +19,11 @@ const moduleMenus = {
     { key: 'playlists', label: '歌单', icon: '📜', path: '/app/music/playlists' },
   ],
   outfit: [
+    { key: 'previewwardrobe', label: '查看', icon: '🧩', path: '/app/outfit/previewwardrobe' },
+    { key: 'updatewardrobe', label: '更新', icon: '🧩', path: '/app/outfit/updatewardrobe' },
     { key: 'closet', label: '衣橱', icon: '🧥', path: '/app/outfit/closet' },
     { key: 'combos', label: '搭配', icon: '🧩', path: '/app/outfit/combos' },
+    
   ],
   office: [
     { key: 'dashboard', label: '面板', icon: '📊', path: '/app/office/dashboard' },

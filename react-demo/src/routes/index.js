@@ -19,6 +19,8 @@ import MusicPlayer from '../pages/modules/music/Player';
 import MusicPlaylists from '../pages/modules/music/Playlists';
 import OutfitCloset from '../pages/modules/outfit/Closet';
 import OutfitCombos from '../pages/modules/outfit/Combos';
+import OutfitUpdateWardrobe from '../pages/modules/outfit/UpdateWardrobe';//更新衣柜
+import OutfitPreviewWardrobe from '../pages/modules/outfit/PreviewWardrobe';//查看衣柜
 import OfficeDashboard from '../pages/modules/office/Dashboard';
 import OfficeDocs from '../pages/modules/office/Docs';
 import OfficeTasks from '../pages/modules/office/Tasks';
@@ -99,6 +101,8 @@ const AppRoutes = () => {
         <Route index element={<Navigate to="closet" replace />} />
         <Route path="closet" element={<OutfitCloset />} />
         <Route path="combos" element={<OutfitCombos />} />
+        <Route path="updatewardrobe" element={<OutfitUpdateWardrobe />} />
+        <Route path="previewwardrobe" element={<OutfitPreviewWardrobe />} />
       </Route>
 
       <Route
