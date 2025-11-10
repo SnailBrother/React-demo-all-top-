@@ -2,13 +2,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import HomeLayout from '../pages/home/index';
-import Dashboard from '../pages/home/components/Dashboard';
-import UserManagement from '../pages/home/components/UserManagement';
-import Analytics from '../pages/home/components/Analytics';
-import Reports from '../pages/home/components/Reports';
-import Settings from '../pages/home/components/Settings';
-import Messages from '../pages/home/components/Messages';
+import Home from '../pages/home';
 import ModuleSelect from '../pages/modules/Select';
 import ModuleLayout from '../pages/modules/ModuleLayout';
 import AccountingOverview from '../pages/modules/accounting/Overview';
@@ -48,6 +42,13 @@ const AppRoutes = () => {
         path="/register"
         element={
           isAuthenticated ? <Navigate to="/apps" replace /> : <Register />
+        }
+      />
+
+      <Route
+        path="/home"
+        element={
+          isAuthenticated ? <Home /> : <Navigate to="/login" replace />
         }
       />
 
@@ -145,26 +146,9 @@ const AppRoutes = () => {
         <Route path="profile" element={<SystemProfile />} />
       </Route>
 
-      {/* 保留旧首页，仅用于兼容可选进入 */}
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <HomeLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Navigate to="/apps" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="users" element={<UserManagement />} />
-        <Route path="analytics" element={<Analytics />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="messages" element={<Messages />} />
-      </Route>
 
       {/* 404 页面 */}
-      <Route path="*" element={<Navigate to="/apps" replace />} />
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
 };
