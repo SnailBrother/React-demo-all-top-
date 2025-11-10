@@ -1,34 +1,25 @@
-// src/context/ThemeContext.js
-// src/context/ThemeContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { apiClient } from '../utils';
 
 const ThemeContext = createContext();
 
-// 默认主题配置 - 统一在这里管理
+// 默认主题配置
 const DEFAULT_THEME = {
-  // 背景色
   'background-color': '#FFFFFFFF',
   'secondary-background-color': '#F8F9FAFF',
   'hover_background-color': '#E9ECEEFF',
   'focus_background-color': '#DEE2E6FF',
-  
-  // 字体颜色
   'font-color': '#000000FF',
   'secondary-font-color': '#6C757DFF',
   'hover_font-color': '#0078D4FF',
   'focus_font-color': '#0056B3FF',
   'watermark-font-color': '#B3B5B6FF',
   'font-family': 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  
-  // 边框颜色
   'border_color': '#DEE2E6FF',
   'secondary-border_color': '#E9ECEEFF',
   'hover_border_color': '#0078D4FF',
   'focus_border_color': '#0056B3FF',
-  
-  // 阴影颜色
   'shadow_color': '#00000019',
   'hover_shadow_color': '#00000026',
   'focus_shadow_color': '#0078D440'
@@ -57,19 +48,6 @@ const DB_FIELD_TO_CSS_VAR = {
 
 // 主题服务函数
 const themeService = {
-
-  // 获取用户的活动主题 - 如果没有活动的主题就使用默认的主题
-  async getActiveUserTheme(email, username) {
-    try {
-      const response = await apiClient.get('/UserThemeSettings/active', {
-        params: { email, username }
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-  // 获取用户的所有主题
   async getUserAllThemes(email, username) {
     try {
       const response = await apiClient.get('/UserThemeSettings', {
@@ -81,7 +59,6 @@ const themeService = {
     }
   },
 
-  // 设置活动主题
   async setActiveTheme(id, email, username) {
     try {
       const response = await apiClient.put(`/UserThemeSettings/setActive/${id}`, {
@@ -94,7 +71,6 @@ const themeService = {
     }
   },
 
-  // 创建新主题
   async createUserTheme(themeData) {
     try {
       const response = await apiClient.post('/UserThemeSettings', themeData);
@@ -104,7 +80,6 @@ const themeService = {
     }
   },
 
-  // 更新主题内容
   async updateUserTheme(id, themeData) {
     try {
       const response = await apiClient.put(`/UserThemeSettings/${id}`, themeData);
@@ -114,7 +89,6 @@ const themeService = {
     }
   },
 
-  // 删除主题
   async deleteUserTheme(id) {
     try {
       const response = await apiClient.delete(`/UserThemeSettings/${id}`);
@@ -165,14 +139,15 @@ export const ThemeProvider = ({ children }) => {
   // 获取当前应该使用的主题
   const getCurrentThemeSettings = useCallback(() => {
     if (previewTheme) {
-      return previewTheme; // 优先返回预览主题
+      return previewTheme;
     }
     if (activeTheme) {
-      return transformDbThemeToCss(activeTheme);// 返回激活的主题
+      return transformDbThemeToCss(activeTheme);
     }
-    return DEFAULT_THEME;// 返回默认主题
+    return DEFAULT_THEME;
   }, [previewTheme, activeTheme, transformDbThemeToCss]);
-// 应用主题到 :root
+
+  // 应用主题到 :root
   const applyThemeToRoot = useCallback((theme) => {
     const root = document.documentElement;
     
@@ -187,7 +162,6 @@ export const ThemeProvider = ({ children }) => {
         const cssVarName = `--${key}`;
         root.style.setProperty(cssVarName, DEFAULT_THEME[key]);
       });
-      console.log('应用默认主题');
     } else if (typeof theme === 'object') {
       // 应用数据库主题
       const cssTheme = transformDbThemeToCss(theme);
@@ -197,117 +171,61 @@ export const ThemeProvider = ({ children }) => {
           const cssVarName = `--${key}`;
           root.style.setProperty(cssVarName, cssTheme[key]);
         });
-        console.log('应用数据库主题:', theme.theme_name);
       }
     }
   }, [transformDbThemeToCss]);
-  // 获取用户所有主题
-  // 获取用户所有主题 - (最终修复版)
-  const fetchUserAllThemes = useCallback(async () => {
-    // 步骤 1: 身份验证检查 (保持不变)
+
+  // 核心：获取用户所有主题并设置活动主题
+  const fetchUserThemes = useCallback(async () => {
     if (!isAuthenticated || !user) {
-      console.log('用户未登录，无法获取主题');
+      console.log('用户未登录，使用默认主题');
       setAllThemes([]);
-      // 确保在未登录时应用系统默认主题
-      applyThemeToRoot('default'); 
+      setActiveTheme(null);
+      applyThemeToRoot('default');
+      setLoading(false);
       return;
     }
 
     try {
-      // 步骤 2: 调用API获取数据 (保持不变)
+      setLoading(true);
       const response = await themeService.getUserAllThemes(user.email, user.username);
       
       if (response && response.success && Array.isArray(response.themes)) {
         const fetchedThemes = response.themes;
-        
-        // --- 核心逻辑修正 ---
-        // 我们不再假设 fetchedThemes 只包含当前用户的数据，
-        // 而是在每一步查找时都进行严格的身份匹配。
+        setAllThemes(fetchedThemes);
 
-        // 步骤 3: 严格查找当前用户的活动主题
-        const activeThemeForCurrentUser = fetchedThemes.find(theme => 
+        // 查找当前用户的活动主题
+        const activeThemeForUser = fetchedThemes.find(theme => 
           theme.is_active && 
           theme.email === user.email && 
           theme.username === user.username
         );
 
-        if (activeThemeForCurrentUser) {
-          // 如果找到了，应用它并更新所有状态
-          setAllThemes(fetchedThemes);
-          setActiveTheme(activeThemeForCurrentUser);
-          applyThemeToRoot(activeThemeForCurrentUser);
-          console.log('找到并应用了当前用户的活动主题:', activeThemeForCurrentUser.theme_name);
-          return; // 任务完成
+        if (activeThemeForUser) {
+          setActiveTheme(activeThemeForUser);
+          applyThemeToRoot(activeThemeForUser);
+          console.log('应用活动主题:', activeThemeForUser.theme_name);
+        } else {
+          // 没有活动主题，使用默认主题
+          setActiveTheme(null);
+          applyThemeToRoot('default');
+          console.log('未找到活动主题，使用默认主题');
         }
-
-        // 步骤 4: 如果没有活动主题，严格查找当前用户的个人默认主题
-        const defaultThemeForCurrentUser = fetchedThemes.find(theme => 
-          theme.is_default && 
-          theme.email === user.email && 
-          theme.username === user.username
-        );
-
-        if (defaultThemeForCurrentUser) {
-          // 如果找到了，应用它并更新状态
-          setAllThemes(fetchedThemes);
-          // 注意：我们将用户的默认主题设置为当前的“活动”状态
-          setActiveTheme(defaultThemeForCurrentUser); 
-          applyThemeToRoot(defaultThemeForCurrentUser);
-          console.log('未找到活动主题，但应用了当前用户的个人默认主题:', defaultThemeForCurrentUser.theme_name);
-          return; // 任务完成
-        }
-
-        // 步骤 5: 如果连个人默认都没有，才回退到系统全局默认
-        setAllThemes(fetchedThemes);
-        setActiveTheme(null);
-        applyThemeToRoot('default');
-        console.log('当前用户既无活动主题也无个人默认主题，使用系统全局默认');
-        
       } else {
-        // API返回数据格式异常或失败
-        console.warn('获取主题API返回异常:', response);
+        // API返回异常
         setAllThemes([]);
         setActiveTheme(null);
         applyThemeToRoot('default');
       }
     } catch (error) {
-      // API调用本身发生错误
       console.error('获取用户主题失败:', error);
       setAllThemes([]);
-      setActiveTheme(null);
-      applyThemeToRoot('default');
-    }
-  }, [isAuthenticated, user, applyThemeToRoot]); // 依赖项已优化
-
-  // 获取用户活动主题
-  const fetchActiveTheme = useCallback(async () => {
-    if (!isAuthenticated || !user) {
-      console.log('用户未登录，使用后备主题');
-      setActiveTheme(null);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      console.log('开始获取用户活动主题...', { email: user.email, username: user.username });
-      const response = await themeService.getActiveUserTheme(user.email, user.username);
-      console.log('用户活动主题响应:', response);
-      
-      if (response && response.success && response.theme) {
-        setActiveTheme(response.theme);
-        applyThemeToRoot(response.theme);
-      } else {
-        setActiveTheme(null);
-        applyThemeToRoot('default');
-      }
-    } catch (error) {
-      console.error('获取用户活动主题失败:', error);
       setActiveTheme(null);
       applyThemeToRoot('default');
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, applyThemeToRoot]);
 
   // 设置活动主题
   const setActiveThemeById = useCallback(async (themeId) => {
@@ -319,18 +237,8 @@ export const ThemeProvider = ({ children }) => {
       const response = await themeService.setActiveTheme(themeId, user.email, user.username);
       
       if (response && response.success) {
-        // 更新本地状态
-        const updatedThemes = allThemes.map(theme => ({
-          ...theme,
-          is_active: theme.id === themeId
-        }));
-        
-        const newActiveTheme = updatedThemes.find(theme => theme.id === themeId);
-        
-        setAllThemes(updatedThemes);
-        setActiveTheme(newActiveTheme);
-        applyThemeToRoot(newActiveTheme);
-        
+        // 重新获取主题列表以更新状态
+        await fetchUserThemes();
         return { success: true };
       } else {
         throw new Error(response?.message || '设置活动主题失败');
@@ -339,7 +247,7 @@ export const ThemeProvider = ({ children }) => {
       console.error('设置活动主题失败:', error);
       throw error;
     }
-  }, [isAuthenticated, user, allThemes]);
+  }, [isAuthenticated, user, fetchUserThemes]);
 
   // 创建新主题
   const createNewTheme = useCallback(async (themeName, themeSettings, setAsActive = false) => {
@@ -361,7 +269,7 @@ export const ThemeProvider = ({ children }) => {
       
       if (response && response.success) {
         // 刷新主题列表
-        await fetchUserAllThemes();
+        await fetchUserThemes();
         return { success: true, theme: response.theme };
       } else {
         throw new Error(response?.message || '创建主题失败');
@@ -370,37 +278,25 @@ export const ThemeProvider = ({ children }) => {
       console.error('创建主题失败:', error);
       throw error;
     }
-  }, [isAuthenticated, user, transformCssToDbTheme, fetchUserAllThemes]);
+  }, [isAuthenticated, user, transformCssToDbTheme, fetchUserThemes]);
 
-  
   // 更新主题
-// src/context/ThemeContext.js
-// 更新主题
-const updateThemeById = useCallback(async (themeId, updateData) => {
-  try {
-    // 直接使用传递的 updateData，它已经包含了 theme_name 和其他字段
-    const response = await themeService.updateUserTheme(themeId, updateData);
-    
-    if (response && response.success) {
-      // 刷新主题列表
-      await fetchUserAllThemes();
+  const updateThemeById = useCallback(async (themeId, updateData) => {
+    try {
+      const response = await themeService.updateUserTheme(themeId, updateData);
       
-      // 如果更新的是当前活动主题，更新 activeTheme
-      if (activeTheme && activeTheme.id === themeId) {
-        const updatedTheme = response.theme || { ...activeTheme, ...updateData };
-        setActiveTheme(updatedTheme);
-        applyThemeToRoot(updatedTheme);
+      if (response && response.success) {
+        // 刷新主题列表
+        await fetchUserThemes();
+        return { success: true };
+      } else {
+        throw new Error(response?.message || '更新主题失败');
       }
-      
-      return { success: true };
-    } else {
-      throw new Error(response?.message || '更新主题失败');
+    } catch (error) {
+      console.error('更新主题失败:', error);
+      throw error;
     }
-  } catch (error) {
-    console.error('更新主题失败:', error);
-    throw error;
-  }
-}, [fetchUserAllThemes, activeTheme, applyThemeToRoot]);
+  }, [fetchUserThemes]);
 
   // 删除主题
   const deleteThemeById = useCallback(async (themeId) => {
@@ -408,12 +304,8 @@ const updateThemeById = useCallback(async (themeId, updateData) => {
       const response = await themeService.deleteUserTheme(themeId);
       
       if (response && response.success) {
-        // 如果删除的是活动主题，需要重新获取活动主题
-        if (activeTheme && activeTheme.id === themeId) {
-          await fetchActiveTheme();
-        }
         // 刷新主题列表
-        await fetchUserAllThemes();
+        await fetchUserThemes();
         return { success: true };
       } else {
         throw new Error(response?.message || '删除主题失败');
@@ -422,9 +314,7 @@ const updateThemeById = useCallback(async (themeId, updateData) => {
       console.error('删除主题失败:', error);
       throw error;
     }
-  }, [activeTheme, fetchActiveTheme, fetchUserAllThemes]);
-
-  
+  }, [fetchUserThemes]);
 
   // 实时预览主题
   const previewThemeSettings = useCallback((themeSettings) => {
@@ -447,33 +337,15 @@ const updateThemeById = useCallback(async (themeId, updateData) => {
     }
   }, [activeTheme, applyThemeToRoot]);
 
-  // 初始化：获取用户活动主题和所有主题
+  // 初始化：获取用户主题
   useEffect(() => {
-    const initializeTheme = async () => {
-      setLoading(true);
-      if (isAuthenticated && user) {
-        await Promise.all([fetchActiveTheme(), fetchUserAllThemes()]);
-      } else {
-        applyThemeToRoot('default');
-        setLoading(false);
-      }
-    };
-
-    initializeTheme();
-  }, [isAuthenticated, user, fetchActiveTheme, fetchUserAllThemes, applyThemeToRoot]);
+    fetchUserThemes();
+  }, [fetchUserThemes]);
 
   // 当用户登录状态变化时，重新获取主题
   useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchActiveTheme();
-      fetchUserAllThemes();
-    } else {
-      // 用户退出登录时，重置为主题
-      setActiveTheme(null);
-      setAllThemes([]);
-      applyThemeToRoot('default');
-    }
-  }, [isAuthenticated, user, fetchActiveTheme, fetchUserAllThemes, applyThemeToRoot]);
+    fetchUserThemes();
+  }, [isAuthenticated, user, fetchUserThemes]);
 
   const value = {
     // 状态
@@ -484,10 +356,10 @@ const updateThemeById = useCallback(async (themeId, updateData) => {
     
     // 主题设置
     themeSettings: getCurrentThemeSettings(),
-    defaultTheme: DEFAULT_THEME, // 暴露默认主题
+    defaultTheme: DEFAULT_THEME,
     
     // 操作函数
-    fetchUserAllThemes,
+    fetchUserThemes,
     setActiveThemeById,
     createNewTheme,
     updateThemeById,
