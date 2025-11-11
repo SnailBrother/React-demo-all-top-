@@ -8,9 +8,12 @@ import ModuleLayout from '../pages/modules/ModuleLayout';
 import AccountingOverview from '../pages/modules/accounting/Overview';
 import AccountingTransactions from '../pages/modules/accounting/Transactions';
 import AccountingReports from '../pages/modules/accounting/Reports';
-import MusicLibrary from '../pages/modules/music/Library';
-import MusicPlayer from '../pages/modules/music/Player';
-import MusicPlaylists from '../pages/modules/music/Playlists';
+
+import MusicHome from '../pages/modules/music/Home';
+import MusicRecommend from '../pages/modules/music/Recommend';
+import MusicRecent from '../pages/modules/music/Recent';
+import MusicFavorites from '../pages/modules/music/Favorites';
+
 import OutfitCloset from '../pages/modules/outfit/Closet';
 import OutfitCombos from '../pages/modules/outfit/Combos';
 import OutfitUpdateWardrobe from '../pages/modules/outfit/UpdateWardrobe';//更新衣柜
@@ -85,10 +88,11 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="library" replace />} />
-        <Route path="library" element={<MusicLibrary />} />
-        <Route path="player" element={<MusicPlayer />} />
-        <Route path="playlists" element={<MusicPlaylists />} />
+        <Route index element={<Navigate to="home" replace />} />
+        <Route path="home" element={<MusicHome />} />
+        <Route path="recommend" element={<MusicRecommend />} />
+        <Route path="recent" element={<MusicRecent />} />
+         <Route path="favorites" element={<MusicFavorites />} />
       </Route>
 
       <Route

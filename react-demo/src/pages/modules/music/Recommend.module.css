@@ -1,0 +1,161 @@
+/* src/pages/Recommend/Recommend.module.css */
+.recommend {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--secondary-color);
+  opacity: 0.8;
+}
+
+.recommendGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.recommendCard {
+  background: var(--card-bg);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.recommendCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.cardCover {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+
+.cardContent {
+  padding: 20px;
+}
+
+.cardTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--font-color);
+}
+
+.cardDesc {
+  color: var(--secondary-color);
+  margin-bottom: 16px;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+.cardButton {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.cardButton:hover {
+  background: var(--primary-dark);
+}
+
+.trendingSection {
+  margin-top: 40px;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--font-color);
+}
+
+.trendingList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.trendingItem {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid var(--border-color);
+}
+
+.trendingItem:hover {
+  background: var(--hover-color);
+}
+
+.trendingCover {
+  font-size: 2rem;
+  margin-right: 15px;
+}
+
+.trendingInfo {
+  flex: 1;
+}
+
+.trendingTitle {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--font-color);
+}
+
+.trendingArtist {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  margin-bottom: 4px;
+  opacity: 0.7;
+}
+
+.trendingStats {
+  font-size: 0.8rem;
+  color: var(--secondary-color);
+  opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+  .recommend {
+    padding: 15px;
+  }
+  
+  .recommendGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .trendingList {
+    grid-template-columns: 1fr;
+  }
+}

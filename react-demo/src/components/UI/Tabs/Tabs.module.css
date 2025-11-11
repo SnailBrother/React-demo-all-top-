@@ -54,7 +54,13 @@
   font-size: 14px;
   flex-shrink: 0;
 }
-
+.tabSvgIcon {
+   width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
 /* 标签页文字标签样式 */
 .tabLabel {
   flex: 1;

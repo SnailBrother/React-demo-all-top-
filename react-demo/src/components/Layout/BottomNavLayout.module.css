@@ -1,4 +1,7 @@
 /* src/components/UI/BottomNav.module.css */
+
+/* 顶部 导航的高度为 60px; */
+
 .bottomNav {
   position: fixed;
   bottom: 0;
@@ -10,6 +13,7 @@
   padding: 8px 0;
   z-index: 1000;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  height: 60px;
 }
 
 .bottomNavItem {
@@ -23,7 +27,7 @@
   transition: all 0.2s ease;
   border: none;
   background: none;
-  min-height: 60px;
+  
 }
 
 .bottomNavItem:hover {
@@ -43,6 +47,13 @@
   margin-bottom: 4px;
   transition: transform 0.2s ease;
 }
+.bottomNavSvgIcon {
+     width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;  
+}
 
 .bottomNavLabel {
   font-size: 12px;
@@ -50,33 +61,5 @@
   line-height: 1.2;
 }
 
-/* 移动端优化 */
-@media (max-width: 768px) {
-  .bottomNav {
-    padding: 6px 0;
-  }
-  
-  .bottomNavItem {
-    min-height: 56px;
-    padding: 6px;
-  }
-  
-  .bottomNavIcon {
-    font-size: 18px;
-  }
-  
-  .bottomNavLabel {
-    font-size: 11px;
-  }
-}
-
-/* 大屏优化 */
-@media (min-width: 1024px) {
-  .bottomNav {
-    max-width: 400px;
-    margin: 0 auto;
-    border-radius: 20px 20px 0 0;
-    border: 1px solid #e0e0e0;
-    border-bottom: none;
-  }
-}
+ 
+ 

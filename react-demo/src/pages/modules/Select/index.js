@@ -17,7 +17,7 @@ const modules = [
     title: '音乐', 
     desc: '收藏与播放音乐', 
     emoji: '🎵',
-    defaultPath: '/app/music/library'
+    defaultPath: '/app/music/home'
   },
   { 
     key: 'outfit', 

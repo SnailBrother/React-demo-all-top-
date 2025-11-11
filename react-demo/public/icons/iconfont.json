@@ -6,6 +6,55 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "5003290",
+      "name": "推荐",
+      "font_class": "tuijian",
+      "unicode": "ea83",
+      "unicode_decimal": 60035
+    },
+    {
+      "icon_id": "5311461",
+      "name": "最近播放",
+      "font_class": "zuijinbofang",
+      "unicode": "ea84",
+      "unicode_decimal": 60036
+    },
+    {
+      "icon_id": "7410477",
+      "name": "喜欢",
+      "font_class": "xihuan11",
+      "unicode": "ea85",
+      "unicode_decimal": 60037
+    },
+    {
+      "icon_id": "7648782",
+      "name": "喜欢",
+      "font_class": "xihuan12",
+      "unicode": "ea86",
+      "unicode_decimal": 60038
+    },
+    {
+      "icon_id": "11665557",
+      "name": "推荐",
+      "font_class": "tuijian1",
+      "unicode": "ea87",
+      "unicode_decimal": 60039
+    },
+    {
+      "icon_id": "35426982",
+      "name": "最近播放",
+      "font_class": "zuijinbofang1",
+      "unicode": "ea88",
+      "unicode_decimal": 60040
+    },
+    {
+      "icon_id": "33010432",
+      "name": "移动端_晚上",
+      "font_class": "yidongduan_wanshang",
+      "unicode": "ea82",
+      "unicode_decimal": 60034
+    },
+    {
       "icon_id": "431779",
       "name": "github",
       "font_class": "github",

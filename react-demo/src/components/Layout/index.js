@@ -1,8 +1,7 @@
-//src/components/Layout/index.js
 // src/components/Layout/index.js
 import React from 'react';
 import Header from './Header';
-import styles from './Layout.module.css';
+import styles from './index.module.css';
 
 const Layout = ({ 
   children, 
@@ -12,14 +11,30 @@ const Layout = ({
   showHeader = true, 
   onLogout 
 }) => {
+  const shouldShowHeader = showHeader && sidebar;
+  const hasSidebar = !!sidebar;
+  const hasBottomNav = !!bottomNav;
+  
   return (
-    <div className={`${styles.layout} ${bottomNav ? styles.withBottomNav : ''}`}>
-      {showHeader && <Header onLogout={onLogout} />}
+    <div className={`${styles.layout}  
+      ${hasSidebar ? styles.withSidebar : ''}
+      ${hasBottomNav ? styles.withBottomNav : ''}
+    `}
+    style={{ backgroundColor: 'red' }}  // 内联背景色设置
+    
+    >
+      {shouldShowHeader && <Header onLogout={onLogout} />}
       <div className={styles.mainLayout}>
-        {sidebar}
-        <div className={`${styles.contentArea} ${bottomNav ? styles.withBottomNav : ''}`}>
-          {tabs}
-          <main className={styles.mainContent}>
+        {sidebar && sidebar}
+        <div className={`
+          ${styles.contentArea} 
+          ${hasSidebar ? styles.withSidebar : ''}
+          ${hasBottomNav ? styles.withBottomNav : ''}
+        `}>
+          {tabs && tabs}
+          <main className={styles.mainContent}
+           
+          >
             {children}
           </main>
         </div>

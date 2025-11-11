@@ -1,0 +1,115 @@
+/* src/components/modules/music/Player.module.css */
+.player {
+  background: rgb(255, 255, 255);
+  /* border-top: 1px solid #e0e0e0; */
+  padding: 0px 0px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+ 
+}
+
+/* 当有底部导航时，播放器位置调整 */
+/* .player.withBottomNav {
+  position: relative;
+  bottom: auto;
+} */
+
+.progressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+ 
+}
+
+.progress {
+  height: 100%;
+  background: #ff4757;
+  transition: width 0.3s ease;
+}
+
+.playerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.songInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.songTitle {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.songArtist {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.controlButton {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.controlButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.controlButton:not(:disabled):hover {
+  background: #f5f5f5;
+}
+
+.playButton {
+  background: #ff4757;
+  color: white;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playButton:hover {
+  background: #ff3742;
+}
+
+.extraControls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.timeDisplay {
+  font-size: 12px;
+  color: #666;
+  min-width: 80px;
+}
+
+ 

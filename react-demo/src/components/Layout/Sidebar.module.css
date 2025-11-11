@@ -106,7 +106,13 @@
   width: 20px;
   text-align: center;
 }
-
+.menuSvgIcon {
+   width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
 /* 菜单项文字标签样式 */
 .menuLabel {
   flex: 1;
@@ -157,6 +163,13 @@
 
 /* SVG 图标基础样式 */
 .Icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+.SidebarLayouticon {
   width: 1em;
   height: 1em;
   vertical-align: -0.15em;
