@@ -1,5 +1,4 @@
-/* src/pages/modules/music/Home.module.css */
-/* 基础布局 */
+/* src/components/modules/music/Home.module.css */
 .home {
     padding: 24px;
     background-color: var(--secondary-background-color, #f8f9fa);
@@ -7,7 +6,7 @@
 }
 
 .allMusicSection {
-    max-width: 1600px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -26,6 +25,12 @@
     font-weight: 600;
     color: var(--font-color, #212529);
     margin: 0;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 /* 搜索框 */
@@ -65,96 +70,49 @@
     color: var(--secondary-font-color, #6c757d);
 }
 
-/* 音乐网格布局 - 桌面端默认 */
-.musicGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
-}
-
-/* 音乐卡片 */
-.musicCard {
-    background: var(--background-color, #fff);
+/* 视图模式切换 */
+.viewModeToggle {
+    display: flex;
+    background-color: var(--hover-background-color, #e9ecef);
     border-radius: 8px;
-    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-    cursor: pointer;
-    overflow: hidden;
-    border: 1px solid var(--border-color, #e9ecef);
+    padding: 4px;
+    gap: 2px;
 }
 
-.musicCard:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 16px var(--hover-shadow-color, rgba(0, 0, 0, 0.1));
-}
-
-/* 封面 */
-.musicCover {
-    position: relative;
-    width: 100%;
-    padding-top: 100%; /* 1:1 宽高比 */
-    background-color: #f0f0f0;
-}
-
-.coverImage {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* 悬浮播放按钮 */
-.playIconOverlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+.viewModeButton {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.musicCard:hover .playIconOverlay {
-    opacity: 1;
-}
-
-.playIcon {
-    width: 40px;
-    height: 40px;
-    color: white;
-    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
-}
-
-/* 音乐信息 */
-.musicInfo {
-    padding: 12px;
-}
-
-.musicTitle {
-    font-weight: 500;
-    font-size: 15px;
-    color: var(--font-color, #212529);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 4px;
-}
-
-.musicArtist {
-    font-size: 13px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    cursor: pointer;
     color: var(--secondary-font-color, #6c757d);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    transition: all 0.2s ease;
+}
+
+.viewModeButton:hover {
+    background-color: var(--background-color, #fff);
+    color: var(--font-color, #212529);
+}
+
+.viewModeButton.active {
+    background-color: var(--background-color, #fff);
+    color: var(--primary-color, #007bff);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.viewModeButton svg {
+    width: 18px;
+    height: 18px;
 }
 
 /* 加载、错误、无数据状态 */
 .loading,
 .error,
 .noData {
-    grid-column: 1 / -1;
     text-align: center;
     padding: 80px 20px;
     color: var(--secondary-font-color, #6c757d);
@@ -166,7 +124,6 @@
 }
 
 .noMoreData {
-    grid-column: 1 / -1;
     text-align: center;
     padding: 20px;
     color: #aaa;
@@ -176,93 +133,53 @@
 /* ========== 移动端适配 ========== */
 @media (max-width: 768px) {
     .home {
-        padding: 16px; /* 减少内边距 */
+        padding: 16px;
     }
     
     .sectionHeader {
-        flex-direction: column; /* 垂直排列标题和搜索框 */
+        flex-direction: column;
         align-items: stretch;
         gap: 12px;
         margin-bottom: 16px;
     }
     
     .sectionTitle {
-        font-size: 20px; /* 减小标题字号 */
+        font-size: 20px;
         text-align: center;
     }
     
-    .searchContainer {
+    .controls {
         width: 100%;
+        justify-content: space-between;
+    }
+    
+    .searchContainer {
+        flex: 1;
+        max-width: 300px;
     }
     
     .searchInput {
-        width: 100%; /* 搜索框占满宽度 */
-        padding: 12px 16px 12px 40px; /* 增加触摸区域 */
-        font-size: 16px; /* 防止iOS缩放 */
-    }
-    
-    /* 核心修改：移动端音乐网格 */
-    .musicGrid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* 最小宽度减小到120px */
-        gap: 12px; /* 减小间距 */
-    }
-    
-    .musicInfo {
-        padding: 8px; /* 减小内边距 */
-    }
-    
-    .musicTitle {
-        font-size: 13px; /* 减小标题字号 */
-    }
-    
-    .musicArtist {
-        font-size: 11px; /* 减小艺术家字号 */
-    }
-    
-    .playIcon {
-        width: 30px; /* 减小播放图标 */
-        height: 30px;
-    }
-    
-    .loading,
-    .error,
-    .noData {
-        padding: 40px 20px; /* 减小状态区域的内边距 */
-        font-size: 14px;
+        width: 100%;
+        padding: 12px 16px 12px 40px;
+        font-size: 16px;
     }
 }
 
-/* 超小屏幕适配 */
 @media (max-width: 480px) {
-    .musicGrid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* 进一步减小最小宽度 */
-        gap: 10px;
-    }
-    
     .home {
         padding: 12px;
     }
     
-    .sectionTitle {
-        font-size: 18px;
+    .controls {
+        flex-direction: column;
+        gap: 12px;
     }
     
-    .musicInfo {
-        padding: 6px;
+    .searchContainer {
+        max-width: none;
     }
     
-    .musicTitle {
-        font-size: 12px;
-    }
-    
-    .musicArtist {
-        font-size: 10px;
-    }
-}
-
-/* 超大屏幕适配 */
-@media (min-width: 1600px) {
-    .musicGrid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 大屏幕显示更大卡片 */
+    .viewModeToggle {
+        align-self: flex-end;
     }
 }

@@ -13,6 +13,8 @@ import MusicHome from '../pages/modules/music/Home';
 import MusicRecommend from '../pages/modules/music/Recommend';
 import MusicRecent from '../pages/modules/music/Recent';
 import MusicFavorites from '../pages/modules/music/Favorites';
+import Musicplayer from '../pages/modules/music/Player';
+import MusicplayerLyrics from '../pages/modules/music/MusicplayerLyrics';
 
 import OutfitCloset from '../pages/modules/outfit/Closet';
 import OutfitCombos from '../pages/modules/outfit/Combos';
@@ -92,7 +94,9 @@ const AppRoutes = () => {
         <Route path="home" element={<MusicHome />} />
         <Route path="recommend" element={<MusicRecommend />} />
         <Route path="recent" element={<MusicRecent />} />
-         <Route path="favorites" element={<MusicFavorites />} />
+        <Route path="favorites" element={<MusicFavorites />} />
+        <Route path="musicplayerlyrics" element={<MusicplayerLyrics />} />
+         <Route path="musicplayer" element={<Musicplayer />} />
       </Route>
 
       <Route

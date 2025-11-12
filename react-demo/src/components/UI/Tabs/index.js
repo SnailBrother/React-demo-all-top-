@@ -1,4 +1,4 @@
-//// src/components/UI/Tabs/index.js
+//// src/components/UI/Tabs/index.js   标签页面
 import React from 'react';
 import { useTheme } from '../../../context/ThemeContext'; // 导入主题hook
 import styles from './Tabs.module.css';

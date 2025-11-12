@@ -4,8 +4,9 @@
 .tabsContainer {
   background: var(--background-color);
   border-bottom: 1px solid var(--border_color);
-  padding: 0 16px;
+  padding: 0 10px;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 /* 标签页列表容器 - 水平排列所有标签 */
@@ -27,12 +28,14 @@
   border-radius: 6px 6px 0 0;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 120px;
+  min-width: 100px;
   max-width: 200px;
   position: relative;
   color: var(--font-color);
   background: var(--secondary-background-color);
-  min-height: 30px;
+  height: 32px;
+  text-align:left;
+ 
 }
 
 /* 标签页悬停状态 */
@@ -55,13 +58,15 @@
   font-size: 14px;
   flex-shrink: 0;
 }
+
 .tabSvgIcon {
-   width: 1em;
+  width: 1em;
   height: 1em;
   vertical-align: -0.15em;
   fill: currentColor;
   overflow: hidden;
 }
+
 /* 标签页文字标签样式 */
 .tabLabel {
   flex: 1;
@@ -109,7 +114,7 @@
 }
 
 /* 只有一个标签页时隐藏所有关闭按钮 */
-.tabsList > :only-child .closeButton {
+.tabsList> :only-child .closeButton {
   display: none;
 }
 
@@ -135,4 +140,3 @@
 .tabsList::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-font-color);
 }
-

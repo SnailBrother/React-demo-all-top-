@@ -19,6 +19,7 @@ const moduleMenus = {
     { key: 'recommend', label: '推荐', icon: '#icon-tuijian1', path: '/app/music/recommend' },
     { key: 'recent', label: '最近播放', icon: '#icon-zuijinbofang', path: '/app/music/recent' },
     { key: 'favorites', label: '我的喜欢', icon: '#icon-xihuan11', path: '/app/music/favorites' },
+    // { key: 'musicplayerlyrics', label: '歌词', icon: '#icon-xihuan11', path: '/app/music/musicplayerlyrics' },
   ],
   outfit: [
     { key: 'previewwardrobe', label: '查看', icon: 'icon-guge', path: '/app/outfit/previewwardrobe' },

@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useMusic } from '../../../context/MusicContext';
+import { useAuth } from '../../../context/AuthContext'; // 导入 AuthContext
+import axios from 'axios';
 import styles from './Player.module.css';
+import { useNavigate } from 'react-router-dom'; // 添加导入
 
 // 辅助函数：格式化时间
 const formatTime = (seconds) => {
@@ -11,13 +14,44 @@ const formatTime = (seconds) => {
 };
 
 const Player = ({ className = '' }) => {
+  const navigate = useNavigate(); // 添加导航hook
   const { state, dispatch } = useMusic();
+  const { user, isAuthenticated } = useAuth(); // 获取用户信息
   const { currentSong, isPlaying, queue, volume = 1, playMode = 'repeat' } = state; 
   const audioRef = useRef(null);
 
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [loading, setLoading] = useState(false);
+ 
+  // --- 检查歌曲是否已被收藏 ---
+  useEffect(() => {
+    if (currentSong && isAuthenticated && user?.username) {
+      checkIfLiked();
+    } else {
+      setIsLiked(false);
+    }
+  }, [currentSong, isAuthenticated, user?.username]);
+
+  const checkIfLiked = async () => {
+    try {
+      const response = await axios.get('http://121.4.22.55:5201/backend/api/reactdemofavorites', {
+        params: {
+          username: user.username,
+          search: currentSong.title // 通过歌曲名搜索
+        }
+      });
+      
+      // 检查当前歌曲是否在收藏列表中
+      const isSongLiked = response.data.data.some(favorite => 
+        favorite.title === currentSong.title && favorite.artist === currentSong.artist
+      );
+      setIsLiked(isSongLiked);
+    } catch (err) {
+      console.error('检查收藏状态失败:', err);
+    }
+  };
 
   // --- 核心播放逻辑 ---
   useEffect(() => {
@@ -31,7 +65,6 @@ const Player = ({ className = '' }) => {
       audioRef.current.src = currentSong.src;
       setProgress(0); 
       setDuration(0);
-      setIsLiked(currentSong.isLiked || false);
       if (isPlaying) {
         audioRef.current.play().catch(console.error);
       }
@@ -43,12 +76,23 @@ const Player = ({ className = '' }) => {
   }, [volume]);
   
   // --- 事件处理函数 ---
-  const handleTimeUpdate = () => {
-    if (audioRef.current) setProgress(audioRef.current.currentTime);
-  };
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) setDuration(audioRef.current.duration);
-  };
+ const handleTimeUpdate = () => {
+  if (audioRef.current) {
+    const currentProgress = audioRef.current.currentTime;
+    setProgress(currentProgress);
+    // 更新到 Context，让歌词页面也能获取
+    dispatch({ type: 'SET_PROGRESS', payload: currentProgress });
+  }
+};
+
+const handleLoadedMetadata = () => {
+  if (audioRef.current) {
+    const totalDuration = audioRef.current.duration;
+    setDuration(totalDuration);
+    // 更新到 Context
+    dispatch({ type: 'SET_DURATION', payload: totalDuration });
+  }
+};
   const handleSongEnd = () => dispatch({ type: 'NEXT_SONG' });
 
   // --- 控制函数 ---
@@ -61,10 +105,62 @@ const Player = ({ className = '' }) => {
     if (audioRef.current) audioRef.current.currentTime = e.target.value;
   };
   const handleVolumeChange = (e) => dispatch({ type: 'SET_VOLUME', payload: parseFloat(e.target.value) });
-  const handleLike = () => setIsLiked(!isLiked);
+  
+  // --- 修改喜欢功能 ---
+  const handleLike = async () => {
+    if (!isAuthenticated || !user?.username) {
+      alert('请先登录');
+      return;
+    }
+
+    if (!currentSong) return;
+
+    setLoading(true);
+    try {
+      if (isLiked) {
+        // 取消收藏
+        await axios.delete('http://121.4.22.55:5201/backend/api/favorites', {
+          data: {
+            user_name: user.username,  // 对应数据库的 user_name
+            song_name: currentSong.title  // 对应数据库的 song_name
+          }
+        });
+        setIsLiked(false);
+        console.log('取消收藏成功');
+      } else {
+        // 添加收藏
+        await axios.post('http://121.4.22.55:5201/backend/api/favorites', {
+          user_name: user.username,    // 对应数据库的 user_name
+          song_name: currentSong.title, // 对应数据库的 song_name
+          artist: currentSong.artist,  // 对应数据库的 artist
+          play_count: 1                // 初始播放次数
+        });
+        setIsLiked(true);
+        console.log('添加收藏成功');
+      }
+    } catch (err) {
+      console.error('操作收藏失败:', err);
+      alert('操作失败，请重试');
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const showComments = () => alert('评论功能待开发');
-  const showLyrics = () => alert('歌词功能待开发');
+// 修改 showLyrics 函数
+const showLyrics = () => {
+    console.log('点击歌词按钮'); // 调试信息
+    console.log('当前歌曲:', currentSong); // 调试信息
+    console.log('navigate 函数:', navigate); // 检查 navigate 是否可用
+    
+    if (!currentSong) {
+        alert('请先选择一首歌曲');
+        return;
+    }
+    
+    console.log('准备导航到:', '/app/music/musicplayerlyrics'); // 调试信息
+    navigate('/app/music/musicplayerlyrics');
+};
   const showPlaylist = () => alert('播放列表功能待开发');
 
   if (!currentSong) return null;
@@ -88,12 +184,10 @@ const Player = ({ className = '' }) => {
       <div className={`${styles.player} ${className}`}>
         {/* --- 第一列：歌曲封面 --- */}
         <div className={styles.column1}>
-        <img 
-            // 【关键修改】这里使用了 currentSong.coverimage
+          <img 
             src={currentSong.coverimage || 'http://121.4.22.55:80/backend/musics/default.jpg'} 
             alt={currentSong.title} 
             className={styles.playerArtwork}
-            // 当图片加载失败时，也使用默认图片
             onError={(e) => { e.target.onerror = null; e.target.src='http://121.4.22.55:80/backend/musics/default.jpg' }}
           />
         </div>
@@ -105,8 +199,13 @@ const Player = ({ className = '' }) => {
                 <span className={styles.songArtist}>{currentSong.artist}</span>
             </div>
             <div className={styles.songActions}>
-                <button className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`} onClick={handleLike} title="喜欢">
-                    {isLiked ? '❤️' : '♡'}
+                <button 
+                  className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`} 
+                  onClick={handleLike} 
+                  title={isLiked ? "取消喜欢" : "喜欢"}
+                  disabled={loading}
+                >
+                  {loading ? '⏳' : (isLiked ? '❤️' : '♡')}
                 </button>
                 <button className={styles.actionButton} onClick={showComments} title="评论">
                     💬

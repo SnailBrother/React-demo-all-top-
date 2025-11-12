@@ -1,0 +1,228 @@
+/* src/components/modules/music/MusicTableView.module.css */
+.musicTableContainer {
+    background: var(--background-color, #fff);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.musicTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.musicTable thead {
+    background-color: var(--secondary-background-color, #f8f9fa);
+    border-bottom: 1px solid var(--border-color, #e9ecef);
+}
+
+.musicTable th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--secondary-font-color, #6c757d);
+}
+
+.thIndex {
+    width: 60px;
+    text-align: center;
+}
+
+.thInfo {
+    width: auto;
+}
+
+.thAction {
+    width: 80px;
+    text-align: center;
+}
+
+.musicRow {
+    border-bottom: 1px solid var(--border-color, #e9ecef);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.musicRow:hover {
+    background-color: var(--hover-background-color, #f8f9fa);
+}
+
+.musicRow:last-child {
+    border-bottom: none;
+}
+
+.tdIndex {
+    padding: 12px 16px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.indexContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 24px;
+}
+
+.indexNumber {
+    font-size: 14px;
+    color: var(--secondary-font-color, #6c757d);
+}
+
+.playIndicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    color: var(--primary-color, #007bff);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.musicRow:hover .indexNumber {
+    opacity: 0;
+}
+
+.musicRow:hover .playIndicator {
+    opacity: 1;
+}
+
+.tdInfo {
+    padding: 12px 16px;
+    vertical-align: middle;
+}
+
+.songInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.albumCover {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.albumCover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.songDetails {
+    flex: 1;
+    min-width: 0;
+}
+
+.songTitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--font-color, #212529);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.songArtist {
+    font-size: 12px;
+    color: var(--secondary-font-color, #6c757d);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tdAction {
+    padding: 12px 16px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.likeButton {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    color: var(--secondary-font-color, #6c757d);
+}
+
+.likeButton:hover {
+    background-color: var(--hover-background-color, #e9ecef);
+    color: #e74c3c;
+}
+
+.likeButton svg {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 768px) {
+    .musicTableContainer {
+        border-radius: 0;
+        margin: 0 -16px;
+    }
+    
+    .musicTable th,
+    .musicTable td {
+        padding: 10px 12px;
+    }
+    
+    .thIndex {
+        width: 40px;
+    }
+    
+    .thAction {
+        width: 60px;
+    }
+    
+    .albumCover {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .songTitle {
+        font-size: 13px;
+    }
+    
+    .songArtist {
+        font-size: 11px;
+    }
+    
+    .likeButton {
+        padding: 6px;
+    }
+    
+    .likeButton svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .musicTableContainer {
+        margin: 0 -12px;
+    }
+    
+    .musicTable th,
+    .musicTable td {
+        padding: 8px 10px;
+    }
+    
+    .songInfo {
+        gap: 8px;
+    }
+    
+    .albumCover {
+        width: 28px;
+        height: 28px;
+    }
+}

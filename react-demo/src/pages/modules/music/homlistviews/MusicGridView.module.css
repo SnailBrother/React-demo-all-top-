@@ -1,0 +1,172 @@
+/* src/components/modules/music/MusicGridView.module.css */
+.musicGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.musicCard {
+    background: var(--background-color, #fff);
+    border-radius: 8px;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid var(--border-color, #e9ecef);
+}
+
+.musicCard:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px var(--hover-shadow-color, rgba(0, 0, 0, 0.1));
+}
+
+.musicCover {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    background-color: #f0f0f0;
+}
+
+.coverImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.playIconOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.musicCard:hover .playIconOverlay {
+    opacity: 1;
+}
+
+.playIcon {
+    width: 40px;
+    height: 40px;
+    color: white;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+.likeButton {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    color: white;
+}
+
+.musicCard:hover .likeButton {
+    opacity: 1;
+}
+
+.likeButton:hover {
+    background: rgba(231, 76, 60, 0.9);
+}
+
+.likeButton svg {
+    width: 16px;
+    height: 16px;
+}
+
+.musicInfo {
+    padding: 12px;
+}
+
+.musicTitle {
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--font-color, #212529);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.musicArtist {
+    font-size: 13px;
+    color: var(--secondary-font-color, #6c757d);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+    .musicGrid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+    }
+    
+    .musicInfo {
+        padding: 8px;
+    }
+    
+    .musicTitle {
+        font-size: 13px;
+    }
+    
+    .musicArtist {
+        font-size: 11px;
+    }
+    
+    .playIcon {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .likeButton {
+        width: 28px;
+        height: 28px;
+        top: 6px;
+        right: 6px;
+    }
+    
+    .likeButton svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .musicGrid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+    
+    .musicInfo {
+        padding: 6px;
+    }
+    
+    .musicTitle {
+        font-size: 12px;
+    }
+    
+    .musicArtist {
+        font-size: 10px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .musicGrid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
