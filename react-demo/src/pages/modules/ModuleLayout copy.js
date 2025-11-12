@@ -1,11 +1,32 @@
 // src/pages/modules/ModuleLayout.js
-import React from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import SidebarLayout from '../../components/Layout/SidebarLayout';
 import BottomNavLayout from '../../components/Layout/BottomNavLayout';
-import Player from './music/Player'; // 1. 在这里引入唯一的 Player
 import styles from './ModuleLayout.module.css';
 
-// 菜单配置
+// ------------------- 自定义 Hook：useViewport -------------------
+// 这个Hook会告诉我们当前是否为移动端视图
+const useViewport = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
+
+  // useLayoutEffect 会在浏览器绘制前同步执行，避免页面闪烁
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < breakpoint);
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    // 组件卸载时移除事件监听，防止内存泄漏
+    return () => window.removeEventListener('resize', handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+// -------------------------------------------------------------
+
+
+// 菜单配置 (保持不变)
 const moduleMenus = {
   accounting: [
     { key: 'overview', label: '总览', icon: 'icon-guge', path: '/app/accounting/overview' },
@@ -39,46 +60,38 @@ const moduleMenus = {
   ],
 };
 
-// 获取模块菜单的辅助函数
+// 获取模块菜单的辅助函数 (保持不变)
 const getModuleMenu = (moduleKey) => {
   return moduleMenus[moduleKey] || [];
 };
 
-// 主组件
+// 主组件 - 使用了条件渲染
 const ModuleLayout = ({ moduleKey, onLogout }) => {
   const menuItems = getModuleMenu(moduleKey);
+  const isMobile = useViewport(); // 调用我们的Hook
 
+  // 使用 isMobile 状态来决定渲染哪个布局
   return (
     <div className={styles.moduleLayout}>
-      {/* 桌面端显示侧边栏布局 */}
-      <div className={styles.desktopLayout}>
-        <SidebarLayout
-          menuItems={menuItems}
-          moduleKey={moduleKey}
-          onLogout={onLogout}
-        />
-      </div>
-      
-      {/* 移动端显示底部导航布局 */}
-      <div className={styles.mobileLayout}>
+      {isMobile ? (
+        // 如果是移动端，只渲染 BottomNavLayout
         <BottomNavLayout
           menuItems={menuItems}
           moduleKey={moduleKey}
           onLogout={onLogout}
         />
-      </div>
-
-      {/* 
-        2. 在这里渲染唯一的 Player 实例。
-        它现在是两个布局的“兄弟”，而不是“孩子”，从而保证了其唯一性。
-        只有当模块是 'music' 时，播放器才会被渲染。
-      */}
-      {moduleKey === 'music' && <Player />}
+      ) : (
+        // 如果是桌面端，只渲染 SidebarLayout
+        <SidebarLayout
+          menuItems={menuItems}
+          moduleKey={moduleKey}
+          onLogout={onLogout}
+        />
+      )}
     </div>
   );
 };
 
-// 导出菜单配置和函数（如果需要其他地方使用）
+// 导出 (保持不变)
 export { moduleMenus, getModuleMenu };
-
 export default ModuleLayout;

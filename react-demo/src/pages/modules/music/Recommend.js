@@ -1,7 +1,7 @@
 // src/components/modules/music/Recommend.js  推荐界面
 import React from 'react';
 import styles from './Recommend.module.css';
-import MusicLayout from './MusicLayout';
+//import MusicLayout from './MusicLayout';
 
 const Recommend = () => {
   const recommendations = [
@@ -36,7 +36,7 @@ const Recommend = () => {
   ];
 
   return (
- <MusicLayout>
+//  <MusicLayout>
  <div className={styles.recommend}>
       
 
@@ -75,7 +75,7 @@ const Recommend = () => {
         </div>
       </div>
     </div>
- </MusicLayout>
+//  </MusicLayout>
    
 
   );

@@ -1,7 +1,7 @@
 // src/components/modules/music/Favorites.js 我的喜欢
 import React, { useState } from 'react';
 import styles from './Favorites.module.css';
-import MusicLayout from './MusicLayout';
+ //import MusicLayout from './MusicLayout';
 
 const Favorites = () => {
   const [activeTab, setActiveTab] = useState('songs');
@@ -23,7 +23,7 @@ const Favorites = () => {
   };
 
   return (
- <MusicLayout>
+  //<MusicLayout>
  <div className={styles.favorites}>
        
 
@@ -97,9 +97,8 @@ const Favorites = () => {
         )}
       </div>
     </div>
- </MusicLayout>
-
-   
+ 
+  // </MusicLayout>
 
   );
 };

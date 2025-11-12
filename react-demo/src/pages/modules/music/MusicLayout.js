@@ -15,9 +15,9 @@ const MusicLayout = ({ children }) => {
       </div>
       
       {/* 播放器 - 始终显示 */}
-      <div className={styles.playerWrapper}>
+      {/* <div className={styles.playerWrapper}>
         <Player />
-      </div>
+      </div> */}
     </div>
   );
 };

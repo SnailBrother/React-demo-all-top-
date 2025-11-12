@@ -3,73 +3,56 @@ import React, { createContext, useContext, useReducer } from 'react';
 
 const MusicContext = createContext();
 
-// 初始状态
+// 初始状态 - 精简版
 const initialState = {
-  currentSong: {
-    title: '未播放',
-    artist: '选择一首歌曲开始播放',
-    duration: 0,
-    cover: '🎵'
-  },
+  currentSong: null,
   isPlaying: false,
-  progress: 0,
-  volume: 100,
+  volume: 1,
   queue: [],
   currentIndex: -1,
-  showPlayer: true, // 新增控制播放器显示的状态
 };
 
-// Reducer
+// Reducer - 精简版
 function musicReducer(state, action) {
   switch (action.type) {
-    case 'SET_CURRENT_SONG':
+    case 'PLAY_SONG':
       return {
         ...state,
-        currentSong: action.payload,
+        currentSong: action.payload.song,
+        queue: action.payload.queue,
+        currentIndex: action.payload.index,
         isPlaying: true,
-        currentIndex: action.index || 0,
       };
     case 'TOGGLE_PLAY':
+      if (!state.currentSong) return state;
       return {
         ...state,
         isPlaying: !state.isPlaying,
       };
-    case 'SET_PROGRESS':
-      return {
-        ...state,
-        progress: action.payload,
-      };
-    case 'SET_QUEUE':
-      return {
-        ...state,
-        queue: action.payload,
-      };
     case 'NEXT_SONG':
-      const nextIndex = state.currentIndex + 1;
-      return nextIndex < state.queue.length 
-        ? { 
-            ...state, 
-            currentIndex: nextIndex, 
-            currentSong: state.queue[nextIndex],
-            progress: 0 
-          }
-        : state;
+      if (state.queue.length === 0) return state;
+      const nextIndex = (state.currentIndex + 1) % state.queue.length;
+      return {
+        ...state,
+        currentIndex: nextIndex,
+        currentSong: state.queue[nextIndex],
+        isPlaying: true,
+      };
     case 'PREV_SONG':
-      const prevIndex = state.currentIndex - 1;
-      return prevIndex >= 0
-        ? { 
-            ...state, 
-            currentIndex: prevIndex, 
-            currentSong: state.queue[prevIndex],
-            progress: 0 
-          }
-        : state;
+      if (state.queue.length === 0) return state;
+      const prevIndex = (state.currentIndex - 1 + state.queue.length) % state.queue.length;
+      return {
+        ...state,
+        currentIndex: prevIndex,
+        currentSong: state.queue[prevIndex],
+        isPlaying: true,
+      };
     default:
       return state;
   }
 }
 
-// Provider组件
+// Provider组件 (无需修改)
 export const MusicProvider = ({ children }) => {
   const [state, dispatch] = useReducer(musicReducer, initialState);
 
@@ -80,7 +63,7 @@ export const MusicProvider = ({ children }) => {
   );
 };
 
-// Hook
+// Hook (无需修改)
 export const useMusic = () => {
   const context = useContext(MusicContext);
   if (!context) {

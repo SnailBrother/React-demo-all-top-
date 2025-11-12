@@ -1,7 +1,7 @@
 // src/components/modules/music/Recent.js 最近播放
 import React from 'react';
 import styles from './Recent.module.css';
-import MusicLayout from './MusicLayout';
+ //import MusicLayout from './MusicLayout';
 
 const Recent = () => {
   const recentItems = [
@@ -14,7 +14,7 @@ const Recent = () => {
   ];
 
   return (
-  <MusicLayout>
+ //<MusicLayout>
  <div className={styles.recent}>
        
 
@@ -52,7 +52,7 @@ const Recent = () => {
         </div>
       </div>
     </div>
-  </MusicLayout>
+  // </MusicLayout>
 
    
 
