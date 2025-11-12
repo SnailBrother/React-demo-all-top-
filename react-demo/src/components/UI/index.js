@@ -9,3 +9,5 @@ export { MessageProvider, useMessage } from './Message';
 export { default as TextArea } from './TextArea';
 export { default as IconButton } from './IconButton';
 export { default as Span } from './Span';
+export { default as BottomNav } from './BottomNav';
+export { default as Sidebar } from './Sidebar';

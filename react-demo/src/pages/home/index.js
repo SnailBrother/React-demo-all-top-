@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from './Home.module.css';
+import styles from './home.module.css';
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

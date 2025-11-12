@@ -32,6 +32,7 @@
   position: relative;
   color: var(--font-color);
   background: var(--secondary-background-color);
+  min-height: 30px;
 }
 
 /* 标签页悬停状态 */
@@ -135,29 +136,3 @@
   background: var(--secondary-font-color);
 }
 
-/* ========== 响应式设计 ========== */
-
-/* 平板和移动设备适配 */
-@media (max-width: 768px) {
-  /* 移动端 - 减少容器内边距 */
-  .tabsContainer {
-    padding: 0 8px;
-  }
-  
-  /* 移动端 - 调整标签页尺寸 */
-  .tab {
-    min-width: 100px;
-    max-width: 150px;
-    padding: 6px 8px;
-  }
-  
-  /* 移动端 - 缩小文字大小 */
-  .tabLabel {
-    font-size: 12px;
-  }
-  
-  /* 移动端 - 缩小图标大小 */
-  .tabIcon {
-    font-size: 12px;
-  }
-}

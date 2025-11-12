@@ -65,10 +65,9 @@
     color: var(--secondary-font-color, #6c757d);
 }
 
-/* 音乐网格布局 */
+/* 音乐网格布局 - 桌面端默认 */
 .musicGrid {
     display: grid;
-    /* 核心修改：减小了最小宽度，以显示更多卡片 */
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 20px;
 }
@@ -79,7 +78,7 @@
     border-radius: 8px;
     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
     cursor: pointer;
-    overflow: hidden; /* 确保封面图圆角生效 */
+    overflow: hidden;
     border: 1px solid var(--border-color, #e9ecef);
 }
 
@@ -108,7 +107,7 @@
 /* 悬浮播放按钮 */
 .playIconOverlay {
     position: absolute;
-    inset: 0; /* 等同于 top, right, bottom, left都为0 */
+    inset: 0;
     background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
@@ -165,11 +164,105 @@
 .error {
     color: #e74c3c;
 }
-/* 添加到 Home.module.css 以提示用户数据已全部加载*/
+
 .noMoreData {
     grid-column: 1 / -1;
     text-align: center;
     padding: 20px;
     color: #aaa;
     font-size: 14px;
+}
+
+/* ========== 移动端适配 ========== */
+@media (max-width: 768px) {
+    .home {
+        padding: 16px; /* 减少内边距 */
+    }
+    
+    .sectionHeader {
+        flex-direction: column; /* 垂直排列标题和搜索框 */
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    
+    .sectionTitle {
+        font-size: 20px; /* 减小标题字号 */
+        text-align: center;
+    }
+    
+    .searchContainer {
+        width: 100%;
+    }
+    
+    .searchInput {
+        width: 100%; /* 搜索框占满宽度 */
+        padding: 12px 16px 12px 40px; /* 增加触摸区域 */
+        font-size: 16px; /* 防止iOS缩放 */
+    }
+    
+    /* 核心修改：移动端音乐网格 */
+    .musicGrid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* 最小宽度减小到120px */
+        gap: 12px; /* 减小间距 */
+    }
+    
+    .musicInfo {
+        padding: 8px; /* 减小内边距 */
+    }
+    
+    .musicTitle {
+        font-size: 13px; /* 减小标题字号 */
+    }
+    
+    .musicArtist {
+        font-size: 11px; /* 减小艺术家字号 */
+    }
+    
+    .playIcon {
+        width: 30px; /* 减小播放图标 */
+        height: 30px;
+    }
+    
+    .loading,
+    .error,
+    .noData {
+        padding: 40px 20px; /* 减小状态区域的内边距 */
+        font-size: 14px;
+    }
+}
+
+/* 超小屏幕适配 */
+@media (max-width: 480px) {
+    .musicGrid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* 进一步减小最小宽度 */
+        gap: 10px;
+    }
+    
+    .home {
+        padding: 12px;
+    }
+    
+    .sectionTitle {
+        font-size: 18px;
+    }
+    
+    .musicInfo {
+        padding: 6px;
+    }
+    
+    .musicTitle {
+        font-size: 12px;
+    }
+    
+    .musicArtist {
+        font-size: 10px;
+    }
+}
+
+/* 超大屏幕适配 */
+@media (min-width: 1600px) {
+    .musicGrid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 大屏幕显示更大卡片 */
+    }
 }

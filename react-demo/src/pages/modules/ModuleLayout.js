@@ -1,11 +1,13 @@
 // src/pages/modules/ModuleLayout.js
-import React from 'react';
-import SidebarLayout from '../../components/Layout/SidebarLayout';
-import BottomNavLayout from '../../components/Layout/BottomNavLayout';
-import Player from './music/Player'; // 1. 在这里引入唯一的 Player
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Header from '../../components/Layout/Header';
+import { Tabs, Sidebar, BottomNav } from '../../components/UI';
+import KeepAliveOutlet from '../../components/KeepAliveOutlet';
+import Player from './music/Player';
 import styles from './ModuleLayout.module.css';
 
-// 菜单配置
+// 菜单配置 (保持不变)
 const moduleMenus = {
   accounting: [
     { key: 'overview', label: '总览', icon: 'icon-guge', path: '/app/accounting/overview' },
@@ -46,39 +48,134 @@ const getModuleMenu = (moduleKey) => {
 
 // 主组件
 const ModuleLayout = ({ moduleKey, onLogout }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const menuItems = getModuleMenu(moduleKey);
+  
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [tabs, setTabs] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
+  // 检测屏幕尺寸
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // 根据当前路由和菜单项初始化或更新 tabs
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const currentMenuItem = menuItems.find(item =>
+      item.path === currentPath || currentPath.startsWith(item.path + '/')
+    );
+
+    if (currentMenuItem) {
+      setTabs(prev => {
+        const exists = prev.find(tab => tab.key === currentMenuItem.key);
+        if (exists) return prev;
+        return [...prev, currentMenuItem];
+      });
+    }
+  }, [location.pathname, menuItems]);
+
+  const activeTab = useMemo(() => {
+    const currentPath = location.pathname;
+    const menuItem = menuItems.find(item =>
+      item.path === currentPath || currentPath.startsWith(item.path + '/')
+    );
+    return menuItem ? menuItem.key : '';
+  }, [location.pathname, menuItems]);
+
+  const handleMenuClick = useCallback((menuItem) => {
+    navigate(menuItem.path);
+  }, [navigate]);
+
+  const handleTabChange = useCallback((tabKey) => {
+    const tab = menuItems.find(t => t.key === tabKey);
+    if (tab) navigate(tab.path);
+  }, [menuItems, navigate]);
+
+  const handleTabClose = useCallback((tabKey) => {
+    if (tabs.length <= 1) return;
+    setTabs(prev => {
+      const newTabs = prev.filter(t => t.key !== tabKey);
+      if (tabKey === activeTab) {
+        const closedIndex = prev.findIndex(t => t.key === tabKey);
+        const nextTab = newTabs[Math.max(0, closedIndex - 1)];
+        if (nextTab) {
+          const menuItem = menuItems.find(item => item.key === nextTab.key);
+          if (menuItem) navigate(menuItem.path);
+        }
+      }
+      return newTabs;
+    });
+  }, [tabs, activeTab, menuItems, navigate]);
+
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed(prev => !prev);
+  }, []);
+
+  // 统一的布局结构
   return (
-    <div className={styles.moduleLayout}>
-      {/* 桌面端显示侧边栏布局 */}
-      <div className={styles.desktopLayout}>
-        <SidebarLayout
-          menuItems={menuItems}
-          moduleKey={moduleKey}
-          onLogout={onLogout}
-        />
-      </div>
+    // 根据 isMobile 和 sidebarCollapsed 状态动态添加类名
+    <div className={`${styles.unifiedLayout} ${isMobile ? styles.isMobile : styles.isDesktop} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
       
-      {/* 移动端显示底部导航布局 */}
-      <div className={styles.mobileLayout}>
-        <BottomNavLayout
+      {/* Header (仅桌面端显示) */}
+      <div className={styles.headerContainer}>
+        <Header onLogout={onLogout} />
+      </div>
+
+      {/* 侧边栏 (仅桌面端显示) */}
+      <div className={styles.sidebarContainer}>
+        <Sidebar
           menuItems={menuItems}
-          moduleKey={moduleKey}
-          onLogout={onLogout}
+          activeKey={activeTab}
+          onMenuClick={handleMenuClick}
+          collapsed={sidebarCollapsed}
+          onToggle={toggleSidebar}
         />
       </div>
 
-      {/* 
-        2. 在这里渲染唯一的 Player 实例。
-        它现在是两个布局的“兄弟”，而不是“孩子”，从而保证了其唯一性。
-        只有当模块是 'music' 时，播放器才会被渲染。
-      */}
-      {moduleKey === 'music' && <Player />}
+      {/* 主内容区域 (桌面和移动端共用) */}
+      <main className={styles.mainContentArea}>
+        {/* Tabs (仅桌面端显示) */}
+        <div className={styles.tabsContainer}>
+          <Tabs
+            tabs={tabs}
+            activeKey={activeTab}
+            onTabChange={handleTabChange}
+            onTabClose={handleTabClose}
+          />
+        </div>
+        
+        {/* 页面路由内容 */}
+        <div className={styles.pageContent}>
+          <KeepAliveOutlet />
+        </div>
+      </main>
+
+      {/* 播放器 (仅音乐模块显示，位置通过CSS控制) */}
+      {moduleKey === 'music' && (
+        <div className={styles.playerContainer}>
+          <Player />
+        </div>
+      )}
+      
+      {/* 底部导航 (仅移动端显示) */}
+      <div className={styles.bottomNavContainer}>
+        <BottomNav
+          menuItems={menuItems}
+          activeKey={activeTab}
+          onMenuClick={handleMenuClick}
+        />
+      </div>
     </div>
   );
 };
 
-// 导出菜单配置和函数（如果需要其他地方使用）
 export { moduleMenus, getModuleMenu };
-
 export default ModuleLayout;

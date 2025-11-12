@@ -1,115 +1,129 @@
-/* src/components/modules/music/Player.module.css */
+/* 主播放器容器，使用 Grid 布局 */
 .player {
-  background: rgb(255, 255, 255);
-  /* border-top: 1px solid #e0e0e0; */
-  padding: 0px 0px;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  min-height: 70px;
+  background: var(--secondary-background-color, #f8f9fa);
+  border-top: 1px solid var(--border_color, #e9ecef);
+  height: 90px;
+  padding: 0 24px;
+  display: grid;
+  align-items: center;
+  /* 定义严格的四列布局: */
+  grid-template-columns: auto 1.5fr 2fr 1fr;
+  gap: 24px;
+}
+
+/* --- 第一列：封面 --- */
+.column1 {
+  display: flex;
+  align-items: center;
+}
+.playerArtwork {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* --- 第二列：歌曲信息 --- */
+.column2 {
   display: flex;
   flex-direction: column;
   justify-content: center;
- 
+  gap: 4px;
+  min-width: 0; /* 防止内容溢出 */
 }
-
-/* 当有底部导航时，播放器位置调整 */
-/* .player.withBottomNav {
-  position: relative;
-  bottom: auto;
-} */
-
-.progressBar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
- 
+.songDetails {
+  display: flex;
+  align-items: baseline; /* 基线对齐，视觉效果更好 */
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.progress {
-  height: 100%;
-  background: #ff4757;
-  transition: width 0.3s ease;
-}
-
-.playerContent {
+.songActions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  gap: 12px;
 }
-
-.songInfo {
-  flex: 1;
-  min-width: 0;
-}
-
 .songTitle {
   font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 15px;
+  color: var(--font-color, #212529);
 }
-
 .songArtist {
-  font-size: 12px;
-  color: #666;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 13px;
+  color: var(--secondary-font-color, #6c757d);
 }
+.actionButton {
+  background: none; border: none; font-size: 18px; cursor: pointer;
+  color: var(--secondary-font-color, #6c757d); padding: 2px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.actionButton:hover {
+  transform: scale(1.1);
+  color: var(--font-color, #212529);
+}
+.actionButton.liked { color: #ff4757; }
 
-.controls {
+/* --- 第三列：主要控件 --- */
+.column3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.topControls { display: flex; align-items: center; gap: 16px; }
+.bottomControls { display: flex; align-items: center; width: 100%; gap: 10px; }
+
+/* --- 第四列：附加控件 --- */
+.column4 {
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
+/* --- 通用控件样式 --- */
 .controlButton {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 50%;
-  transition: all 0.2s;
+  background: none; border: none; color: var(--secondary-font-color, #495057);
+  font-size: 18px; cursor: pointer; padding: 8px; border-radius: 50%;
+  transition: all 0.2s; display: flex; align-items: center; justify-content: center; line-height: 1;
 }
-
-.controlButton:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
+.controlButton:disabled { opacity: 0.3; cursor: not-allowed; }
 .controlButton:not(:disabled):hover {
-  background: #f5f5f5;
+  background: var(--hover_background-color, #e9ecef);
+  color: var(--hover_font-color, #007bff);
 }
-
 .playButton {
-  background: #ff4757;
-  color: white;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--hover_border_color, #007bff); color: white;
+  width: 40px; height: 40px; font-size: 20px;
 }
+.playButton:hover { background: var(--focus_border_color, #0056b3); }
 
-.playButton:hover {
-  background: #ff3742;
+/* --- 时间和进度条 --- */
+.timeDisplay { font-size: 12px; color: var(--secondary-font-color, #6c757d); min-width: 40px; text-align: center; }
+.progressBar { flex-grow: 1; }
+
+/* --- 音量控制 --- */
+.volumeControl { display: flex; align-items: center; gap: 8px; }
+.volumeIcon { font-size: 18px; color: var(--secondary-font-color, #6c757d); }
+.volumeSlider { width: 100px; }
+
+/* --- 自定义范围输入(range)样式 - 进度条和音量条 --- */
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px;
+  background: var(--secondary-border_color, #dee2e6);
+  border-radius: 2px; outline: none; cursor: pointer; transition: background 0.2s;
 }
-
-.extraControls {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+input[type="range"]:hover { background: var(--border_color, #ced4da); }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; background: var(--hover_font-color, #007bff);
+  border-radius: 50%; cursor: pointer; border: 2px solid var(--background-color, #fff);
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
 }
-
-.timeDisplay {
-  font-size: 12px;
-  color: #666;
-  min-width: 80px;
+input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px; background: var(--hover_font-color, #007bff);
+  border-radius: 50%; cursor: pointer; border: 2px solid var(--background-color, #fff);
 }
-
- 
