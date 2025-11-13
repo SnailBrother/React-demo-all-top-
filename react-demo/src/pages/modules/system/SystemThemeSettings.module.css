@@ -7,7 +7,7 @@
   padding: 20px;
   background: var(--background-color);
   color: var(--font-color);
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* 头部区域 - 包含标题和当前主题信息 */

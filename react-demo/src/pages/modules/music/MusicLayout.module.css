@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   /* 使用视口高度 */
-   /* height: calc(100vh - 150px); */
+   /* height: calc(100dvh - 150px); */
    height: 100%;
   position: relative;
 }
@@ -19,11 +19,11 @@
 /* 平板和手机端 (1024px 及以下) */
 @media (max-width: 1024px) {
   .musicLayout {
-     height: calc(100vh - 87px);
+     height: calc(100dvh - 87px);
   }    
 }
 @media (min-width: 1025px) {
   .musicLayout {
-     height: calc(100vh - 125px);
+     height: calc(100dvh - 125px);
   }    
 }
