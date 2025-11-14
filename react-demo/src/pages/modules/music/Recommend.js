@@ -6,6 +6,7 @@ import { useMusic } from '../../../context/MusicContext';
 import styles from './Recommend.module.css';
 import MusicTableView from './homlistviews/MusicTableView';
 import MusicGridView from './homlistviews/MusicGridView';
+import { Loading } from '../../../components/UI';
 
 const Recommend = () => {
     const { user, isAuthenticated } = useAuth();
@@ -18,7 +19,16 @@ const Recommend = () => {
         other: []
     });
     const [activeTab, setActiveTab] = useState('ranking');
-    const [page, setPage] = useState(1);
+
+    // 【修改 1】: 将单一的 page 状态改为一个对象，为每个 tab 独立记录页数
+    const [pages, setPages] = useState({
+        ranking: 1,
+        chinese: 1,
+        western: 1,
+        japaneseKorean: 1,
+        other: 1
+    });
+
     const [hasMore, setHasMore] = useState({
         ranking: true,
         chinese: true,
@@ -26,61 +36,56 @@ const Recommend = () => {
         japaneseKorean: true,
         other: true
     });
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState('table');
 
     const observer = useRef();
 
+    // 【修改 2】: 更新无限滚动逻辑，使其增加对应 tab 的页数
     const lastMusicElementRef = useCallback(node => {
         if (loading) return;
         if (observer.current) observer.current.disconnect();
         observer.current = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting && hasMore[activeTab]) {
-                setPage(prevPage => prevPage + 1);
+                // 当滚动到底部时，增加当前激活 tab 的页数
+                setPages(prevPages => ({
+                    ...prevPages,
+                    [activeTab]: prevPages[activeTab] + 1
+                }));
             }
         });
         if (node) observer.current.observe(node);
     }, [loading, hasMore, activeTab]);
 
-    // 只在搜索词变化时重置数据
-    useEffect(() => {
-        if (searchTerm) {
-            // 搜索时重置当前tab的数据
-            setMusicData(prev => ({
-                ...prev,
-                [activeTab]: []
-            }));
-            setPage(1);
-            setHasMore(prev => ({
-                ...prev,
-                [activeTab]: true
-            }));
-        }
-    }, [searchTerm]); // 移除 activeTab 依赖
 
-    // 切换tab时重置分页，但不重置数据
-    useEffect(() => {
-        setPage(1);
-        // 如果当前tab没有数据，设置可以加载更多
-        if (musicData[activeTab].length === 0) {
-            setHasMore(prev => ({
-                ...prev,
-                [activeTab]: true
-            }));
-        }
-    }, [activeTab]); // 只在tab切换时执行
-
+    // 【修改 3】: 移除切换 tab 时重置 page 的 useEffect。
+    // 我们只在组件首次加载或认证状态变化时触发数据获取。
+    // 新数据的获取将由 pages 状态的变化来驱动。
     useEffect(() => {
         if (isAuthenticated) {
-            fetchRecommendMusic();
+            // 只有当一个分类的数据为空时，才主动获取数据
+            if (musicData[activeTab].length === 0) {
+                 fetchRecommendMusic(true); // 传入 true 表示这是该 tab 的首次加载
+            }
         }
-    }, [page, searchTerm, activeTab, isAuthenticated]);
+    }, [activeTab, isAuthenticated]); // 依赖项简化
 
-    const fetchRecommendMusic = async () => {
-        // 如果当前tab没有更多数据，就不请求
-        if (!hasMore[activeTab] && page > 1) {
+    // 【修改 4】: 让 useEffect 依赖于 pages 对象的变化
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchRecommendMusic(false); // 传入 false 表示这不是首次加载
+        }
+    }, [pages, searchTerm, isAuthenticated]); // 依赖项改为 pages
+
+
+    // 【修改 5】: 调整 fetch 函数，使其使用 pages 对象
+    const fetchRecommendMusic = async (isFirstLoadForTab) => {
+        const currentPage = pages[activeTab];
+
+        // 如果不是首次加载，并且页数仍为1，或者没有更多数据了，则不执行获取
+        if (!isFirstLoadForTab && (currentPage === 1 || !hasMore[activeTab])) {
             return;
         }
 
@@ -90,13 +95,12 @@ const Recommend = () => {
             const response = await axios.get('http://121.4.22.55:5201/backend/api/reactdemorecommend', {
                 params: {
                     category: activeTab,
-                    page: page,
+                    page: currentPage, // 使用当前 tab 对应的页数
                     pageSize: 20,
                     search: searchTerm
                 }
             });
             
-            // 转换数据格式 - 确保字段与 MusicContext 匹配
             const newMusics = response.data.data.map(song => ({
                 id: song.id,
                 title: song.title || '未知标题',
@@ -110,18 +114,16 @@ const Recommend = () => {
                 liked: song.liked || false
             }));
 
-            console.log('推荐音乐数据:', newMusics);
-
             setMusicData(prev => {
-                const all = page === 1 ? newMusics : [...prev[activeTab], ...newMusics];
+                // 如果是搜索导致的重新加载（页码为1），则替换数据
+                const shouldReplace = currentPage === 1;
+                const existingData = shouldReplace ? [] : (prev[activeTab] || []);
+                const all = [...existingData, ...newMusics];
+                // 去重逻辑
                 const unique = Array.from(new Set(all.map(m => m.id))).map(id => all.find(m => m.id === id));
-                return {
-                    ...prev,
-                    [activeTab]: unique
-                };
+                return { ...prev, [activeTab]: unique };
             });
             
-            // 更新当前tab的hasMore状态
             setHasMore(prev => ({
                 ...prev,
                 [activeTab]: response.data.data.length > 0 && response.data.page < response.data.totalPages
@@ -134,22 +136,30 @@ const Recommend = () => {
             setLoading(false);
         }
     };
+    
+    // 【修改 6】: 更新搜索逻辑，使其重置所有 tab 的分页
+    useEffect(() => {
+        // 当搜索词变化时，重置所有分页状态到1，并清空当前音乐数据以便重新加载
+        const handler = setTimeout(() => {
+            setPages({ ranking: 1, chinese: 1, western: 1, japaneseKorean: 1, other: 1 });
+            setMusicData({ ranking: [], chinese: [], western: [], japaneseKorean: [], other: [] });
+        }, 500); // 防抖
+        
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchTerm]);
+
 
     const handlePlayMusic = (songToPlay) => {
-        console.log('播放歌曲:', songToPlay);
-        
         const currentMusics = musicData[activeTab] || [];
         const actualIndex = currentMusics.findIndex(music => music.id === songToPlay.id);
-        
-        console.log('当前歌曲列表:', currentMusics);
-        console.log('找到的索引:', actualIndex);
         
         if (actualIndex === -1) {
             console.error('未找到歌曲在列表中的位置');
             return;
         }
 
-        // 确保歌曲数据完整
         const songWithFullData = {
             id: songToPlay.id,
             title: songToPlay.title || '未知标题',
@@ -159,8 +169,6 @@ const Recommend = () => {
             coverimage: songToPlay.coverimage || 'http://121.4.22.55:80/backend/musics/default.jpg',
             playcount: songToPlay.playcount || 0
         };
-
-        console.log('最终播放的歌曲数据:', songWithFullData);
 
         dispatch({
             type: 'PLAY_SONG',
@@ -180,8 +188,6 @@ const Recommend = () => {
     };
 
     const handlePlaySingle = (songToPlay) => {
-        console.log('播放单曲:', songToPlay);
-        
         const songWithFullData = {
             id: songToPlay.id,
             title: songToPlay.title || '未知标题',
@@ -203,8 +209,6 @@ const Recommend = () => {
 
     const handleLike = async (e, musicId) => {
         e.stopPropagation();
-        console.log('喜欢歌曲:', musicId);
-        
         try {
             await axios.post('http://121.4.22.55:5201/backend/api/favorites', {
                 username: user.username,
@@ -229,7 +233,6 @@ const Recommend = () => {
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
-        // 切换tab时不需要重置数据，只需要重置分页
     };
 
     const getTabName = (tabKey) => {
@@ -246,16 +249,10 @@ const Recommend = () => {
     const currentMusics = musicData[activeTab] || [];
     const currentHasMore = hasMore[activeTab];
 
-    if (!isAuthenticated) {
-        return (
-            <div className={styles.home}>
-                <div className={styles.allMusicSection}>
-                    <div className={styles.notLoggedIn}>
-                        请先登录以查看音乐推荐
-                    </div>
-                </div>
-            </div>
-        );
+    // 初始加载时显示全屏加载动画 (现在只在 musicData 完全为空时显示)
+    const isInitialLoading = loading && Object.values(musicData).every(arr => arr.length === 0);
+    if (isInitialLoading) {
+        return <Loading message="音乐推荐加载中..." />;
     }
 
     return (
@@ -307,40 +304,52 @@ const Recommend = () => {
                             onClick={() => handleTabChange(tab)}
                         >
                             {getTabName(tab)}
-                            {musicData[tab] && musicData[tab].length > 0 && (
-                                <span className={styles.tabCount}>{musicData[tab].length}</span>
-                            )}
                         </button>
                     ))}
                 </div>
                 
                 {error && <div className={styles.error}>{error}</div>}
 
-                {viewMode === 'table' ? (
-                    <MusicTableView
-                        musics={currentMusics}
-                        onPlayMusic={handlePlayMusic}
-                        onPlaySingle={handlePlaySingle}
-                        onLike={handleLike}
-                        lastMusicElementRef={lastMusicElementRef}
-                        showLikeButton={true}
-                        showRank={activeTab === 'ranking'}
-                        currentSong={currentSong}
-                    />
-                ) : (
-                    <MusicGridView
-                        musics={currentMusics}
-                        onPlayMusic={handlePlayMusic}
-                        onPlaySingle={handlePlaySingle}
-                        onLike={handleLike}
-                        lastMusicElementRef={lastMusicElementRef}
-                        showLikeButton={true}
-                        showRank={activeTab === 'ranking'}
-                        currentSong={currentSong}
-                    />
+                {/* 切换tab时的加载状态 - 只在数据为空且正在加载时显示 */}
+                {loading && currentMusics.length === 0 && (
+                    <div className={styles.loadingOverlay}>
+                        <Loading message={`正在加载${getTabName(activeTab)}音乐...`} />
+                    </div>
                 )}
+
+                {/* 内容区域 */}
+                <div className={styles.contentArea}>
+                    {viewMode === 'table' ? (
+                        <MusicTableView
+                            musics={currentMusics}
+                            onPlayMusic={handlePlayMusic}
+                            onPlaySingle={handlePlaySingle}
+                            onLike={handleLike}
+                            lastMusicElementRef={lastMusicElementRef}
+                            showLikeButton={true}
+                            showRank={activeTab === 'ranking'}
+                            currentSong={currentSong}
+                        />
+                    ) : (
+                        <MusicGridView
+                            musics={currentMusics}
+                            onPlayMusic={handlePlayMusic}
+                            onPlaySingle={handlePlaySingle}
+                            onLike={handleLike}
+                            lastMusicElementRef={lastMusicElementRef}
+                            showLikeButton={true}
+                            showRank={activeTab === 'ranking'}
+                            currentSong={currentSong}
+                        />
+                    )}
+                </div>
                 
-                {loading && <div className={styles.loading}>正在加载更多{getTabName(activeTab)}音乐...</div>}
+                {/* 滚动加载时的加载提示 */}
+                {loading && currentMusics.length > 0 && (
+                    <div className={styles.loadingMore}>
+                        <Loading message={`正在加载更多${getTabName(activeTab)}音乐...`} />
+                    </div>
+                )}
 
                 {!currentHasMore && currentMusics.length > 0 && (
                     <div className={styles.noMoreData}>已加载全部{getTabName(activeTab)}音乐</div>

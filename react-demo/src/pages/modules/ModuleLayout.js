@@ -4,18 +4,35 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/Layout/Header';
 import { Tabs, Sidebar, BottomNav } from '../../components/UI';
 import KeepAliveOutlet from '../../components/KeepAliveOutlet';
+import { useTheme } from '../../context/ThemeContext'; // 导入 ThemeContext
+import { useAuth } from '../../context/AuthContext';
 import Player from './music/Player';
 import styles from './ModuleLayout.module.css';
+
 import DarkClouds from '../../components/Animation/DarkClouds';// 导入背景组件
 import WaterWave from '../../components/Animation/WaterWave';//水滴滚动
 import NauticalBackground from '../../components/Animation/NauticalBackground';//路飞出海
 import FlowerScene from '../../components/Animation/FlowerScene';//鲜花盛开
 import SakuraBackground from '../../components/Animation/SakuraBackground';//樱花飘落
 import DetailsHomeBackground from '../../components/Animation/DetailsHomeBackground';//烟花
-//import CustomBackground from '../../components/Animation/CustomBackground';//自定义
+import CustomBackground from '../../components/Animation/CustomBackground';//自定义
 import CandleAnimation from '../../components/Animation/CandleAnimation';//蜡烛吹灭
 import CompassTime from '../../components/Animation/CompassTime';//时间罗盘
 import BallLoading from '../../components/Animation/BallLoading';//弹性小球
+
+// 【第2步】创建一个从字符串到组件的映射
+const backgroundComponents = {
+  WaterWave: <WaterWave />,
+  NauticalBackground: <NauticalBackground />,
+  FlowerScene: <FlowerScene />,
+  DarkClouds: <DarkClouds />,
+  SakuraBackground: <SakuraBackground />,
+  DetailsHomeBackground: <DetailsHomeBackground />,
+  CandleAnimation: <CandleAnimation />,
+  CompassTime: <CompassTime />,
+  BallLoading: <BallLoading />,
+  CustomBackground: <CustomBackground />,
+};
 
 // 菜单配置 (保持不变)
 const moduleMenus = {
@@ -59,14 +76,41 @@ const getModuleMenu = (moduleKey) => {
 
 // 主组件
 const ModuleLayout = ({ moduleKey, onLogout }) => {
+
+  // 【第3步】从 useTheme 中获取 activeTheme 对象
+  const { activeTheme, loading: themeLoading } = useTheme();
+
   const location = useLocation();
   const navigate = useNavigate();
   const menuItems = getModuleMenu(moduleKey);
-  
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [tabs, setTabs] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
+
+  // 【第4步】根据 activeTheme.background_animation 的值，动态选择背景组件
+  // const BackgroundComponent = useMemo(() => {
+  // 如果有活动主题，就用它的特效名称；否则，可以设置一个默认值（比如 WaterWave）
+  // const animationName = activeTheme?.background_animation || 'WaterWave';
+
+  // 从映射中找到对应的组件，如果找不到，也返回一个默认组件
+  // return backgroundComponents[animationName] || <WaterWave />;
+  // }, [activeTheme]); // 依赖项只有 activeTheme
+
+  // 修改背景组件选择逻辑
+  const BackgroundComponent = useMemo(() => {
+    // 如果主题还在加载中，显示默认背景
+    if (themeLoading && !activeTheme) {
+      return <WaterWave />;
+    }
+
+    // 如果有活动主题，就用它的特效名称；否则，使用默认值
+    const animationName = activeTheme?.background_animation || 'WaterWave';
+
+    // 从映射中找到对应的组件，如果找不到，也返回一个默认组件
+    return backgroundComponents[animationName] || <WaterWave />;
+  }, [activeTheme, themeLoading]);
   // 检测屏幕尺寸
   useEffect(() => {
     const checkScreenSize = () => {
@@ -130,22 +174,23 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
     setSidebarCollapsed(prev => !prev);
   }, []);
 
-   // 统一的布局结构
+  // 统一的布局结构
   return (
     <>
       {/* 背景层 */}
       <div className={styles.backgroundContainer}>
-        <DarkClouds />
+        {/* 【第5步】在这里渲染动态选择的组件 */}
+        {BackgroundComponent}
       </div>
-      
+
       {/* 主布局容器 */}
       <div className={`${styles.unifiedLayout} ${isMobile ? styles.isMobile : styles.isDesktop} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
-        
+
         {/* Header (仅桌面端显示) */}
         <div className={styles.headerContainer}>
           <Header onLogout={onLogout} />
         </div>
-
+        {/* <p><strong>用户ID:</strong> {activeTheme.id}</p> */}
         {/* 侧边栏 (仅桌面端显示) */}
         <div className={styles.sidebarContainer}>
           <Sidebar
@@ -168,7 +213,7 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
               onTabClose={handleTabClose}
             />
           </div>
-          
+
           {/* 页面路由内容 */}
           <div className={styles.pageContent}>
             <KeepAliveOutlet />
@@ -181,7 +226,7 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
             <Player />
           </div>
         )}
-        
+
         {/* 底部导航 (仅移动端显示) */}
         <div className={styles.bottomNavContainer}>
           <BottomNav

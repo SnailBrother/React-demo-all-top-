@@ -11,19 +11,21 @@ import styles from './App.module.css';
 
 function App() {
   return (
+      <Router>
     <AuthProvider>
       <ThemeProvider>
         <MusicProvider>
           <MessageProvider>
-            <Router>
+          
               <div className={styles.app}>
                 <AppRoutes />
               </div>
-            </Router>
+            
           </MessageProvider>
         </MusicProvider>
       </ThemeProvider>
     </AuthProvider>
+    </Router>
   );
 }
 

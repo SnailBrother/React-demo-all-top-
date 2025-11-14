@@ -1,5 +1,7 @@
 // src/pages/user/login/index.js
-import React, { useState, useEffect } from 'react'; // 添加 useEffect
+// src/pages/user/login/index.js
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useAuth } from '../../../hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/UI'; 
@@ -8,12 +10,13 @@ import styles from './login.module.css';
 const Login = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { setUserInfo } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
     const [errors, setErrors] = useState({});
-    const { login, loading } = useAuth();
+    const [loading, setLoading] = useState(false);
 
     // 添加 useEffect 来接收注册页面传递的邮箱
     useEffect(() => {
@@ -68,13 +71,54 @@ const Login = () => {
         e.preventDefault();
 
         if (validateForm()) {
+            setLoading(true);
             try {
-                await login(formData.email, formData.password);
-                // 登录成功后跳转 - 主题已经在 AuthContext 中加载并应用
-                const from = location.state?.from?.pathname || '/apps';
-                navigate(from, { replace: true });
+                // 直接使用 axios 调用登录接口
+                const response = await axios.post('/api/auth/login', {
+                    email: formData.email,
+                    password: formData.password
+                });
+
+                console.log('登录响应:', response.data);
+
+                if (response.data.success) {
+                    // 创建用户数据
+                    const userData = {
+                        id: response.data.user?.id || Date.now(),
+                        username: response.data.user?.username || formData.email.split('@')[0],
+                        email: response.data.user?.email || formData.email,
+                        loginTime: new Date().toISOString()
+                    };
+
+                    // 获取token
+                    const token = response.data.token || 
+                                 response.data.accessToken || 
+                                 response.data.access_token ||
+                                 response.data.authToken ||
+                                 response.data.user?.token;
+
+                    // 使用 AuthContext 设置用户信息
+                    setUserInfo(userData, token);
+
+                    // 登录成功后跳转
+                    const from = location.state?.from?.pathname || '/apps';
+                    navigate(from, { replace: true });
+                } else {
+                    throw new Error(response.data.message || '登录失败');
+                }
             } catch (error) {
-                setErrors({ submit: error.message });
+                console.error('登录错误:', error);
+                let errorMessage = '登录失败，请检查邮箱和密码';
+                
+                if (error.response?.data?.message) {
+                    errorMessage = error.response.data.message;
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                setErrors({ submit: errorMessage });
+            } finally {
+                setLoading(false);
             }
         }
     };

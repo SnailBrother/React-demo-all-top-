@@ -1,20 +1,20 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './CustomBackground.css';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext'; // 使用 useAuth hook
+import { useTheme } from '../../context/ThemeContext';
 import io from 'socket.io-client';
 
-// 创建Socket.IO连接
 const socket = io('http://121.4.22.55:5201', {
   transports: ['websocket', 'polling']
 });
 
 const CustomBackground = () => {
-  const { username } = useContext(AuthContext);
+  const { user } = useAuth(); // 使用 useAuth hook 获取用户信息
+  const { activeTheme } = useTheme();
   const [imageSrc, setImageSrc] = useState('');
   const [imageTimestamp, setImageTimestamp] = useState(Date.now());
 
   useEffect(() => {
-    // 检查用户自定义背景图片是否存在
     const checkImageExists = (url, callback) => {
       const img = new Image();
       img.onload = () => callback(true);
@@ -22,38 +22,37 @@ const CustomBackground = () => {
       img.src = url;
     };
 
-    if (username) {
-       const userImageUrl = `http://121.4.22.55:80/backend/images/SystemThemesettings/${username}/CustomBackground.jpg?t=${imageTimestamp}`;
+    if (user?.email && activeTheme?.id) {
+      // 使用动态的 themeId 而不是硬编码的 6
+      const userImageUrl = `http://121.4.22.55:80/backend/images/ReactDemoUserThemeSettings/${user.email}/${activeTheme.id}/CustomBackground.jpg?t=${imageTimestamp}`;
       
       checkImageExists(userImageUrl, (exists) => {
         if (exists) {
           setImageSrc(userImageUrl);
         } else {
-          // 使用默认背景图片
-          setImageSrc('http://121.4.22.55:80/backend/images/SystemThemesettings/CustomBackground.jpg');
+          setImageSrc('http://121.4.22.55:80/backend/images/ReactDemoUserThemeSettings/default/CustomBackground.jpg');
         }
       });
     }
-  }, [username, imageTimestamp]);
- // 监听背景图片更新事件
+  }, [user, activeTheme, imageTimestamp]);
+
+  // 监听背景图片更新事件
   useEffect(() => {
     socket.on('background-image-updated', (data) => {
-      if (data.username === username) {
-        // 更新时间戳以强制刷新图片
+      if (data.email === user?.email) {
         setImageTimestamp(data.timestamp || Date.now());
       }
     });
 
-    // 加入用户特定的房间
-    if (username) {
-      socket.emit('join-user-room', username);
+    if (user?.email) {
+      socket.emit('join-user-room', user.email);
     }
 
     return () => {
       socket.off('background-image-updated');
     };
-  }, [username]);
-  
+  }, [user]);
+
   return (
     <div className="customBackground-container">
       {imageSrc && (
@@ -62,8 +61,7 @@ const CustomBackground = () => {
           alt="Custom Background" 
           className="customBackground-image"
           onError={(e) => {
-            // 如果图片加载失败，使用默认图片
-            e.target.src = 'http://121.4.22.55:80/backend/images/SystemThemesettings/CustomBackground.jpg';
+            e.target.src = 'http://121.4.22.55:80/backend/images/ReactDemoUserThemeSettings/default/CustomBackground.jpg';
           }}
         />
       )}
@@ -72,6 +70,5 @@ const CustomBackground = () => {
 };
 
 export default CustomBackground;
-
 
 // src="http://121.4.22.55:80/backend/images/SystemThemesettings/李中敬/CustomBackground.jpg"

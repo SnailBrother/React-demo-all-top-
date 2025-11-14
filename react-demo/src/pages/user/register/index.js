@@ -1,5 +1,7 @@
 // src/pages/user/register/index.js
+// src/pages/user/register/index.js
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/UI';  
@@ -7,6 +9,7 @@ import styles from './register.module.css';
 
 const Register = () => {
     const navigate = useNavigate();
+    const { setUserInfo } = useAuth();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -14,7 +17,7 @@ const Register = () => {
         confirmPassword: ''
     });
     const [errors, setErrors] = useState({});
-    const { register, loading } = useAuth();
+    const [loading, setLoading] = useState(false);
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
@@ -63,17 +66,41 @@ const Register = () => {
         e.preventDefault();
 
         if (validateForm()) {
+            setLoading(true);
             try {
-                await register(formData.username, formData.email, formData.password);
-                // 注册成功后跳转到登录页面并携带消息
-                navigate('/login', { 
-                    state: { 
-                        message: '注册成功！请使用您的账户登录。',
-                        email: formData.email // 可选：预填充邮箱
-                    } 
+                // 直接使用 axios 调用注册接口
+                const response = await axios.post('/api/auth/register', {
+                    username: formData.username,
+                    email: formData.email,
+                    password: formData.password
                 });
+
+                console.log('注册响应:', response.data);
+
+                if (response.data.success) {
+                    // 注册成功后跳转到登录页面并携带消息
+                    navigate('/login', { 
+                        state: { 
+                            message: '注册成功！请使用您的账户登录。',
+                            email: formData.email // 可选：预填充邮箱
+                        } 
+                    });
+                } else {
+                    throw new Error(response.data.message || '注册失败');
+                }
             } catch (error) {
-                setErrors({ submit: error.message });
+                console.error('注册错误:', error);
+                let errorMessage = '注册失败，请稍后重试';
+                
+                if (error.response?.data?.message) {
+                    errorMessage = error.response.data.message;
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                setErrors({ submit: errorMessage });
+            } finally {
+                setLoading(false);
             }
         }
     };

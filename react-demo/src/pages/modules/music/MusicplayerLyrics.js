@@ -132,6 +132,13 @@ const MusicplayerLyrics = () => {
         <div className={styles.lyricsPage}>
             {/* 顶部歌曲信息和返回按钮 */}
             <div className={styles.songHeader}>
+                <button 
+                    className={styles.backButton}
+                    onClick={() => window.history.back()}
+                >
+                    返回
+                </button>
+
                 <div className={styles.headerLeft}>
                     <img 
                         src={currentSong.coverimage || 'http://121.4.22.55:80/backend/musics/default.jpg'} 
@@ -146,12 +153,7 @@ const MusicplayerLyrics = () => {
                         </div>
                     </div>
                 </div>
-                <button 
-                    className={styles.backButton}
-                    onClick={() => window.history.back()}
-                >
-                    返回播放器
-                </button>
+                
             </div>
 
             {/* 歌词显示区域 - 占据剩余全部空间 */}

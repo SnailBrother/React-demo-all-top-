@@ -1,13 +1,16 @@
 // src/context/AuthContext.js
-// src/context/AuthContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { apiClient } from '../utils';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. 导入 useNavigate
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // 2. 在 Provider 内部获取 navigate
+  // 注意：这要求 AuthProvider 必须被包裹在 <Router> 内部
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -18,121 +21,35 @@ export const AuthProvider = ({ children }) => {
         setUser(JSON.parse(userData));
       } catch (error) {
         console.error('解析用户数据出错:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.clear(); // 出错时清空所有
       }
     }
-
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
-    setLoading(true);
-    try {
-      // 登录API调用
-      const responseData = await apiClient.post('/auth/login', {
-        email,
-        password
-      });
-
-      console.log('登录响应数据:', responseData);
-
-      if (!responseData) {
-        throw new Error('登录响应数据为空');
-      }
-
-      // 创建用户数据
-      const userData = {
-        id: responseData.id || responseData.user?.id || Date.now(),
-        username: responseData.username || responseData.user?.username || email.split('@')[0],
-        email: responseData.email || responseData.user?.email || email,
-        loginTime: new Date().toISOString()
-      };
-
-      setUser(userData);
-      
-      // 获取token
-      const token = responseData.token || 
-                   responseData.accessToken || 
-                   responseData.access_token ||
-                   responseData.authToken ||
-                   responseData.user?.token;
-                 
-      if (token) {
-        localStorage.setItem('token', token);
-        console.log('保存的token:', token);
-      } else {
-        console.warn('未找到token字段，使用模拟token');
-        localStorage.setItem('token', 'mock-token-' + Date.now());
-      }
-      
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      return { success: true };
-
-    } catch (error) {
-      console.error('登录错误:', error);
-      
-      let errorMessage = '登录失败';
-      
-      if (error.message && error.message.includes('HTTP error')) {
-        errorMessage = error.message;
-      } else {
-        errorMessage = error.message || '登录失败';
-      }
-      
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
+  const setUserInfo = (userData, token) => {
+    setUser(userData);
+    if (token) {
+      localStorage.setItem('token', token);
     }
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  // 注册功能
-  const register = async (username, email, password) => {
-    setLoading(true);
-    try {
-      const responseData = await apiClient.post('/auth/register', {
-        username,
-        email,
-        password
-      });
-
-      console.log('注册响应数据:', responseData);
-
-      return { success: true };
-
-    } catch (error) {
-      console.error('注册错误:', error);
-      
-      let errorMessage = '注册失败';
-      
-      if (error.message && error.message.includes('HTTP error')) {
-        errorMessage = error.message;
-      } else {
-        errorMessage = error.message || '注册失败';
-      }
-      
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 退出登录
-  const logout = () => {
+  // 3. 创建一个完整的 logout 函数
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-  };
+    // 在状态更新后，直接导航到登录页
+    navigate('/login', { replace: true });
+  }, [navigate]); // 依赖 navigate
 
-  // 提供上下文值
   const value = {
     user,
-    login,
-    register,
-    logout,
+    setUserInfo,
+    logout, // 4. 将 logout 函数暴露出去
     loading,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
   };
 
   return (

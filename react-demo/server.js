@@ -292,12 +292,12 @@ app.get('/api/auth/profile', async (req, res) => {
 
 // 1. 获取用户的活动主题（修正版）
 app.get('/api/UserThemeSettings/active', async (req, res) => {
-    const { email, username } = req.query;
+    const { email } = req.query;
     
-    console.log('获取活动主题请求:', { email, username });
+    console.log('获取活动主题请求:', { email });
     
     // 验证必需参数
-    if (!email || !username) {
+    if (!email) {
         return res.status(400).json({
             success: false,
             message: '邮箱和用户名均为必需参数'
@@ -311,12 +311,12 @@ app.get('/api/UserThemeSettings/active', async (req, res) => {
             SELECT * FROM reactDemoApp.dbo.UserThemeSettings 
             WHERE is_active = 1 
             AND email = @email 
-            AND username = @username
+            
         `;
         
         const result = await pool.request()
             .input('email', sql.NVarChar, email)
-            .input('username', sql.NVarChar, username)
+           
             .query(query);
         
         if (result.recordset.length === 0) {
@@ -344,15 +344,15 @@ app.get('/api/UserThemeSettings/active', async (req, res) => {
 // 2. 设置活动主题（也需要相应调整查询条件）
 app.put('/api/UserThemeSettings/setActive/:id', async (req, res) => {
     const { id } = req.params;
-    const { email, username } = req.body;
+    const { email } = req.body;
     
-    console.log('设置活动主题请求:', { id, email, username });
+    console.log('设置活动主题请求:', { id, email });
     
     // 验证必需参数
-    if (!email || !username) {
+    if (!email) {
         return res.status(400).json({
             success: false,
-            message: '邮箱和用户名均为必需参数'
+            message: '邮箱均为必需参数'
         });
     }
     
@@ -366,24 +366,24 @@ app.put('/api/UserThemeSettings/setActive/:id', async (req, res) => {
             // 第一步：停用该用户的所有主题（严格匹配邮箱和用户名）
             await transaction.request()
                 .input('email', sql.NVarChar, email)
-                .input('username', sql.NVarChar, username)
+                
                 .query(`
                     UPDATE reactDemoApp.dbo.UserThemeSettings 
                     SET is_active = 0 
-                    WHERE email = @email AND username = @username
+                    WHERE email = @email
                 `);
             
             // 第二步：激活指定的主题（同时验证主题属于该用户）
             const result = await transaction.request()
                 .input('id', sql.Int, id)
                 .input('email', sql.NVarChar, email)
-                .input('username', sql.NVarChar, username)
+                
                 .query(`
                     UPDATE reactDemoApp.dbo.UserThemeSettings 
                     SET is_active = 1 
                     WHERE id = @id 
                     AND email = @email 
-                    AND username = @username
+                  
                     
                     SELECT * FROM reactDemoApp.dbo.UserThemeSettings 
                     WHERE id = @id
@@ -422,9 +422,9 @@ app.put('/api/UserThemeSettings/setActive/:id', async (req, res) => {
 
 // 3. 获取用户的所有主题（包括非活动主题）
 app.get('/api/UserThemeSettings', async (req, res) => {
-    const { email, username } = req.query;
+    const { email } = req.query;
     
-    console.log('获取用户所有主题请求:', { email, username });
+    console.log('获取用户所有主题请求:', { email });
     
     try {
         await poolConnect;
@@ -439,10 +439,7 @@ app.get('/api/UserThemeSettings', async (req, res) => {
             query += ' AND email = @email';
             request.input('email', sql.NVarChar, email);
         }
-        if (username) {
-            query += ' AND username = @username';
-            request.input('username', sql.NVarChar, username);
-        }
+        
         
         query += ' ORDER BY is_active DESC, theme_name ASC';
         
@@ -466,7 +463,7 @@ app.get('/api/UserThemeSettings', async (req, res) => {
 // 4. 创建新主题
 app.post('/api/UserThemeSettings', async (req, res) => {
     const {
-        username,
+        
         email,
         theme_name = '新主题',
         background_color = '#FFFFFFFF',
@@ -489,7 +486,7 @@ app.post('/api/UserThemeSettings', async (req, res) => {
         is_active = false // 默认不激活新主题
     } = req.body;
     
-    console.log('创建主题请求:', { username, email, theme_name, is_active });
+    console.log('创建主题请求:', { email, theme_name, is_active });
     
     try {
         await poolConnect;
@@ -502,17 +499,17 @@ app.post('/api/UserThemeSettings', async (req, res) => {
             if (is_active) {
                 await transaction.request()
                     .input('email', sql.NVarChar, email)
-                    .input('username', sql.NVarChar, username)
+                   
                     .query(`
                         UPDATE reactDemoApp.dbo.UserThemeSettings 
                         SET is_active = 0 
-                        WHERE email = @email AND username = @username
+                        WHERE email = @email
                     `);
             }
             
             // 插入新主题
             const result = await transaction.request()
-                .input('username', sql.NVarChar, username)
+                
                 .input('email', sql.NVarChar, email)
                 .input('theme_name', sql.NVarChar, theme_name)
                 .input('background_color', sql.NVarChar, background_color)
@@ -536,7 +533,7 @@ app.post('/api/UserThemeSettings', async (req, res) => {
                 .query(`
                     INSERT INTO reactDemoApp.dbo.UserThemeSettings 
                     (
-                        username, email, theme_name,
+                        email, theme_name,
                         background_color, secondary_background_color, hover_background_color, focus_background_color,
                         font_color, secondary_font_color, hover_font_color, focus_font_color, watermark_font_color, font_family,
                         border_color, secondary_border_color, hover_border_color, focus_border_color,
@@ -544,7 +541,7 @@ app.post('/api/UserThemeSettings', async (req, res) => {
                     ) 
                     OUTPUT INSERTED.* 
                     VALUES (
-                        @username, @email, @theme_name,
+                        @email, @theme_name,
                         @background_color, @secondary_background_color, @hover_background_color, @focus_background_color,
                         @font_color, @secondary_font_color, @hover_font_color, @focus_font_color, @watermark_font_color, @font_family,
                         @border_color, @secondary_border_color, @hover_border_color, @focus_border_color,
@@ -591,7 +588,7 @@ app.put('/api/UserThemeSettings/:id', async (req, res) => {
         
         Object.keys(updates).forEach(key => {
             // 允许更新 theme_name，移除对 theme_name 的限制
-            if (key !== 'id' && key !== 'username' && key !== 'email') {
+            if (key !== 'id' && key !== 'email') {
               setClause.push(`${key} = @${key}`);
               // 根据字段类型处理
               if (key === 'is_active') {
@@ -682,10 +679,10 @@ app.delete('/api/UserThemeSettings/:id', async (req, res) => {
         if (isActive) {
             const newActiveTheme = await pool.request()
                 .input('email', sql.NVarChar, theme.email)
-                .input('username', sql.NVarChar, theme.username)
+                
                 .query(`
                     SELECT TOP 1 * FROM reactDemoApp.dbo.UserThemeSettings 
-                    WHERE email = @email AND username = @username 
+                    WHERE email = @email
                     ORDER BY id DESC
                 `);
             
@@ -712,7 +709,7 @@ app.delete('/api/UserThemeSettings/:id', async (req, res) => {
 
 // 7. 获取用户的主题数量统计
 app.get('/api/UserThemeSettings/stats', async (req, res) => {
-    const { email, username } = req.query;
+    const { email } = req.query;
     
     try {
         await poolConnect;
@@ -730,10 +727,7 @@ app.get('/api/UserThemeSettings/stats', async (req, res) => {
             query += ' AND email = @email';
             request.input('email', sql.NVarChar, email);
         }
-        if (username) {
-            query += ' AND username = @username';
-            request.input('username', sql.NVarChar, username);
-        }
+       
         
         const result = await request.query(query);
         

@@ -7,17 +7,16 @@ import { IconButton,Span } from '../UI';
 import Button from '../UI/Button';
 import styles from './Header.module.css';
 
-const Header = ({ title = "React-Demo" }) => {
-  const { theme } = useTheme();
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
-  const handleSwitchAccount = () => {
-    if (logout) {
-      logout();
-    }
-    navigate('/login', { replace: true });
-  };
+
+
+
+
+
+
+const Header = ({ title = "React-Demo" }) => {
+  const { user, logout } = useAuth(); // 直接使用 context 提供的 logout 函数
+  const navigate = useNavigate();
 
   const handleBackToHome = () => {
     navigate('/apps', { replace: true });
@@ -25,12 +24,11 @@ const Header = ({ title = "React-Demo" }) => {
 
   return (
     <header className={styles.header}>
-      <div  >
+      <div>
         <h1 className={styles.title}>{title}</h1>
       </div>
 
       <div className={styles.headerActions}>
-        {/* 返回首页按钮 */}
         <IconButton
           icon="#icon-home"
           onClick={handleBackToHome}
@@ -39,15 +37,15 @@ const Header = ({ title = "React-Demo" }) => {
           size="medium"
         />
         
-        {/* 用户信息 */}
         {user && (
-          <Span     >
+          <Span>
             {user.username || user.email || '用户'}
           </Span>
         )}
 
+        {/* 点击时直接调用从 context 来的 logout 函数 */}
         <Button
-          onClick={handleSwitchAccount}
+          onClick={logout}
           variant="secondary"
           size="small"
         >

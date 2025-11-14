@@ -1,7 +1,7 @@
 {
   "name": "react-demo",
   "version": "0.1.0",
-  "private": true,
+  "proxy": "http://121.4.22.55:5201",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -40,3 +40,4 @@
     ]
   }
 }
+ 

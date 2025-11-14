@@ -1,354 +1,183 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext';
-import { apiClient } from '../utils';
+// context/ThemeContext.js
+// context/ThemeContext.js
+import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
-// 默认主题配置 - 作为最终回退
-const DEFAULT_THEME = {
-  'background-color': '#FFFFFFFF',
-  'secondary-background-color': '#F8F9FAFF',
-  'hover_background-color': '#E9ECEEFF',
-  'focus_background-color': '#DEE2E6FF',
-  'font-color': '#000000FF',
-  'secondary-font-color': '#6C757DFF',
-  'hover_font-color': '#0078D4FF',
-  'focus_font-color': '#0056B3FF',
-  'watermark-font-color': '#B3B5B6FF',
-  'font-family': 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  'border_color': '#DEE2E6FF',
-  'secondary-border_color': '#E9ECEEFF',
-  'hover_border_color': '#0078D4FF',
-  'focus_border_color': '#0056B3FF',
-  'shadow_color': '#00000019',
-  'hover_shadow_color': '#00000026',
-  'focus_shadow_color': '#0078D440'
-};
-
-// 数据库字段名到CSS变量名的映射
-const DB_FIELD_TO_CSS_VAR = {
-  background_color: 'background-color',
-  secondary_background_color: 'secondary-background-color',
-  hover_background_color: 'hover_background-color',
-  focus_background_color: 'focus_background-color',
-  font_color: 'font-color',
-  secondary_font_color: 'secondary-font-color',
-  hover_font_color: 'hover_font-color',
-  focus_font_color: 'focus_font-color',
-  watermark_font_color: 'watermark-font-color',
-  font_family: 'font-family',
-  border_color: 'border_color',
-  secondary_border_color: 'secondary-border_color',
-  hover_border_color: 'hover_border_color',
-  focus_border_color: 'focus_border_color',
-  shadow_color: 'shadow_color',
-  hover_shadow_color: 'hover_shadow_color',
-  focus_shadow_color: 'focus_shadow_color'
-};
-
-// 主题服务API调用层
-const themeService = {
-  async getUserAllThemes(email, username) {
-    return apiClient.get('/UserThemeSettings', { params: { email, username } });
-  },
-  async setActiveTheme(id, email, username) {
-    return apiClient.put(`/UserThemeSettings/setActive/${id}`, { email, username });
-  },
-  // 新增：设置个人默认主题的API调用
-  async setDefaultTheme(id, email, username) {
-    return apiClient.put(`/UserThemeSettings/setDefault/${id}`, { email, username });
-  },
-  async createUserTheme(themeData) {
-    return apiClient.post('/UserThemeSettings', themeData);
-  },
-  async updateUserTheme(id, themeData) {
-    return apiClient.put(`/UserThemeSettings/${id}`, themeData);
-  },
-  async deleteUserTheme(id) {
-    return apiClient.delete(`/UserThemeSettings/${id}`);
-  }
-};
-
 export const ThemeProvider = ({ children }) => {
+  const [themeSettings, setThemeSettings] = useState({});
+  const [defaultTheme, setDefaultTheme] = useState({
+    'background-color': '#ffffff',
+    'secondary-background-color': '#f5f5f5',
+    'hover_background-color': '#e6f7ff',
+    'focus_background-color': '#1890ff',
+    'font-color': '#000000',
+    'secondary-font-color': '#666666',
+    'hover_font-color': '#1890ff',
+    'focus_font-color': '#ffffff',
+    'watermark-font-color': '#cccccc',
+    'font-family': 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    'border_color': '#d9d9d9',
+    'secondary-border_color': '#f0f0f0',
+    'hover_border_color': '#1890ff',
+    'focus_border_color': '#1890ff',
+    'shadow_color': 'rgba(0, 0, 0, 0.1)',
+    'hover_shadow_color': 'rgba(24, 144, 255, 0.3)',
+    'focus_shadow_color': 'rgba(24, 144, 255, 0.5)'
+  });
+  const [previewTheme, setPreviewTheme] = useState(null);
   const [allThemes, setAllThemes] = useState([]);
   const [activeTheme, setActiveTheme] = useState(null);
-  const [previewTheme, setPreviewTheme] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
-  const { user, isAuthenticated } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  // 工具函数：DB转CSS
-  const transformDbThemeToCss = useCallback((dbTheme) => {
-    if (!dbTheme) return null;
-    const cssTheme = {};
-    for (const dbField in DB_FIELD_TO_CSS_VAR) {
-      if (dbTheme[dbField] !== undefined && dbTheme[dbField] !== null) {
-        cssTheme[DB_FIELD_TO_CSS_VAR[dbField]] = dbTheme[dbField];
+  // 页面加载时从本地存储恢复主题
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('activeTheme');
+    if (savedTheme) {
+      try {
+        const theme = JSON.parse(savedTheme);
+        console.log('从本地存储恢复主题:', theme);
+        setActiveTheme(theme);
+        applyThemeToRoot(transformDbThemeToCss(theme));
+      } catch (error) {
+        console.error('恢复主题失败:', error);
+        localStorage.removeItem('activeTheme');
       }
     }
-    return cssTheme;
   }, []);
 
-  // 工具函数：CSS转DB
-  const transformCssToDbTheme = useCallback((cssTheme) => {
-    const dbTheme = {};
-    for (const dbField in DB_FIELD_TO_CSS_VAR) {
-      const cssVar = DB_FIELD_TO_CSS_VAR[dbField];
-      if (cssTheme[cssVar] !== undefined) {
-        dbTheme[dbField] = cssTheme[cssVar];
-      }
+  // 当 activeTheme 变化时保存到本地存储
+  useEffect(() => {
+    if (activeTheme) {
+      localStorage.setItem('activeTheme', JSON.stringify(activeTheme));
+      console.log('主题已保存到本地存储:', activeTheme);
     }
-    return dbTheme;
+  }, [activeTheme]);
+
+  // 更新主题设置
+  const updateThemeSettings = useCallback((newSettings) => {
+    setThemeSettings(prev => ({ ...prev, ...newSettings }));
   }, []);
 
-  // 核心工具函数：将主题应用到DOM
-  const applyThemeToRoot = useCallback((theme) => {
+  // 预览主题设置
+  const previewThemeSettings = useCallback((previewSettings) => {
+    setPreviewTheme(previewSettings);
+    applyThemeToRoot(previewSettings);
+  }, []);
+
+  // 取消预览
+  const cancelPreview = useCallback(() => {
+    setPreviewTheme(null);
+    if (activeTheme) {
+      applyThemeToRoot(transformDbThemeToCss(activeTheme));
+    } else {
+      applyThemeToRoot(defaultTheme);
+    }
+  }, [activeTheme, defaultTheme]);
+
+  // 应用主题到根元素
+  const applyThemeToRoot = useCallback((settings) => {
     const root = document.documentElement;
-    root.removeAttribute('data-custom-theme');
-    root.removeAttribute('data-preview-theme');
-
-    if (theme === 'default' || !theme) {
-      root.setAttribute('data-theme', 'default');
-      Object.keys(DEFAULT_THEME).forEach(key => {
-        root.style.setProperty(`--${key}`, DEFAULT_THEME[key]);
-      });
-    } else if (typeof theme === 'object') {
-      const cssTheme = transformDbThemeToCss(theme);
-      if (cssTheme) {
-        root.setAttribute('data-custom-theme', theme.theme_name || 'custom');
-        Object.keys(cssTheme).forEach(key => {
-          root.style.setProperty(`--${key}`, cssTheme[key]);
-        });
+    Object.entries(settings).forEach(([key, value]) => {
+      if (value) {
+        const cssVarName = `--${key.replace(/_/g, '-')}`;
+        root.style.setProperty(cssVarName, value);
       }
-    }
-  }, [transformDbThemeToCss]);
-
-  // 核心数据获取函数：包含三级回退逻辑
-  const fetchUserThemes = useCallback(async () => {
-    if (!isAuthenticated || !user) {
-      setAllThemes([]);
-      setActiveTheme(null);
-      applyThemeToRoot('default');
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await themeService.getUserAllThemes(user.email, user.username);
-      
-      if (response && response.success && Array.isArray(response.themes)) {
-        const fetchedThemes = response.themes;
-        setAllThemes(fetchedThemes);
-
-        // 1. 严格查找当前用户的活动主题
-        const activeForUser = fetchedThemes.find(t => t.is_active && t.email === user.email && t.username === user.username);
-        if (activeForUser) {
-          setActiveTheme(activeForUser);
-          applyThemeToRoot(activeForUser);
-          return;
-        }
-
-        // 2. 若无活动主题，则严格查找当前用户的个人默认主题
-        const defaultForUser = fetchedThemes.find(t => t.is_default && t.email === user.email && t.username === user.username);
-        if (defaultForUser) {
-          setActiveTheme(defaultForUser);
-          applyThemeToRoot(defaultForUser);
-          return;
-        }
-        
-        // 3. 最终回退到系统全局默认
-        setActiveTheme(null);
-        applyThemeToRoot('default');
-      } else {
-        throw new Error('API data format error');
-      }
-    } catch (error) {
-      console.error('获取用户主题失败:', error);
-      setAllThemes([]);
-      setActiveTheme(null);
-      applyThemeToRoot('default');
-    } finally {
-      setLoading(false);
-    }
-  }, [isAuthenticated, user, applyThemeToRoot]);
-
-  // ---- 写操作函数 (采用本地状态更新，避免重复获取) ----
-
-  const setActiveThemeById = useCallback(async (themeId) => {
-    if (!isAuthenticated || !user) throw new Error('用户未登录');
-    try {
-      await themeService.setActiveTheme(themeId, user.email, user.username);
-      const updatedThemes = allThemes.map(t => ({ ...t, is_active: t.id === themeId }));
-      const newActiveTheme = updatedThemes.find(t => t.id === themeId);
-      
-      setAllThemes(updatedThemes);
-      if (newActiveTheme) {
-        setActiveTheme(newActiveTheme);
-        applyThemeToRoot(newActiveTheme);
-      }
-      return { success: true };
-    } catch (error) {
-      console.error('设置活动主题失败:', error);
-      throw error;
-    }
-  }, [isAuthenticated, user, allThemes, applyThemeToRoot]);
-
-  const setDefaultThemeById = useCallback(async (themeId) => {
-    if (!isAuthenticated || !user) throw new Error('用户未登录');
-    try {
-      await themeService.setDefaultTheme(themeId, user.email, user.username);
-      const updatedThemes = allThemes.map(t => ({ ...t, is_default: t.id === themeId }));
-      setAllThemes(updatedThemes);
-      // 如果当前没有活动主题，设置默认后可能需要更新UI
-      if (!activeTheme) {
-        const newActive = updatedThemes.find(t => t.is_default);
-        if (newActive) {
-            setActiveTheme(newActive);
-            applyThemeToRoot(newActive);
-        }
-      }
-      return { success: true };
-    } catch (error) {
-      console.error('设置默认主题失败:', error);
-      throw error;
-    }
-  }, [isAuthenticated, user, allThemes, activeTheme, applyThemeToRoot]);
-
-  const createNewTheme = useCallback(async (themeName, themeSettings, setAsActive = false) => {
-    if (!isAuthenticated || !user) throw new Error('用户未登录');
-    try {
-      const themeData = {
-        email: user.email,
-        username: user.username,
-        theme_name: themeName,
-        is_active: setAsActive,
-        ...transformCssToDbTheme(themeSettings)
-      };
-      const response = await themeService.createUserTheme(themeData);
-      if (response && response.success && response.theme) {
-        const newTheme = response.theme; // 使用后端返回的完整对象
-        let newThemesList = [...allThemes, newTheme];
-
-        if (setAsActive) {
-            newThemesList = newThemesList.map(t => ({...t, is_active: t.id === newTheme.id}));
-            setActiveTheme(newTheme);
-            applyThemeToRoot(newTheme);
-        }
-        setAllThemes(newThemesList);
-        return { success: true, theme: newTheme };
-      } else {
-        throw new Error(response?.message || '创建主题失败');
-      }
-    } catch (error) {
-      console.error('创建主题失败:', error);
-      throw error;
-    }
-  }, [isAuthenticated, user, allThemes, transformCssToDbTheme, applyThemeToRoot]);
-
-    // 更新主题 - (升级版：返回更新后的主题)
-  const updateThemeById = useCallback(async (themeId, updateData) => {
-    try {
-      const response = await themeService.updateUserTheme(themeId, updateData);
-      if (response && response.success && response.theme) {
-        const updatedTheme = response.theme;
-        const newThemesList = allThemes.map(t => t.id === themeId ? updatedTheme : t);
-        setAllThemes(newThemesList);
-        
-        if (activeTheme && activeTheme.id === themeId) {
-          setActiveTheme(updatedTheme);
-          applyThemeToRoot(updatedTheme);
-        }
-        
-        // --- 核心修改 ---
-        // 返回从后端获取的、最权威的、完整的更新后对象
-        return { success: true, theme: updatedTheme }; 
-      } else {
-        throw new Error(response?.message || '更新主题失败');
-      }
-    } catch (error) {
-      console.error('更新主题失败:', error);
-      throw error;
-    }
-  }, [allThemes, activeTheme, applyThemeToRoot]);
-
-  const deleteThemeById = useCallback(async (themeId) => {
-    try {
-      await themeService.deleteUserTheme(themeId);
-      const newThemesList = allThemes.filter(t => t.id !== themeId);
-      setAllThemes(newThemesList);
-
-      if (activeTheme && activeTheme.id === themeId) {
-        // 如果删除的是活动主题，需要重新应用回退逻辑
-        const defaultForUser = newThemesList.find(t => t.is_default && t.email === user.email && t.username === user.username);
-        if (defaultForUser) {
-          setActiveTheme(defaultForUser);
-          applyThemeToRoot(defaultForUser);
-        } else {
-          setActiveTheme(null);
-          applyThemeToRoot('default');
-        }
-      }
-      return { success: true };
-    } catch (error) {
-      console.error('删除主题失败:', error);
-      throw error;
-    }
-  }, [isAuthenticated, user, allThemes, activeTheme, applyThemeToRoot]);
-
-  // ---- 预览功能 ----
-  
-  const previewThemeSettings = useCallback((themeSettings) => {
-    setPreviewTheme(themeSettings);
-    const root = document.documentElement;
-    root.setAttribute('data-preview-theme', 'true');
-    Object.keys(themeSettings).forEach(key => {
-      root.style.setProperty(`--${key}`, themeSettings[key]);
     });
   }, []);
 
-  const cancelPreview = useCallback(() => {
-    setPreviewTheme(null);
-    applyThemeToRoot(activeTheme || 'default');
-  }, [activeTheme, applyThemeToRoot]);
+  // 数据库主题转CSS变量格式
+  const transformDbThemeToCss = useCallback((dbTheme) => {
+    if (!dbTheme) return {};
+    
+    return {
+      'background-color': dbTheme.background_color,
+      'secondary-background-color': dbTheme.secondary_background_color,
+      'hover_background-color': dbTheme.hover_background_color,
+      'focus_background-color': dbTheme.focus_background_color,
+      'font-color': dbTheme.font_color,
+      'secondary-font-color': dbTheme.secondary_font_color,
+      'hover_font-color': dbTheme.hover_font_color,
+      'focus_font-color': dbTheme.focus_font_color,
+      'watermark-font-color': dbTheme.watermark_font_color,
+      'font-family': dbTheme.font_family,
+      'border_color': dbTheme.border_color,
+      'secondary-border_color': dbTheme.secondary_border_color,
+      'hover_border_color': dbTheme.hover_border_color,
+      'focus_border_color': dbTheme.focus_border_color,
+      'shadow_color': dbTheme.shadow_color,
+      'hover_shadow_color': dbTheme.hover_shadow_color,
+      'focus_shadow_color': dbTheme.focus_shadow_color,
+      'background-animation': dbTheme.background_animation
+    };
+  }, []);
 
-  // 获取当前主题的最终设置（预览 > 活动/默认 > 系统默认）
-  const getCurrentThemeSettings = useCallback(() => {
-    if (previewTheme) return previewTheme;
-    if (activeTheme) return transformDbThemeToCss(activeTheme);
-    return DEFAULT_THEME;
-  }, [previewTheme, activeTheme, transformDbThemeToCss]);
+  // CSS变量格式转数据库主题
+  const transformCssToDbTheme = useCallback((cssTheme) => {
+    return {
+      background_color: cssTheme['background-color'],
+      secondary_background_color: cssTheme['secondary-background-color'],
+      hover_background_color: cssTheme['hover_background-color'],
+      focus_background_color: cssTheme['focus_background-color'],
+      font_color: cssTheme['font-color'],
+      secondary_font_color: cssTheme['secondary-font-color'],
+      hover_font_color: cssTheme['hover_font-color'],
+      focus_font_color: cssTheme['focus_font-color'],
+      watermark_font_color: cssTheme['watermark-font-color'],
+      font_family: cssTheme['font-family'],
+      border_color: cssTheme['border_color'],
+      secondary_border_color: cssTheme['secondary-border_color'],
+      hover_border_color: cssTheme['hover_border_color'],
+      focus_border_color: cssTheme['focus_border_color'],
+      shadow_color: cssTheme['shadow_color'],
+      hover_shadow_color: cssTheme['hover_shadow_color'],
+      focus_shadow_color: cssTheme['focus_shadow_color'],
+      background_animation: cssTheme['background-animation']
+    };
+  }, []);
 
-  // 修复：单一、正确的useEffect，用于初始化和响应用户变化
-  useEffect(() => {
-    fetchUserThemes();
-  }, [isAuthenticated, user]); // 依赖用户登录状态，而不是fetchUserThemes本身
+  // 更新主题列表
+  const updateThemes = useCallback((themes) => {
+    setAllThemes(themes);
+  }, []);
 
-  // ---- Context Value ----
+  // 更新活动主题
+  const updateActiveTheme = useCallback((theme) => {
+    console.log('更新活动主题:', theme);
+    setActiveTheme(theme);
+    if (theme) {
+      applyThemeToRoot(transformDbThemeToCss(theme));
+      // 自动保存到本地存储
+      localStorage.setItem('activeTheme', JSON.stringify(theme));
+    } else {
+      // 如果没有主题，清除本地存储并应用默认主题
+      localStorage.removeItem('activeTheme');
+      applyThemeToRoot(defaultTheme);
+    }
+  }, [applyThemeToRoot, transformDbThemeToCss, defaultTheme]);
+
+  // 设置加载状态
+  const setLoadingState = useCallback((isLoading) => {
+    setLoading(isLoading);
+  }, []);
+
   const value = {
-    // 状态
+    themeSettings,
+    defaultTheme,
+    previewTheme,
     allThemes,
     activeTheme,
-    previewTheme,
     loading,
-    
-    // 主题设置
-    themeSettings: getCurrentThemeSettings(),
-    defaultTheme: DEFAULT_THEME,
-    
-    // 操作函数
-    fetchUserThemes,
-    setActiveThemeById,
-    setDefaultThemeById, // 暴露设置默认主题的函数
-    createNewTheme,
-    updateThemeById,
-    deleteThemeById,
+    updateThemeSettings,
     previewThemeSettings,
     cancelPreview,
-    
-    // 工具函数
     transformDbThemeToCss,
-    transformCssToDbTheme
+    transformCssToDbTheme,
+    applyThemeToRoot,
+    setDefaultTheme,
+    updateThemes,
+    updateActiveTheme,
+    setLoadingState
   };
 
   return (
