@@ -1,6 +1,48 @@
 //src/utils/helpers.js
 import { ERROR_MESSAGES, VALIDATION_PATTERNS } from './constants';
 
+
+// 辅助函数：确保颜色为8位带透明度的格式
+export const ensure8DigitHex = (color) => {
+  if (!color) return '#FFFFFFFF';
+
+  if (color.startsWith('#') && color.length === 7) {
+    return `${color}FF`;
+  }
+
+  if (color.startsWith('#') && color.length === 4) {
+    const r = color[1];
+    const g = color[2];
+    const b = color[3];
+    return `#${r}${r}${g}${g}${b}${b}FF`;
+  }
+
+  if (color.startsWith('#') && color.length === 9) {
+    return color;
+  }
+
+  if (color.startsWith('rgba')) {
+    const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    if (match) {
+      const r = parseInt(match[1]).toString(16).padStart(2, '0');
+      const g = parseInt(match[2]).toString(16).padStart(2, '0');
+      const b = parseInt(match[3]).toString(16).padStart(2, '0');
+      const alpha = match[4] ? Math.round(parseFloat(match[4]) * 255).toString(16).padStart(2, '0') : 'FF';
+      return `#${r}${g}${b}${alpha}`;
+    }
+  }
+
+  return '#FFFFFFFF';
+};
+
+// 辅助函数：从Ant Design颜色对象获取8位十六进制
+export const get8DigitHexFromColor = (color) => {
+  if (!color) return '#FFFFFFFF';
+  if (color && typeof color.toHexString === 'function') return ensure8DigitHex(color.toHexString());
+  if (typeof color === 'string') return ensure8DigitHex(color);
+  return '#FFFFFFFF';
+};
+
 // Format date
 export const formatDate = (date, format = 'YYYY-MM-DD') => {
   if (!date) return '';
@@ -79,3 +121,4 @@ export const deepClone = (obj) => {
     return clonedObj;
   }
 };
+

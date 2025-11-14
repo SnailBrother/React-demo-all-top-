@@ -6,6 +6,16 @@ import { Tabs, Sidebar, BottomNav } from '../../components/UI';
 import KeepAliveOutlet from '../../components/KeepAliveOutlet';
 import Player from './music/Player';
 import styles from './ModuleLayout.module.css';
+import DarkClouds from '../../components/Animation/DarkClouds';// 导入背景组件
+import WaterWave from '../../components/Animation/WaterWave';//水滴滚动
+import NauticalBackground from '../../components/Animation/NauticalBackground';//路飞出海
+import FlowerScene from '../../components/Animation/FlowerScene';//鲜花盛开
+import SakuraBackground from '../../components/Animation/SakuraBackground';//樱花飘落
+import DetailsHomeBackground from '../../components/Animation/DetailsHomeBackground';//烟花
+//import CustomBackground from '../../components/Animation/CustomBackground';//自定义
+import CandleAnimation from '../../components/Animation/CandleAnimation';//蜡烛吹灭
+import CompassTime from '../../components/Animation/CompassTime';//时间罗盘
+import BallLoading from '../../components/Animation/BallLoading';//弹性小球
 
 // 菜单配置 (保持不变)
 const moduleMenus = {
@@ -120,61 +130,68 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
     setSidebarCollapsed(prev => !prev);
   }, []);
 
-  // 统一的布局结构
+   // 统一的布局结构
   return (
-    // 根据 isMobile 和 sidebarCollapsed 状态动态添加类名
-    <div className={`${styles.unifiedLayout} ${isMobile ? styles.isMobile : styles.isDesktop} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
+    <>
+      {/* 背景层 */}
+      <div className={styles.backgroundContainer}>
+        <DarkClouds />
+      </div>
       
-      {/* Header (仅桌面端显示) */}
-      <div className={styles.headerContainer}>
-        <Header onLogout={onLogout} />
-      </div>
+      {/* 主布局容器 */}
+      <div className={`${styles.unifiedLayout} ${isMobile ? styles.isMobile : styles.isDesktop} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
+        
+        {/* Header (仅桌面端显示) */}
+        <div className={styles.headerContainer}>
+          <Header onLogout={onLogout} />
+        </div>
 
-      {/* 侧边栏 (仅桌面端显示) */}
-      <div className={styles.sidebarContainer}>
-        <Sidebar
-          menuItems={menuItems}
-          activeKey={activeTab}
-          onMenuClick={handleMenuClick}
-          collapsed={sidebarCollapsed}
-          onToggle={toggleSidebar}
-        />
-      </div>
-
-      {/* 主内容区域 (桌面和移动端共用) */}
-      <main className={styles.mainContentArea}>
-        {/* Tabs (仅桌面端显示) */}
-        <div className={styles.tabsContainer}>
-          <Tabs
-            tabs={tabs}
+        {/* 侧边栏 (仅桌面端显示) */}
+        <div className={styles.sidebarContainer}>
+          <Sidebar
+            menuItems={menuItems}
             activeKey={activeTab}
-            onTabChange={handleTabChange}
-            onTabClose={handleTabClose}
+            onMenuClick={handleMenuClick}
+            collapsed={sidebarCollapsed}
+            onToggle={toggleSidebar}
           />
         </div>
-        
-        {/* 页面路由内容 */}
-        <div className={styles.pageContent}>
-          <KeepAliveOutlet />
-        </div>
-      </main>
 
-      {/* 播放器 (仅音乐模块显示，位置通过CSS控制) */}
-      {moduleKey === 'music' && (
-        <div className={styles.playerContainer}>
-          <Player />
+        {/* 主内容区域 (桌面和移动端共用) */}
+        <main className={styles.mainContentArea}>
+          {/* Tabs (仅桌面端显示) */}
+          <div className={styles.tabsContainer}>
+            <Tabs
+              tabs={tabs}
+              activeKey={activeTab}
+              onTabChange={handleTabChange}
+              onTabClose={handleTabClose}
+            />
+          </div>
+          
+          {/* 页面路由内容 */}
+          <div className={styles.pageContent}>
+            <KeepAliveOutlet />
+          </div>
+        </main>
+
+        {/* 播放器 (仅音乐模块显示，位置通过CSS控制) */}
+        {moduleKey === 'music' && (
+          <div className={styles.playerContainer}>
+            <Player />
+          </div>
+        )}
+        
+        {/* 底部导航 (仅移动端显示) */}
+        <div className={styles.bottomNavContainer}>
+          <BottomNav
+            menuItems={menuItems}
+            activeKey={activeTab}
+            onMenuClick={handleMenuClick}
+          />
         </div>
-      )}
-      
-      {/* 底部导航 (仅移动端显示) */}
-      <div className={styles.bottomNavContainer}>
-        <BottomNav
-          menuItems={menuItems}
-          activeKey={activeTab}
-          onMenuClick={handleMenuClick}
-        />
       </div>
-    </div>
+    </>
   );
 };
 

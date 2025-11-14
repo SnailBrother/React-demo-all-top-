@@ -1,13 +1,28 @@
 /* src/pages/modules/ModuleLayout.module.css */
+/* 背景容器 - 固定在视口最底层 */
+.backgroundContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100dvw;
+  height: 100dvh;
+  z-index: -1; /* 确保背景在最底层 */
+  pointer-events: none; /* 确保背景不会干扰用户交互 */
+}
 /* 统一布局容器 */
 .unifiedLayout {
   height: 100dvh;
   width: 100dvw;
-  background: var(--background-color);
+    background: var(--background-color);  
+
+  background: transparent; 
+  /* 改为透明，让背景显示出来 */
+
   color: var(--font-color);
   overflow: hidden;
   display: grid; /* 使用 Grid 布局 */
   transition: all 0.3s ease;
+   position: relative; /* 确保内容在背景之上 */
 }
 
 /* ------------------- 桌面端布局 (.isDesktop) ------------------- */
