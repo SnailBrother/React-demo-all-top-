@@ -2,9 +2,11 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/Layout/Header';
+import PublicMessage from '../../components/Layout/PublicMessage';
 import { Tabs, Sidebar, BottomNav } from '../../components/UI';
 import KeepAliveOutlet from '../../components/KeepAliveOutlet';
 import { useTheme } from '../../context/ThemeContext'; // 导入 ThemeContext
+import { useMusic } from '../../context/MusicContext'; // 导入音乐上下文
 import { useAuth } from '../../context/AuthContext';
 import Player from './music/Player';
 import styles from './ModuleLayout.module.css';
@@ -42,10 +44,10 @@ const moduleMenus = {
     { key: 'reports', label: '报表', icon: 'icon-guge', path: '/app/accounting/reports' },
   ],
   music: [
-    { key: 'home', label: '首页', icon: '#icon-biaoqianA01_shouye-51', path: '/app/music/home' },
-    { key: 'recommend', label: '推荐', icon: '#icon-tuijian1', path: '/app/music/recommend' },
-    { key: 'recent', label: '最近播放', icon: '#icon-zuijinbofang', path: '/app/music/recent' },
-    { key: 'favorites', label: '我的喜欢', icon: '#icon-xihuan11', path: '/app/music/favorites' },
+    { key: 'home', label: '首页', icon: '#icon-biaoqianA01_shouye-51', path: '/app/music/home', showInTabs: false },
+    { key: 'recommend', label: '推荐', icon: '#icon-tuijian1', path: '/app/music/recommend', showInTabs: false },
+    { key: 'recent', label: '最近播放', icon: '#icon-zuijinbofang', path: '/app/music/recent', showInTabs: false },
+    { key: 'favorites', label: '我的喜欢', icon: '#icon-xihuan11', path: '/app/music/favorites', showInTabs: false },
     // { key: 'musicplayerlyrics', label: '歌词', icon: '#icon-xihuan11', path: '/app/music/musicplayerlyrics' },
   ],
   outfit: [
@@ -76,9 +78,13 @@ const getModuleMenu = (moduleKey) => {
 
 // 主组件
 const ModuleLayout = ({ moduleKey, onLogout }) => {
-
+  // 在组件内部添加状态控制
+  const [showPublicMessage, setShowPublicMessage] = useState(true);
   // 【第3步】从 useTheme 中获取 activeTheme 对象
   const { activeTheme, loading: themeLoading } = useTheme();
+  const { state: musicState } = useMusic(); // 新增：获取音乐状态
+  // 新增：判断是否显示播放器
+  const shouldShowPlayer = moduleKey === 'music' && musicState.currentSong;
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -122,6 +128,7 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
   }, []);
 
   // 根据当前路由和菜单项初始化或更新 tabs
+  // 修改 useEffect 中的标签页更新逻辑
   useEffect(() => {
     const currentPath = location.pathname;
     const currentMenuItem = menuItems.find(item =>
@@ -131,21 +138,44 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
     if (currentMenuItem) {
       setTabs(prev => {
         const exists = prev.find(tab => tab.key === currentMenuItem.key);
+
+        // 如果菜单项配置为不在标签页显示，则不添加到标签页
+        if (currentMenuItem.showInTabs === false) {
+          // 如果已存在，则移除
+          if (exists) {
+            return prev.filter(tab => tab.key !== currentMenuItem.key);
+          }
+          return prev;
+        }
+
+        // 正常添加到标签页
         if (exists) return prev;
         return [...prev, currentMenuItem];
       });
     }
   }, [location.pathname, menuItems]);
 
+  // 修改 activeTab 计算逻辑
   const activeTab = useMemo(() => {
     const currentPath = location.pathname;
     const menuItem = menuItems.find(item =>
       item.path === currentPath || currentPath.startsWith(item.path + '/')
     );
+
+    // 如果当前路由对应的菜单项不显示在标签页，则返回空字符串
+    if (menuItem && menuItem.showInTabs === false) {
+      return '';
+    }
+
     return menuItem ? menuItem.key : '';
   }, [location.pathname, menuItems]);
 
+  // 修改 handleMenuClick 函数，处理不显示在标签页的菜单项
   const handleMenuClick = useCallback((menuItem) => {
+    // 如果菜单项不显示在标签页，先移除可能存在的标签页
+    if (menuItem.showInTabs === false) {
+      setTabs(prev => prev.filter(tab => tab.key !== menuItem.key));
+    }
     navigate(menuItem.path);
   }, [navigate]);
 
@@ -184,7 +214,8 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
       </div>
 
       {/* 主布局容器 */}
-      <div className={`${styles.unifiedLayout} ${isMobile ? styles.isMobile : styles.isDesktop} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
+      <div className={`${styles.unifiedLayout} ${isMobile ? styles.isMobile : styles.isDesktop} ${sidebarCollapsed ? styles.sidebarCollapsed : ''} ${shouldShowPlayer ? styles.hasPlayer : styles.noPlayer
+        }`}>
 
         {/* Header (仅桌面端显示) */}
         <div className={styles.headerContainer}>
@@ -204,6 +235,13 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
 
         {/* 主内容区域 (桌面和移动端共用) */}
         <main className={styles.mainContentArea}>
+          {/* 公共消息通知 */}
+          {showPublicMessage && (
+            <div className={styles.publicMessageContainer}>
+              <PublicMessage onClose={() => setShowPublicMessage(false)} />
+            </div>
+          )}
+
           {/* Tabs (仅桌面端显示) */}
           <div className={styles.tabsContainer}>
             <Tabs
@@ -221,7 +259,12 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
         </main>
 
         {/* 播放器 (仅音乐模块显示，位置通过CSS控制) */}
-        {moduleKey === 'music' && (
+        {/* {moduleKey === 'music' && (
+          <div className={styles.playerContainer}>
+            <Player />
+          </div>
+        )} */}
+        {shouldShowPlayer && (
           <div className={styles.playerContainer}>
             <Player />
           </div>

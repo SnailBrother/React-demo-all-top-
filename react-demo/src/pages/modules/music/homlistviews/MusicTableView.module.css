@@ -39,13 +39,13 @@
 }
 
 .musicRow {
-    border-bottom: 1px solid var(--border-color, #e9ecef);
+    border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
 
 .musicRow:hover {
-    background-color: var(--hover-background-color, #f8f9fa);
+    background-color: var(--hover-background-color);
 }
 
 /* 【新增】正在播放的行样式 */

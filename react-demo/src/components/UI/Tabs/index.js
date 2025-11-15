@@ -1,4 +1,5 @@
 //// src/components/UI/Tabs/index.js   标签页面
+// src/components/UI/Tabs/index.js
 import React from 'react';
 import { useTheme } from '../../../context/ThemeContext'; // 导入主题hook
 import styles from './Tabs.module.css';
@@ -56,6 +57,17 @@ const Tabs = ({
 
   // 只有当有多个标签页时才允许关闭
   const canClose = tabs.length > 1;
+
+  // 如果没有激活的标签页或者标签页为空，则不渲染
+  if (!tabs || tabs.length === 0 || !activeKey) {
+    return null;
+  }
+
+  // 检查 activeKey 是否在 tabs 中存在
+  const hasValidActiveTab = tabs.some(tab => tab.key === activeKey);
+  if (!hasValidActiveTab) {
+    return null;
+  }
 
   return (
     <div className={`${styles.tabsContainer} ${styles[theme]}`}>

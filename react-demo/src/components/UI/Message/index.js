@@ -1,8 +1,8 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './Message.module.css';
 
-const MessageContext = createContext();
+const MessageContext = createContext(null);
 
 export const useMessage = () => {
   const context = useContext(MessageContext);
@@ -16,23 +16,24 @@ const MessageItem = ({ message, onClose }) => {
   const [isLeaving, setIsLeaving] = useState(false);
 
   useEffect(() => {
-    if (message.duration) {
-      const timer = setTimeout(() => {
+    // 自动关闭逻辑
+    if (message.duration && message.duration > 0) {
+      const closeTimer = setTimeout(() => {
         setIsLeaving(true);
         setTimeout(() => onClose(message.id), 300);
       }, message.duration);
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(closeTimer);
     }
-  }, [message.duration, message.id, onClose]);
+  }, [message.id, message.duration, onClose]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsLeaving(true);
     setTimeout(() => onClose(message.id), 300);
-  };
+  }, [message.id, onClose]);
 
   return (
-    <div className={`${styles.message} ${styles[message.type]} ${isLeaving ? styles.leaving : ''}`}>
+    <div className={`${styles.message} ${styles[message.type] || styles.info} ${isLeaving ? styles.leaving : ''}`}>
       <div className={styles.messageContent}>{message.content}</div>
       <button className={styles.closeButton} onClick={handleClose}>
         ×
@@ -43,41 +44,70 @@ const MessageItem = ({ message, onClose }) => {
 
 export const MessageProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
+  const [portalRoot, setPortalRoot] = useState(null);
 
-  const addMessage = (message) => {
-    const id = Date.now().toString();
+  // 使用 useRef 来跟踪是否已经创建了 portal root
+  const portalCreatedRef = React.useRef(false);
+
+  const removeMessage = useCallback((id) => {
+    setMessages(currentMessages => currentMessages.filter(msg => msg.id !== id));
+  }, []);
+
+  const addMessage = useCallback((message) => {
+    const id = `${Date.now()}-${Math.random()}`;
     const newMessage = {
       id,
       type: 'info',
       duration: 3000,
       ...message,
     };
-    setMessages(prev => [...prev, newMessage]);
+    setMessages(currentMessages => [...currentMessages, newMessage]);
     return id;
-  };
+  }, []);
 
-  const removeMessage = (id) => {
-    setMessages(prev => prev.filter(msg => msg.id !== id));
-  };
-
-  const messageApi = {
+  const messageApi = React.useMemo(() => ({
     info: (content, options) => addMessage({ type: 'info', content, ...options }),
     success: (content, options) => addMessage({ type: 'success', content, ...options }),
     warning: (content, options) => addMessage({ type: 'warning', content, ...options }),
     error: (content, options) => addMessage({ type: 'error', content, ...options }),
-  };
+  }), [addMessage]);
 
-  const contextValue = {
-    messages,
+  const contextValue = React.useMemo(() => ({
+    ...messageApi,
     addMessage,
     removeMessage,
-    ...messageApi
-  };
+  }), [messageApi, addMessage, removeMessage]);
+
+  // 优化 portal root 创建逻辑
+  useEffect(() => {
+    // 如果已经创建了，直接返回
+    if (portalCreatedRef.current) {
+      return;
+    }
+
+    let element = document.getElementById('message-portal-root');
+    
+    // 如果不存在，创建新的
+    if (!element) {
+      element = document.createElement('div');
+      element.id = 'message-portal-root';
+      document.body.appendChild(element);
+      portalCreatedRef.current = true;
+    }
+    
+    setPortalRoot(element);
+
+    // 清理函数
+    return () => {
+      // 注意：这里我们不自动移除 portal root，因为可能有多个组件使用
+      // 让应用自己决定何时清理
+    };
+  }, []);
 
   return (
     <MessageContext.Provider value={contextValue}>
       {children}
-      {createPortal(
+      {portalRoot && createPortal(
         <div className={styles.messageContainer}>
           {messages.map((message) => (
             <MessageItem
@@ -87,7 +117,7 @@ export const MessageProvider = ({ children }) => {
             />
           ))}
         </div>,
-        document.body
+        portalRoot
       )}
     </MessageContext.Provider>
   );

@@ -1,23 +1,24 @@
 // src/components/modules/music/Recent.js 最近播放
-// src/components/modules/music/Recent.js
+// src/components/modules/music/Recent.js 最近播放
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import { useMusic } from '../../../context/MusicContext';
-import styles from './Favorites.module.css';
+import styles from './Recent.module.css';
 import MusicTableView from './homlistviews/MusicTableView';
 import MusicGridView from './homlistviews/MusicGridView';
+import { Loading } from '../../../components/UI';
 
 const Recent = () => {
     const { user, isAuthenticated } = useAuth();
-    const { dispatch } = useMusic();
+    const { dispatch, currentSong } = useMusic();
     const [recentMusics, setRecentMusics] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState('table'); // 'table' 或 'grid'
+    const [viewMode, setViewMode] = useState('table');
 
     const observer = useRef();
 
@@ -39,25 +40,24 @@ const Recent = () => {
     }, [searchTerm]);
 
     useEffect(() => {
-        if (isAuthenticated && user?.username) {
+        if (isAuthenticated && user?.email) { // 修改：改为检查 email
             fetchRecentMusics();
         }
-    }, [page, searchTerm, isAuthenticated, user?.username]);
+    }, [page, searchTerm, isAuthenticated, user?.email]); // 修改：依赖改为 email
 
     const fetchRecentMusics = async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get('http://121.4.22.55:5201/backend/api/reactdemoRecentlyPlayedmusic', {
+            const response = await axios.get('/api/reactdemoRecentlyPlayedmusic', {
                 params: {
-                    username: user.username,
+                    email: user.email, // 修改：改为传递 email
                     page: page,
                     pageSize: 20,
                     search: searchTerm
                 }
             });
             
-            // 转换数据格式
             const newRecentMusics = response.data.data.map(song => ({
                 id: song.id,
                 title: song.title,
@@ -68,10 +68,10 @@ const Recent = () => {
                             ? `http://121.4.22.55:80/backend/musics/${song.coverimage}`
                             : 'http://121.4.22.55:80/backend/musics/default.jpg',
                 playtime: song.playtime,
-                play_count: song.play_count || 0 // 如果有播放次数的话
+                play_count: song.play_count || 0
             }));
 
-            console.log('最近播放数据:', newRecentMusics); // 调试用
+            console.log('最近播放数据:', newRecentMusics);
 
             setRecentMusics(prev => {
                 const all = page === 1 ? newRecentMusics : [...prev, ...newRecentMusics];
@@ -105,25 +105,36 @@ const Recent = () => {
     const handleLike = (e, musicId) => {
         e.stopPropagation();
         console.log('喜欢歌曲:', musicId);
-        // 这里可以添加喜欢歌曲的逻辑
     };
 
     const handleRemoveRecent = async (e, musicId) => {
         e.stopPropagation();
         try {
-            await axios.delete('http://121.4.22.55:5201/backend/api/reactdemorecent', {
+            // 注意：这里需要创建对应的删除 API，也需要改为使用 email
+            await axios.delete('/api/reactdemoRecentlyPlayedmusic', {
                 data: {
-                    username: user.username,
+                    email: user.email, // 修改：改为传递 email
                     musicId: musicId
                 }
             });
-            // 从本地状态中移除
             setRecentMusics(prev => prev.filter(music => music.id !== musicId));
         } catch (err) {
             console.error('移除最近播放记录失败:', err);
             setError('移除记录失败，请稍后重试');
         }
     };
+
+    // 初始加载时显示全屏加载动画
+    const isInitialLoading = loading && recentMusics.length === 0 && page === 1;
+    if (isInitialLoading) {
+        return (
+            <div className={styles.home}>
+                <div className={styles.allMusicSection}>
+                    <Loading message="最近播放记录加载中..." />
+                </div>
+            </div>
+        );
+    }
 
     // 如果未登录，显示提示
     if (!isAuthenticated) {
@@ -138,12 +149,30 @@ const Recent = () => {
         );
     }
 
+    // 如果用户没有邮箱信息，显示提示
+    if (!user?.email) {
+        return (
+            <div className={styles.home}>
+                <div className={styles.allMusicSection}>
+                    <div className={styles.notLoggedIn}>
+                        无法获取用户信息，请重新登录
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.home}>
             <div className={styles.allMusicSection}>
+                {/* 【修改】: 使用和 Home.js 相同的顶部布局结构 */}
                 <div className={styles.sectionHeader}>
+                    {/* 1. 标题 - 固定在左侧 */}
                     <h2 className={styles.sectionTitle}>最近播放 ({recentMusics.length})</h2>
-                    <div className={styles.controls}>
+
+                    {/* 2. 右侧容器 - 搜索框和视图切换右对齐 */}
+                    <div className={styles.sectionHeaderRight}>
+                        {/* 搜索框 */}
                         <div className={styles.searchContainer}>
                             <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path>
@@ -156,6 +185,8 @@ const Recent = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
+
+                        {/* 视图切换 */}
                         <div className={styles.viewModeToggle}>
                             <button
                                 className={`${styles.viewModeButton} ${viewMode === 'table' ? styles.active : ''}`}
@@ -178,35 +209,54 @@ const Recent = () => {
                         </div>
                     </div>
                 </div>
-                
+
                 {error && <div className={styles.error}>{error}</div>}
 
-                {viewMode === 'table' ? (
-                    <MusicTableView
-                        musics={recentMusics}
-                        onPlayMusic={handlePlayMusic}
-                        onLike={handleLike}
-                        onRemoveRecent={handleRemoveRecent} // 新增移除功能
-                        lastMusicElementRef={lastMusicElementRef}
-                        showLikeButton={true}
-                        showRemoveButton={true} // 显示移除按钮
-                    />
-                ) : (
-                    <MusicGridView
-                        musics={recentMusics}
-                        onPlayMusic={handlePlayMusic}
-                        onLike={handleLike}
-                        onRemoveRecent={handleRemoveRecent} // 新增移除功能
-                        lastMusicElementRef={lastMusicElementRef}
-                        showLikeButton={true}
-                        showRemoveButton={true} // 显示移除按钮
-                    />
+                {/* 搜索或首次加载时的加载状态 */}
+                {loading && recentMusics.length === 0 && (
+                    <div className={styles.loadingOverlay}>
+                        <Loading message={searchTerm ? `正在搜索 "${searchTerm}"...` : "正在加载最近播放记录..."} />
+                    </div>
                 )}
-                
-                {loading && <div className={styles.loading}>正在加载更多记录...</div>}
 
-                {!hasMore && recentMusics.length > 0 && <div className={styles.noMoreData}>已加载全部记录</div>}
-                
+                {/* 内容区域 */}
+                <div className={styles.contentArea}>
+                    {viewMode === 'table' ? (
+                        <MusicTableView
+                            musics={recentMusics}
+                            onPlayMusic={handlePlayMusic}
+                            onLike={handleLike}
+                            onRemoveRecent={handleRemoveRecent}
+                            lastMusicElementRef={lastMusicElementRef}
+                            showLikeButton={true}
+                            showRemoveButton={true}
+                            currentSong={currentSong}
+                        />
+                    ) : (
+                        <MusicGridView
+                            musics={recentMusics}
+                            onPlayMusic={handlePlayMusic}
+                            onLike={handleLike}
+                            onRemoveRecent={handleRemoveRecent}
+                            lastMusicElementRef={lastMusicElementRef}
+                            showLikeButton={true}
+                            showRemoveButton={true}
+                            currentSong={currentSong}
+                        />
+                    )}
+                </div>
+
+                {/* 滚动加载时的加载提示 */}
+                {loading && recentMusics.length > 0 && (
+                    <div className={styles.loadingMore}>
+                        <Loading message="正在加载更多记录..." />
+                    </div>
+                )}
+
+                {!hasMore && recentMusics.length > 0 && (
+                    <div className={styles.noMoreData}>已加载全部记录</div>
+                )}
+
                 {!loading && recentMusics.length === 0 && (
                     <div className={styles.noData}>
                         {searchTerm ? `没有找到与 "${searchTerm}" 相关的播放记录` : '暂无最近播放的音乐'}

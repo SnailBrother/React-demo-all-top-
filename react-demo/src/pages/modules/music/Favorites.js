@@ -7,17 +7,18 @@ import { useMusic } from '../../../context/MusicContext';
 import styles from './Favorites.module.css';
 import MusicTableView from './homlistviews/MusicTableView';
 import MusicGridView from './homlistviews/MusicGridView';
+import { Loading } from '../../../components/UI';
 
 const Favorites = () => {
     const { user, isAuthenticated } = useAuth();
-    const { dispatch } = useMusic();
+    const { dispatch, currentSong } = useMusic();
     const [favorites, setFavorites] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState('table'); // 'table' 或 'grid'
+    const [viewMode, setViewMode] = useState('table');
 
     const observer = useRef();
 
@@ -44,51 +45,47 @@ const Favorites = () => {
         }
     }, [page, searchTerm, isAuthenticated, user?.username]);
 
-// 修改 fetchFavorites 函数中的数据处理部分
-const fetchFavorites = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-        const response = await axios.get('http://121.4.22.55:5201/backend/api/reactdemofavorites', {
-            params: {
-                username: user.username,
-                page: page,
-                pageSize: 20,
-                search: searchTerm
-            }
-        });
-        
-        // 转换数据格式
-        const newFavorites = response.data.data.map(song => ({
-            id: song.id,
-            title: song.title,        // 从 song_name 映射过来
-            artist: song.artist,
-           
-            src: `http://121.4.22.55:80/backend/musics/${song.src}`,
-            coverimage: song.coverimage
-                        ? `http://121.4.22.55:80/backend/musics/${song.coverimage}`
-                        : 'http://121.4.22.55:80/backend/musics/default.jpg',
-            play_count: song.play_count
+    const fetchFavorites = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get('http://121.4.22.55:5201/backend/api/reactdemofavorites', {
+                params: {
+                    username: user.username,
+                    page: page,
+                    pageSize: 20,
+                    search: searchTerm
+                }
+            });
             
-        }));
+            const newFavorites = response.data.data.map(song => ({
+                id: song.id,
+                title: song.title,
+                artist: song.artist,
+                src: `http://121.4.22.55:80/backend/musics/${song.src}`,
+                coverimage: song.coverimage
+                            ? `http://121.4.22.55:80/backend/musics/${song.coverimage}`
+                            : 'http://121.4.22.55:80/backend/musics/default.jpg',
+                play_count: song.play_count
+            }));
 
-        console.log('收藏歌曲数据:', newFavorites); // 调试用
+            console.log('收藏歌曲数据:', newFavorites);
 
-        setFavorites(prev => {
-            const all = page === 1 ? newFavorites : [...prev, ...newFavorites];
-            const unique = Array.from(new Set(all.map(m => m.id))).map(id => all.find(m => m.id === id));
-            return unique;
-        });
-        
-        setHasMore(response.data.data.length > 0 && response.data.page < response.data.totalPages);
+            setFavorites(prev => {
+                const all = page === 1 ? newFavorites : [...prev, ...newFavorites];
+                const unique = Array.from(new Set(all.map(m => m.id))).map(id => all.find(m => m.id === id));
+                return unique;
+            });
+            
+            setHasMore(response.data.data.length > 0 && response.data.page < response.data.totalPages);
 
-    } catch (err) {
-        console.error('获取收藏列表失败:', err);
-        setError('获取收藏列表失败，请稍后重试');
-    } finally {
-        setLoading(false);
-    }
-};
+        } catch (err) {
+            console.error('获取收藏列表失败:', err);
+            setError('获取收藏列表失败，请稍后重试');
+        } finally {
+            setLoading(false);
+        }
+    };
     
     const handlePlayMusic = (songToPlay) => {
         const actualIndex = favorites.findIndex(music => music.id === songToPlay.id);
@@ -106,9 +103,19 @@ const fetchFavorites = async () => {
     const handleLike = (e, musicId) => {
         e.stopPropagation();
         console.log('取消喜欢歌曲:', musicId);
-        // 这里可以添加取消喜欢歌曲的逻辑
-        // 例如调用取消收藏的API，然后重新获取收藏列表
     };
+
+    // 初始加载时显示全屏加载动画
+    const isInitialLoading = loading && favorites.length === 0 && page === 1;
+    if (isInitialLoading) {
+        return (
+            <div className={styles.home}>
+                <div className={styles.allMusicSection}>
+                    <Loading message="收藏列表加载中..." />
+                </div>
+            </div>
+        );
+    }
 
     // 如果未登录，显示提示
     if (!isAuthenticated) {
@@ -126,9 +133,14 @@ const fetchFavorites = async () => {
     return (
         <div className={styles.home}>
             <div className={styles.allMusicSection}>
+                {/* 【修改】: 使用和 Home.js 相同的顶部布局结构 */}
                 <div className={styles.sectionHeader}>
+                    {/* 1. 标题 - 固定在左侧 */}
                     <h2 className={styles.sectionTitle}>收藏 ({favorites.length})</h2>
-                    <div className={styles.controls}>
+
+                    {/* 2. 右侧容器 - 搜索框和视图切换右对齐 */}
+                    <div className={styles.sectionHeaderRight}>
+                        {/* 搜索框 */}
                         <div className={styles.searchContainer}>
                             <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path>
@@ -141,6 +153,8 @@ const fetchFavorites = async () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
+
+                        {/* 视图切换 */}
                         <div className={styles.viewModeToggle}>
                             <button
                                 className={`${styles.viewModeButton} ${viewMode === 'table' ? styles.active : ''}`}
@@ -163,31 +177,50 @@ const fetchFavorites = async () => {
                         </div>
                     </div>
                 </div>
-                
+
                 {error && <div className={styles.error}>{error}</div>}
 
-                {viewMode === 'table' ? (
-                    <MusicTableView
-                        musics={favorites}
-                        onPlayMusic={handlePlayMusic}
-                        onLike={handleLike}
-                        lastMusicElementRef={lastMusicElementRef}
-                        showLikeButton={false} // 收藏页面不需要喜欢按钮
-                    />
-                ) : (
-                    <MusicGridView
-                        musics={favorites}
-                        onPlayMusic={handlePlayMusic}
-                        onLike={handleLike}
-                        lastMusicElementRef={lastMusicElementRef}
-                        showLikeButton={false} // 收藏页面不需要喜欢按钮
-                    />
+                {/* 搜索或首次加载时的加载状态 */}
+                {loading && favorites.length === 0 && (
+                    <div className={styles.loadingOverlay}>
+                        <Loading message={searchTerm ? `正在搜索 "${searchTerm}"...` : "正在加载收藏列表..."} />
+                    </div>
                 )}
-                
-                {loading && <div className={styles.loading}>正在加载更多收藏...</div>}
 
-                {!hasMore && favorites.length > 0 && <div className={styles.noMoreData}>已加载全部收藏</div>}
-                
+                {/* 内容区域 */}
+                <div className={styles.contentArea}>
+                    {viewMode === 'table' ? (
+                        <MusicTableView
+                            musics={favorites}
+                            onPlayMusic={handlePlayMusic}
+                            onLike={handleLike}
+                            lastMusicElementRef={lastMusicElementRef}
+                            showLikeButton={false}
+                            currentSong={currentSong}
+                        />
+                    ) : (
+                        <MusicGridView
+                            musics={favorites}
+                            onPlayMusic={handlePlayMusic}
+                            onLike={handleLike}
+                            lastMusicElementRef={lastMusicElementRef}
+                            showLikeButton={false}
+                            currentSong={currentSong}
+                        />
+                    )}
+                </div>
+
+                {/* 滚动加载时的加载提示 */}
+                {loading && favorites.length > 0 && (
+                    <div className={styles.loadingMore}>
+                        <Loading message="正在加载更多收藏..." />
+                    </div>
+                )}
+
+                {!hasMore && favorites.length > 0 && (
+                    <div className={styles.noMoreData}>已加载全部收藏</div>
+                )}
+
                 {!loading && favorites.length === 0 && (
                     <div className={styles.noData}>
                         {searchTerm ? `没有找到与 "${searchTerm}" 相关的收藏` : '暂无收藏的音乐'}

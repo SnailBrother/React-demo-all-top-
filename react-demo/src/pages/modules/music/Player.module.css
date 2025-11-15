@@ -1,14 +1,17 @@
 /* 主播放器容器，使用 Grid 布局 */
 .player {
-  background: var(--secondary-background-color, #f8f9fa);
+     background: var(--secondary-background-color, #f8f9fa);   
+ 
   border-top: 1px solid var(--border_color, #e9ecef);
-  height: 90px;
+  height: 80px;
   padding: 0 24px;
   display: grid;
   align-items: center;
   /* 定义严格的四列布局: */
   grid-template-columns: auto 1.5fr 2fr 1fr;
   gap: 24px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* --- 第一列：封面 --- */

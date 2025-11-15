@@ -8831,14 +8831,15 @@ app.get('/backend/api/reactdemofavorites', async (req, res) => {
     }
 });
 
-//最近播放音乐
-// 后端 API 接口 - 获取最近播放音乐
-app.get('/backend/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
+//reactdemo最近播放音乐
+// 后端 API 接口 - 获取最近播放音乐 demoreact获取用户最近播放歌曲
+//demoreact获取用户最近播放歌曲
+app.get('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
     try {
-        const { username, page = 1, pageSize = 20, search = '' } = req.query;
+        const { email, page = 1, pageSize = 20, search = '' } = req.query;
 
-        if (!username) {
-            return res.status(400).json({ error: '用户名不能为空' });
+        if (!email) {
+            return res.status(400).json({ error: '邮箱不能为空' });
         }
 
         await sql.connect(config);
@@ -8847,7 +8848,7 @@ app.get('/backend/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
         let query = `
             SELECT 
                 id,
-                username,
+                email,
                 title,
                 artist,
                 coverimage,
@@ -8855,13 +8856,13 @@ app.get('/backend/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
                 genre,
                 playtime
             FROM ChatApp.dbo.RecentlyPlayedMusic 
-            WHERE username = @username
+            WHERE email = @email
         `;
 
         let countQuery = `
             SELECT COUNT(*) as total 
             FROM ChatApp.dbo.RecentlyPlayedMusic 
-            WHERE username = @username
+            WHERE email = @email
         `;
 
         // 添加搜索条件
@@ -8876,12 +8877,12 @@ app.get('/backend/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
 
         // 执行查询
         const request = new sql.Request();
-        request.input('username', sql.VarChar, username);
+        request.input('email', sql.NVarChar, email);
         request.input('offset', sql.Int, offset);
         request.input('pageSize', sql.Int, parseInt(pageSize));
 
         if (search) {
-            request.input('search', sql.VarChar, `%${search}%`);
+            request.input('search', sql.NVarChar, `%${search}%`);
         }
 
         // 获取总数
@@ -8908,12 +8909,11 @@ app.get('/backend/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
         res.status(500).json({ error: '服务器错误' });
     }
 });
-
+ 
 
 //获取推荐音乐
-// 后端 API 接口 - 获取推荐音乐
-// 后端 API 接口 - 获取推荐音乐
-app.get('/backend/api/reactdemorecommend', async (req, res) => {
+// 后端 API 接口 - 获取推荐音乐 这是所有的歌曲推荐
+app.get('/api/reactdemorecommend', async (req, res) => {
     try {
         const { category = 'ranking', page = 1, pageSize = 20, search = '' } = req.query;
 
@@ -9052,6 +9052,184 @@ app.get('/backend/api/reactdemorecommend', async (req, res) => {
     } catch (err) {
         console.error('获取推荐音乐错误:', err);
         res.status(500).json({ error: '服务器错误' });
+    }
+});
+
+// 添加最近播放记录
+app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
+    try {
+        const { email, title, artist, coverimage, src, genre } = req.body;
+
+        // 验证必填字段
+        if (!email || !title || !artist || !src) {
+            return res.status(400).json({ 
+                error: '邮箱、标题、艺术家和音乐源路径为必填字段' 
+            });
+        }
+
+        await sql.connect(config);
+
+        // 先检查是否已有相同记录（同一用户同一歌曲）
+        const checkQuery = `
+            SELECT id FROM ChatApp.dbo.RecentlyPlayedMusic 
+            WHERE email = @email AND title = @title AND artist = @artist
+        `;
+        
+        const checkRequest = new sql.Request();
+        checkRequest.input('email', sql.NVarChar, email);
+        checkRequest.input('title', sql.NVarChar, title);
+        checkRequest.input('artist', sql.NVarChar, artist);
+        
+        const existingRecord = await checkRequest.query(checkQuery);
+
+        if (existingRecord.recordset.length > 0) {
+            // 如果已存在，先删除旧的记录
+            const deleteQuery = `
+                DELETE FROM ChatApp.dbo.RecentlyPlayedMusic 
+                WHERE email = @email AND title = @title AND artist = @artist
+            `;
+            await checkRequest.query(deleteQuery);
+            console.log('删除旧的播放记录:', { email, title, artist });
+        }
+
+        // 检查当前用户的记录数量（包括刚刚删除的那条）
+        const countQuery = `
+            SELECT COUNT(*) as recordCount 
+            FROM ChatApp.dbo.RecentlyPlayedMusic 
+            WHERE email = @email
+        `;
+        
+        const countRequest = new sql.Request();
+        countRequest.input('email', sql.NVarChar, email);
+        const countResult = await countRequest.query(countQuery);
+        const recordCount = countResult.recordset[0].recordCount;
+        
+        // 如果记录数量达到或超过100条，删除最早的一条记录
+        if (recordCount >= 100) {
+            const deleteOldestQuery = `
+                DELETE FROM ChatApp.dbo.RecentlyPlayedMusic 
+                WHERE id IN (
+                    SELECT TOP 1 id 
+                    FROM ChatApp.dbo.RecentlyPlayedMusic 
+                    WHERE email = @email 
+                    ORDER BY playtime ASC, id ASC
+                )
+            `;
+            
+            const deleteRequest = new sql.Request();
+            deleteRequest.input('email', sql.NVarChar, email);
+            await deleteRequest.query(deleteOldestQuery);
+            console.log('删除最早的一条记录，邮箱:', email);
+        }
+        
+        // 插入新记录（无论是否已存在，都重新插入）
+        const insertQuery = `
+            INSERT INTO ChatApp.dbo.RecentlyPlayedMusic 
+            (email, title, artist, coverimage, src, genre, playtime)
+            VALUES (@email, @title, @artist, @coverimage, @src, @genre, GETDATE())
+        `;
+        
+        const insertRequest = new sql.Request();
+        insertRequest.input('email', sql.NVarChar, email);
+        insertRequest.input('title', sql.NVarChar, title);
+        insertRequest.input('artist', sql.NVarChar, artist);
+        insertRequest.input('coverimage', sql.NVarChar, coverimage || '');
+        insertRequest.input('src', sql.NVarChar, src);
+        insertRequest.input('genre', sql.NVarChar, genre || '');
+        
+        await insertRequest.query(insertQuery);
+        console.log('新增最近播放记录:', { email, title, artist });
+        
+        res.json({ 
+            success: true, 
+            message: existingRecord.recordset.length > 0 ? '更新记录成功' : '添加记录成功',
+            action: existingRecord.recordset.length > 0 ? 'updated' : 'added'
+        });
+
+    } catch (err) {
+        console.error('添加最近播放记录错误:', err);
+        res.status(500).json({ 
+            success: false,
+            error: '服务器错误' 
+        });
+    }
+});
+
+//用户播放当前音乐音乐的时候将当前音乐的播放量增加+1
+// 增加歌曲播放量 API
+app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
+    try {
+        const { title, artist } = req.body;
+
+        // 验证必填字段
+        if (!title || !artist) {
+            return res.status(400).json({ 
+                error: '标题和艺术家为必填字段' 
+            });
+        }
+
+        await sql.connect(config);
+
+        // 检查歌曲是否存在
+        const checkQuery = `
+            SELECT id FROM ChatApp.dbo.Music 
+            WHERE title = @title AND artist = @artist
+        `;
+        
+        const checkRequest = new sql.Request();
+        checkRequest.input('title', sql.NVarChar, title);
+        checkRequest.input('artist', sql.NVarChar, artist);
+        
+        const existingRecord = await checkRequest.query(checkQuery);
+
+        if (existingRecord.recordset.length > 0) {
+            // 如果歌曲存在，只更新 playcount 和 updatetime 字段
+            const updateQuery = `
+                UPDATE ChatApp.dbo.Music 
+                SET playcount = COALESCE(playcount, 0) + 1, 
+                    updatetime = GETDATE()
+                WHERE title = @title AND artist = @artist
+            `;
+            
+            const updateRequest = new sql.Request();
+            updateRequest.input('title', sql.NVarChar, title);
+            updateRequest.input('artist', sql.NVarChar, artist);
+            
+            await updateRequest.query(updateQuery);
+
+            // 获取更新后的播放量（可选，用于日志记录）
+            const getCountQuery = `
+                SELECT playcount FROM ChatApp.dbo.Music 
+                WHERE title = @title AND artist = @artist
+            `;
+            const countResult = await updateRequest.query(getCountQuery);
+            const newPlayCount = countResult.recordset[0].playcount;
+            
+            console.log('更新播放量成功:', { title, artist, newPlayCount });
+            
+            res.json({ 
+                success: true, 
+                message: '播放量更新成功',
+                playcount: newPlayCount
+            });
+        } else {
+            // 如果歌曲不存在，不创建新记录，直接返回成功但跳过计数
+            console.log('歌曲不存在，跳过播放量统计:', { title, artist });
+            
+            res.json({ 
+                success: true, 
+                message: '歌曲不存在，跳过播放量统计',
+                playcount: 0,
+                skipped: true
+            });
+        }
+
+    } catch (err) {
+        console.error('更新播放量错误:', err);
+        res.status(500).json({ 
+            success: false,
+            error: '服务器错误' 
+        });
     }
 });
 //新的歌曲获取 react demo   👆

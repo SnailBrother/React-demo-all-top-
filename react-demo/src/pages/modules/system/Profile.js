@@ -1,11 +1,11 @@
 import React from 'react';
 import { useAuth } from '../../../context/AuthContext';
-
+import styles from './Profile.module.css';
 const SystemProfile = () => {
   const { user, isAuthenticated } = useAuth(); //获取用户名 
 
   return (
-    <div>
+    <div className={styles.container}>
       <h2>系统设置 - 个人资料</h2>
       
       {isAuthenticated && user ? (

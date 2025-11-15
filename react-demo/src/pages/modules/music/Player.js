@@ -13,6 +13,14 @@ const formatTime = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
+// 辅助函数：生成文件名（移除特殊字符）
+const generateFileName = (title, artist, extension) => {
+  // 移除文件名中的非法字符
+  const cleanTitle = title.replace(/[<>:"/\\|?*]/g, '');
+  const cleanArtist = artist.replace(/[<>:"/\\|?*]/g, '');
+  return `${cleanTitle}-${cleanArtist}.${extension}`;
+};
+
 const Player = ({ className = '' }) => {
   const navigate = useNavigate(); // 添加导航hook
   const { state, dispatch } = useMusic();
@@ -25,6 +33,54 @@ const Player = ({ className = '' }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(false);
  
+  // --- 记录播放历史 ---
+  const recordPlayHistory = async (song) => {
+    if (!isAuthenticated || !user?.email || !song) {
+      return;
+    }
+
+    try {
+      // 生成正确的文件名
+      const coverimageFileName = generateFileName(song.title, song.artist, 'jpg');
+      const srcFileName = generateFileName(song.title, song.artist, 'mp3');
+      
+      await axios.post('/api/reactdemoRecentlyPlayedmusic', {
+        email: user.email,         
+        title: song.title,
+        artist: song.artist,
+        coverimage: coverimageFileName, // 使用生成的文件名
+        src: srcFileName, // 使用生成的文件名
+        genre: song.genre || ''   // 如果有歌曲类型就传，没有就传空字符串
+      });
+      console.log('播放记录保存成功', {
+        coverimage: coverimageFileName,
+        src: srcFileName
+      });
+    } catch (err) {
+      console.error('保存播放记录失败:', err);
+      // 这里可以选择不提示用户，避免影响播放体验
+    }
+  };
+
+  // --- 增加播放量 ---
+// --- 增加播放量 ---
+const increasePlayCount = async (song) => {
+  if (!song) {
+    return;
+  }
+
+  try {
+    await axios.post('/api/reactdemoIncreasePlayCount', {
+      title: song.title,
+      artist: song.artist
+    });
+    console.log('播放量统计请求已发送:', { title: song.title, artist: song.artist });
+  } catch (err) {
+    console.error('增加播放量失败:', err);
+    // 这里可以选择不提示用户，避免影响播放体验
+  }
+};
+
   // --- 检查歌曲是否已被收藏 ---
   useEffect(() => {
     if (currentSong && isAuthenticated && user?.username) {
@@ -65,6 +121,15 @@ const Player = ({ className = '' }) => {
       audioRef.current.src = currentSong.src;
       setProgress(0); 
       setDuration(0);
+      
+      // 当歌曲切换时，记录播放历史和增加播放量
+      if (isAuthenticated && user?.email) {
+        recordPlayHistory(currentSong);
+      }
+      
+      // 每次切换歌曲时增加播放量
+      increasePlayCount(currentSong);
+      
       if (isPlaying) {
         audioRef.current.play().catch(console.error);
       }
@@ -93,7 +158,14 @@ const handleLoadedMetadata = () => {
     dispatch({ type: 'SET_DURATION', payload: totalDuration });
   }
 };
-  const handleSongEnd = () => dispatch({ type: 'NEXT_SONG' });
+
+  const handleSongEnd = () => {
+    // 歌曲播放结束时也增加播放量（确保完整播放）
+    if (currentSong && progress > duration * 0.5) { // 播放超过50%才计数
+      increasePlayCount(currentSong);
+    }
+    dispatch({ type: 'NEXT_SONG' });
+  };
 
   // --- 控制函数 ---
   const togglePlay = () => dispatch({ type: 'TOGGLE_PLAY' });

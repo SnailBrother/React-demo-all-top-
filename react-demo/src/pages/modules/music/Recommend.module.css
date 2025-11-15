@@ -1,43 +1,58 @@
 /* src/components/modules/music/Recommend.module.css */
+/* src/components/modules/music/Recommend.module.css */
 
-/* 使用与 Favorites.module.css 相同的样式结构 */
 .home {
     padding: 24px;
     background-color: var(--secondary-background-color, #f8f9fa);
     min-height: 100%;
+    box-sizing: border-box;
 }
 
 .allMusicSection {
     max-width: 1200px;
     margin: 0 auto;
+    min-height: 400px;
 }
 
-/* 头部：标题与搜索 */
+/* =================================== */
+/*          头部核心布局 (与Home.js保持一致) */
+/* =================================== */
 .sectionHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
     gap: 16px;
     margin-bottom: 24px;
 }
 
+/* 1. 标题样式 - 固定在左侧 */
 .sectionTitle {
     font-size: 24px;
     font-weight: 600;
     color: var(--font-color, #212529);
     margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-align: left;
+    min-width: 150px;
 }
 
-.controls {
+/* 2. 右侧容器 - 占据剩余空间并右对齐 */
+.sectionHeaderRight {
     display: flex;
+    justify-content: flex-end;
     align-items: center;
     gap: 16px;
+    flex: 1;
+    min-width: 0;
 }
 
-/* 搜索框 */
+/* 搜索框容器样式 */
 .searchContainer {
     position: relative;
+    flex: 1;
+    max-width: 400px;
+    min-width: 200px;
 }
 
 .searchIcon {
@@ -52,15 +67,16 @@
 }
 
 .searchInput {
-    width: 280px;
+    width: 100%;
     padding: 9px 16px 9px 40px;
     font-size: 14px;
     border-radius: 8px;
     border: 1px solid transparent;
-    background-color: var(--hover-background-color, #e9ecef);
+    background-color: var(--secondary-background-color);
     color: var(--font-color, #212529);
     outline: none;
     transition: background-color 0.2s ease, border-color 0.2s ease;
+    box-sizing: border-box;
 }
 
 .searchInput:focus {
@@ -72,13 +88,14 @@
     color: var(--secondary-font-color, #6c757d);
 }
 
-/* 视图模式切换 */
+/* 3. 视图模式切换按钮 */
 .viewModeToggle {
     display: flex;
-    background-color: var(--hover-background-color, #e9ecef);
+    background-color: var(--secondary-background-color);
     border-radius: 8px;
     padding: 4px;
     gap: 2px;
+    flex-shrink: 0;
 }
 
 .viewModeButton {
@@ -111,7 +128,9 @@
     height: 18px;
 }
 
-/* 分类标签容器 */
+/* =================================== */
+/*          分类标签容器               */
+/* =================================== */
 .tabContainer {
     display: flex;
     gap: 8px;
@@ -148,34 +167,44 @@
     color: white;
 }
 
-.tabCount {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    padding: 2px 6px;
-    font-size: 12px;
-    min-width: 20px;
-    text-align: center;
+/* =================================== */
+/*          内容区域样式               */
+/* =================================== */
+.contentArea {
+    position: relative;
+    min-height: 200px;
 }
 
-.tab.active .tabCount {
-    background: rgba(255, 255, 255, 0.3);
+/* =================================== */
+/*          加载状态样式               */
+/* =================================== */
+
+/* 初始加载和搜索加载 - 全屏覆盖 */
+.loadingOverlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    padding: 40px 20px;
 }
 
-/* 加载、错误、无数据状态 */
-.loading,
-.error,
-.noData,
-.notLoggedIn {
+/* 滚动加载 - 在列表底部 */
+.loadingMore {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+/* 错误状态 */
+.error {
     text-align: center;
     padding: 80px 20px;
-    color: var(--secondary-font-color, #6c757d);
+    color: #e74c3c;
     font-size: 16px;
 }
 
-.error {
-    color: #e74c3c;
-}
-
+/* 无更多数据 */
 .noMoreData {
     text-align: center;
     padding: 20px;
@@ -183,65 +212,50 @@
     font-size: 14px;
 }
 
-/* 排行榜特殊样式 */
-.rankBadge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--primary-color, #007bff);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    margin-right: 8px;
+/* 无数据状态 */
+.noData {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--secondary-font-color, #6c757d);
+    font-size: 16px;
 }
 
-.rank1 {
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-}
-
-.rank2 {
-    background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
-}
-
-.rank3 {
-    background: linear-gradient(135deg, #CD7F32, #A56C27);
-}
-
-/* ========== 移动端适配 ========== */
+/* =================================== */
+/*           移动端适配                */
+/* =================================== */
 @media (max-width: 768px) {
     .home {
         padding: 16px;
     }
     
     .sectionHeader {
-        flex-direction: column;
-        align-items: stretch;
         gap: 12px;
-        margin-bottom: 16px;
     }
-    
+
     .sectionTitle {
-        font-size: 20px;
-        text-align: center;
+        min-width: 90px;
+        max-width: 100px;
     }
     
-    .controls {
-        width: 100%;
-        justify-content: space-between;
+    .sectionHeaderRight {
+        gap: 12px;
+         justify-content: flex-start;
     }
     
     .searchContainer {
-        flex: 1;
-        max-width: 300px;
+        min-width: 150px;
+        max-width: 250px;
+    }
+
+    .searchInput {
+        font-size: 14px;
+        padding: 8px 12px 8px 36px;
     }
     
-    .searchInput {
-        width: 100%;
-        padding: 12px 16px 12px 40px;
-        font-size: 16px;
+    .searchIcon {
+        left: 12px;
+        width: 16px;
+        height: 16px;
     }
 
     .tabContainer {
@@ -253,24 +267,41 @@
         padding: 6px 12px;
         font-size: 13px;
     }
+
+    .loadingOverlay,
+    .loadingMore {
+        min-height: 200px;
+        padding: 30px 16px;
+    }
 }
 
 @media (max-width: 480px) {
-    .home {
-        padding: 12px;
+    .sectionHeader {
+        gap: 8px;
+    }
+
+    .sectionTitle {
+        font-size: 18px;
+           max-width: 100px;
     }
     
-    .controls {
-        flex-direction: column;
-        gap: 12px;
+    .sectionHeaderRight {
+        gap: 8px;
     }
     
     .searchContainer {
-        max-width: none;
+        min-width: 120px;
+        max-width: 180px;
     }
     
-    .viewModeToggle {
-        align-self: flex-end;
+    .viewModeButton {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .viewModeButton svg {
+        width: 16px;
+        height: 16px;
     }
 
     .tabContainer {
@@ -281,5 +312,32 @@
     
     .tab {
         flex-shrink: 0;
+    }
+
+    .loadingOverlay,
+    .loadingMore {
+        min-height: 150px;
+        padding: 20px 12px;
+    }
+}
+
+/* 超小屏幕保护 */
+@media (max-width: 360px) {
+    .sectionTitle {
+        font-size: 16px;
+        min-width: 80px;
+    }
+    
+    .searchContainer {
+        min-width: 100px;
+    }
+    
+    .searchInput {
+        font-size: 13px;
+        padding: 6px 10px 6px 32px;
+    }
+    
+    .searchInput::placeholder {
+        font-size: 12px;
     }
 }
