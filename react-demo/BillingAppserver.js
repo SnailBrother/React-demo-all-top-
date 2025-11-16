@@ -9233,9 +9233,617 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
 });
 //新的歌曲获取 react demo   👆
 
+
+
+
+
+
+
+//reactdemo 一起听歌曲管理  👇
  
+
+// 一起听歌房间相关 API
+// 获取房间 开始
+ 
+// 1. 获取所有房间 (【核心修改】: 现在每个房间都附带用户列表)
+// 1. 获取所有房间 (现在每个房间都附带用户列表)
+// GET /api/ReactDemomusic-rooms (最终正确版)
+app.get('/api/ReactDemomusic-rooms', async (req, res) => {
+  try {
+    console.log('开始获取房间列表...');
+    const pool = await poolConnect;
+    console.log('数据库连接成功');
+    
+    // ====================== 【【【 核心修改点 】】】 ======================
+    // 采用子查询预先计算每个房间的人数，避免 GROUP BY 的问题
+    const query = `
+      SELECT 
+        r.*,
+        ISNULL(u_count.current_users, 0) as current_users
+      FROM 
+        reactDemoApp.dbo.ListenMusicTogetherMusicRooms r
+      LEFT JOIN 
+        (
+          SELECT 
+            room_name, 
+            COUNT(*) as current_users
+          FROM 
+            reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers
+          GROUP BY 
+            room_name
+        ) u_count 
+      ON 
+        r.room_name = u_count.room_name
+      WHERE 
+        (r.room_status != '已关闭' OR r.room_status IS NULL)
+      ORDER BY 
+        r.created_at DESC;
+    `;
+    
+    console.log('执行SQL查询...');
+    const result = await pool.request().query(query);
+    
+    console.log('查询到的房间数量:', result.recordset.length);
+    
+    if (result.recordset.length === 0) {
+      return res.json([]); // 如果没有房间，直接返回空数组
+    }
+
+    // ====================== 【【【 性能优化 】】】 ======================
+    // 不再为每个房间单独查询用户，而是一次性获取所有用户，然后在内存中组合
+    
+    // 1. 获取所有房间的所有用户信息
+    const usersQuery = `
+      SELECT ru.room_name, ru.email, u.username, ru.is_host, ru.join_time
+      FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers ru
+      LEFT JOIN reactDemoApp.dbo.userAccounts u ON ru.email = u.email
+      ORDER BY ru.is_host DESC, ru.join_time ASC
+    `;
+    const usersResult = await pool.request().query(usersQuery);
+    const allUsers = usersResult.recordset;
+
+    // 2. 将用户信息组合到每个房间对象中
+    const roomsWithUsers = result.recordset.map(room => {
+      return {
+        ...room,
+        // 在内存中为每个房间筛选出属于它的用户列表
+        users: allUsers.filter(user => user.room_name === room.room_name)
+      };
+    });
+    
+    res.json(roomsWithUsers);
+
+  } catch (err) {
+    console.error('获取房间列表失败:', err.message);
+    res.status(500).json({ error: '获取房间列表失败: ' + err.message });
+  }
+});
+
+// 创建房间
+// POST /api/ReactDemomusic-rooms (修正版)
+app.post('/api/ReactDemomusic-rooms', async (req, res) => {
+  const { room_name, password, host, max_users = 10 } = req.body;
+
+  console.log('收到创建房间请求:', { room_name, password, host, max_users });
+
+  if (!room_name || !host) {
+    return res.status(400).json({ error: '房间名称和主持人邮箱不能为空' });
+  }
+
+  try {
+    const pool = await poolConnect;
+    
+    // 检查房间名是否已存在 (无变化)
+    const checkResult = await pool.request()
+      .input('room_name', sql.NVarChar, room_name)
+      .query(`
+        SELECT id FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms 
+        WHERE room_name = @room_name 
+        AND (room_status != '已关闭' OR room_status IS NULL)
+      `);
+    
+    if (checkResult.recordset.length > 0) {
+      return res.status(400).json({ error: '房间名已存在' });
+    }
+
+    // ====================== 【【【 核心修改点 】】】 ======================
+    // 创建房间 - 将保留关键字 current_time 用方括号 [] 包裹起来
+    const insertResult = await pool.request()
+      .input('room_name', sql.NVarChar, room_name)
+      .input('password', sql.NVarChar, password || null)
+      .input('host', sql.NVarChar, host)
+      .input('max_users', sql.Int, max_users)
+      .input('title', sql.NVarChar, '暂无歌曲')
+      .input('artist', sql.NVarChar, '暂无歌手')
+      .input('coverimage', sql.NVarChar, 'http://121.4.22.55:80/backend/musics/default.jpg')
+      .input('src', sql.NVarChar, '')
+      .input('genre', sql.NVarChar, '')
+      .input('current_time', sql.Float, 0)
+      .input('is_playing', sql.Bit, 0)
+      .input('play_mode', sql.NVarChar, 'repeat')
+      .query(`
+        INSERT INTO reactDemoApp.dbo.ListenMusicTogetherMusicRooms 
+        (room_name, password, host, max_users, title, artist, coverimage, src, genre, [current_time], is_playing, play_mode, room_status)
+        VALUES (@room_name, @password, @host, @max_users, @title, @artist, @coverimage, @src, @genre, @current_time, @is_playing, @play_mode, '等待中');
+        SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE id = SCOPE_IDENTITY();
+      `);
+    // ====================================================================
+
+    const room = insertResult.recordset[0];
+    console.log('创建的房间:', room);
+
+    // 添加创建者到房间用户表 (无变化)
+    await pool.request()
+      .input('room_name', sql.NVarChar, room_name)
+      .input('email', sql.NVarChar, host)
+      .input('is_host', sql.Bit, 1)
+      .query(`
+        INSERT INTO reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
+        (room_name, email, is_host)
+        VALUES (@room_name, @email, @is_host)
+      `);
+
+    console.log('添加创建者到用户表成功');
+
+    // 获取完整的房间信息（包含用户列表） (无变化)
+    const usersResult = await pool.request()
+      .input('room_name', sql.NVarChar, room_name)
+      .query(`
+        SELECT email, is_host, join_time
+        FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
+        WHERE room_name = @room_name
+        ORDER BY is_host DESC, join_time ASC
+      `);
+
+    const roomWithUsers = {
+      ...room,
+      users: usersResult.recordset,
+      current_users: usersResult.recordset.length
+    };
+
+    // 通过 Socket.IO 广播新房间 (无变化)
+    if (io) {
+      io.emit('rooms-updated');
+    }
+
+    res.json({ success: true, room: roomWithUsers });
+  } catch (err) {
+    console.error('创建房间失败:', err);
+    res.status(500).json({ error: '创建房间失败: ' + err.message });
+  }
+});
+
+// 加入房间
+app.post('/api/ReactDemomusic-rooms/join', async (req, res) => {
+  const { room_name, password, email } = req.body;
+
+  try {
+    const pool = await poolConnect;
+    
+    // 获取房间信息
+    const roomResult = await pool.request()
+      .input('room_name', sql.NVarChar, room_name)
+      .query('SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name AND room_status != \'已关闭\'');
+    
+    if (roomResult.recordset.length === 0) {
+      return res.status(404).json({ error: '房间不存在或已关闭' });
+    }
+
+    const room = roomResult.recordset[0];
+
+    // 检查密码
+    if (room.password && room.password !== password) {
+      return res.status(401).json({ error: '房间密码错误' });
+    }
+
+    // 检查用户是否已在房间中
+    const userCheck = await pool.request()
+      .input('room_name', sql.NVarChar, room_name)
+      .input('email', sql.NVarChar, email)
+      .query('SELECT id FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name AND email = @email');
+    
+    if (userCheck.recordset.length > 0) {
+      return res.status(400).json({ error: '您已在此房间中' });
+    }
+
+    // 检查房间人数
+    const userCountResult = await pool.request()
+      .input('room_name', sql.NVarChar, room_name)
+      .query('SELECT COUNT(*) as user_count FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name');
+    
+    const userCount = userCountResult.recordset[0].user_count;
+    if (userCount >= room.max_users) {
+      return res.status(400).json({ error: '房间已满' });
+    }
+
+    // 添加用户到房间
+    await pool.request()
+      .input('room_name', sql.NVarChar, room_name)
+      .input('email', sql.NVarChar, email)
+      .input('is_host', sql.Bit, 0)
+      .query(`
+        INSERT INTO reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
+        (room_name, email, is_host)
+        VALUES (@room_name, @email, @is_host)
+      `);
+
+    // 获取更新后的用户列表
+    const usersResult = await pool.request()
+      .input('room_name', sql.NVarChar, room_name)
+      .query(`
+        SELECT email, is_host, join_time
+        FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
+        WHERE room_name = @room_name
+        ORDER BY is_host DESC, join_time ASC
+      `);
+
+    // 通过 Socket.IO 广播用户加入
+    if (io) {
+      io.to(`room-${room.id}`).emit('room-users-update', usersResult.recordset);
+      io.emit('rooms-updated');
+    }
+
+    res.json({ 
+      success: true, 
+      room: {
+        ...room,
+        users: usersResult.recordset,
+        current_users: usersResult.recordset.length
+      },
+      users: usersResult.recordset
+    });
+  } catch (err) {
+    console.error('加入房间失败:', err);
+    res.status(500).json({ error: '加入房间失败: ' + err.message });
+  }
+});
+
+// 房主解散房间 (DELETE 请求)
+app.delete('/api/ReactDemomusic-rooms/:room_name', async (req, res) => {
+    const { room_name } = req.params;
+    const { email } = req.body;
+
+    if (!room_name || !email) {
+        return res.status(400).json({ error: '房间名和用户邮箱不能为空' });
+    }
+
+    try {
+        const pool = await poolConnect;
+        
+        // 获取房间信息并验证房主身份
+        const roomResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query('SELECT id, host FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name');
+        
+        if (roomResult.recordset.length === 0) {
+            return res.status(404).json({ error: '房间不存在' });
+        }
+        
+        const room = roomResult.recordset[0];
+        if (room.host !== email) {
+            return res.status(403).json({ error: '权限不足，只有房主才能解散房间' });
+        }
+
+        // 删除房间所有相关数据
+        await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query('DELETE FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name');
+        
+        await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query('DELETE FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name');
+        
+        // 广播房间解散事件
+        if (io) {
+            io.to(`room-${room.id}`).emit('room-dissolved');
+            io.emit('rooms-updated');
+        }
+
+        res.json({ success: true, message: '房间已成功解散' });
+    } catch (err) {
+        console.error('解散房间失败:', err);
+        res.status(500).json({ error: '解散房间失败: ' + err.message });
+    }
+});
+
+// 离开房间
+app.post('/api/ReactDemomusic-rooms/leave', async (req, res) => {
+    const { room_name, email } = req.body;
+
+    try {
+        const pool = await poolConnect;
+        
+        // 获取房间信息
+        const roomResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query('SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name');
+        
+        if (roomResult.recordset.length === 0) {
+            return res.status(404).json({ error: '房间不存在' });
+        }
+
+        const room = roomResult.recordset[0];
+
+        // 检查用户是否在房间中
+        const userCheck = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .input('email', sql.NVarChar, email)
+            .query('SELECT is_host FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name AND email = @email');
+        
+        if (userCheck.recordset.length === 0) {
+            return res.status(400).json({ error: '您不在此房间中' });
+        }
+
+        const wasHost = userCheck.recordset[0].is_host;
+
+        // 移除用户
+        await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .input('email', sql.NVarChar, email)
+            .query('DELETE FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name AND email = @email');
+
+        // 检查剩余用户数量
+        const remainingUsersResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query('SELECT COUNT(*) as user_count FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name');
+        
+        const remainingUserCount = remainingUsersResult.recordset[0].user_count;
+
+        // 处理房主离开的情况
+        if (wasHost) {
+            if (remainingUserCount > 0) {
+                // 还有剩余用户，转移房主给最早加入的用户
+                const newHostResult = await pool.request()
+                    .input('room_name', sql.NVarChar, room_name)
+                    .query('SELECT TOP 1 email FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name ORDER BY join_time ASC');
+                
+                if (newHostResult.recordset.length > 0) {
+                    const newHost = newHostResult.recordset[0].email;
+                    
+                    // 更新房间的房主
+                    await pool.request()
+                        .input('room_name', sql.NVarChar, room_name)
+                        .input('new_host', sql.NVarChar, newHost)
+                        .query('UPDATE reactDemoApp.dbo.ListenMusicTogetherMusicRooms SET host = @new_host WHERE room_name = @room_name');
+                    
+                    // 更新新用户的房主状态
+                    await pool.request()
+                        .input('room_name', sql.NVarChar, room_name)
+                        .input('new_host', sql.NVarChar, newHost)
+                        .query('UPDATE reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers SET is_host = 1 WHERE room_name = @room_name AND email = @new_host');
+                }
+            } else {
+                // 没有剩余用户，关闭房间
+                await pool.request()
+                    .input('room_name', sql.NVarChar, room_name)
+                    .query('UPDATE reactDemoApp.dbo.ListenMusicTogetherMusicRooms SET room_status = \'已关闭\' WHERE room_name = @room_name');
+            }
+        }
+
+        // 获取更新后的用户列表
+        const usersResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query(`
+                SELECT email, is_host, join_time
+                FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
+                WHERE room_name = @room_name
+                ORDER BY is_host DESC, join_time ASC
+            `);
+
+        // 通过 Socket.IO 广播用户离开
+        if (io) {
+            io.to(`room-${room.id}`).emit('room-users-update', usersResult.recordset);
+            io.emit('rooms-updated');
+
+            // 如果房间被关闭，广播房间关闭事件
+            if (remainingUserCount === 0) {
+                io.to(`room-${room.id}`).emit('room-closed');
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            message: wasHost ? '已退出房间，房主权限已转移' : '已成功离开房间',
+            roomClosed: remainingUserCount === 0
+        });
+    } catch (err) {
+        console.error('离开房间失败:', err);
+        res.status(500).json({ error: '离开房间失败: ' + err.message });
+    }
+});
+
+// 更新房间状态（主持人用）
+app.put('/api/ReactDemomusic-rooms/:roomId', async (req, res) => {
+  const { roomId } = req.params;
+  const { title, artist, coverimage, src, genre, current_time, is_playing, play_mode } = req.body;
+
+  try {
+    const pool = await poolConnect;
+    
+    await pool.request()
+      .input('room_id', sql.Int, roomId)
+      .input('title', sql.NVarChar, title)
+      .input('artist', sql.NVarChar, artist)
+      .input('coverimage', sql.NVarChar, coverimage)
+      .input('src', sql.NVarChar, src)
+      .input('genre', sql.NVarChar, genre)
+      .input('current_time', sql.Float, current_time)
+      .input('is_playing', sql.Bit, is_playing)
+      .input('play_mode', sql.NVarChar, play_mode)
+      .query(`
+        UPDATE reactDemoApp.dbo.ListenMusicTogetherMusicRooms 
+        SET title = @title, artist = @artist, coverimage = @coverimage, 
+            src = @src, genre = @genre, current_time = @current_time, 
+            is_playing = @is_playing, play_mode = @play_mode
+        WHERE id = @room_id
+      `);
+
+    // 获取更新后的房间信息
+    const roomResult = await pool.request()
+      .input('room_id', sql.Int, roomId)
+      .query('SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE id = @room_id');
+
+    const room = roomResult.recordset[0];
+
+    // 通过 Socket.IO 广播状态更新
+    if (io) {
+      io.to(`room-${roomId}`).emit('room-state-update', room);
+    }
+
+    res.json({ success: true, room });
+  } catch (err) {
+    console.error('更新房间状态失败:', err);
+    res.status(500).json({ error: '更新房间状态失败' });
+  }
+});
+
+// 获取房间用户列表
+app.get('/api/ReactDemomusic-rooms/:roomName/users', async (req, res) => {
+  const { roomName } = req.params;
+
+  try {
+    const pool = await poolConnect;
+    
+    const usersResult = await pool.request()
+      .input('room_name', sql.NVarChar, roomName)
+      .query(`
+        SELECT email, is_host, join_time
+        FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
+        WHERE room_name = @room_name
+        ORDER BY is_host DESC, join_time ASC
+      `);
+
+    res.json(usersResult.recordset);
+  } catch (err) {
+    console.error('获取房间用户失败:', err);
+    res.status(500).json({ error: '获取房间用户失败' });
+  }
+});
+
+// 发送消息
+app.post('/api/ReactDemomusic-rooms/:roomName/messages', async (req, res) => {
+  const { roomName } = req.params;
+  const { email, message } = req.body;
+
+  try {
+    const pool = await poolConnect;
+    
+    // 获取房间ID
+    const roomResult = await pool.request()
+      .input('room_name', sql.NVarChar, roomName)
+      .query('SELECT id FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name');
+    
+    if (roomResult.recordset.length === 0) {
+      return res.status(404).json({ error: '房间不存在' });
+    }
+
+    const roomId = roomResult.recordset[0].id;
+
+    // 插入消息
+    await pool.request()
+      .input('room_name', sql.NVarChar, roomName)
+      .input('email', sql.NVarChar, email)
+      .input('message', sql.NVarChar, message)
+      .query(`
+        INSERT INTO reactDemoApp.dbo.MusicRoomMessages 
+        (room_name, email, message)
+        VALUES (@room_name, @email, @message)
+      `);
+
+    // 获取完整的消息信息（包含用户信息）
+    const messageResult = await pool.request()
+      .input('room_name', sql.NVarChar, roomName)
+      .input('email', sql.NVarChar, email)
+      .query(`
+        SELECT m.*, u.username 
+        FROM reactDemoApp.dbo.MusicRoomMessages m
+        LEFT JOIN BillingApp.dbo.users u ON m.email = u.email
+        WHERE m.room_name = @room_name AND m.email = @email
+        ORDER BY m.sent_at DESC
+      `);
+
+    const newMessage = messageResult.recordset[0];
+
+    // 通过 Socket.IO 广播新消息
+    if (io) {
+      io.to(`room-${roomId}`).emit('new-message', newMessage);
+    }
+
+    res.json({ success: true, message: newMessage });
+  } catch (err) {
+    console.error('发送消息失败:', err);
+    res.status(500).json({ error: '发送消息失败' });
+  }
+});
+
+// 获取房间消息
+app.get('/api/ReactDemomusic-rooms/:roomName/messages', async (req, res) => {
+  const { roomName } = req.params;
+
+  try {
+    const pool = await poolConnect;
+    
+    const result = await pool.request()
+      .input('room_name', sql.NVarChar, roomName)
+      .query(`
+        SELECT m.*, u.username 
+        FROM reactDemoApp.dbo.MusicRoomMessages m
+        LEFT JOIN reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers u ON m.email = u.email
+        WHERE m.room_name = @room_name
+        ORDER BY m.sent_at ASC
+      `);
+
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('获取消息失败:', err);
+    res.status(500).json({ error: '获取消息失败' });
+  }
+});
+ 
+ 
+ 
+//reactdemo 一起听歌曲管理  👆
+
+
+
+
+
+
+
+
+
 //reactdemo 歌曲评论 api👇
-// 获取某首歌曲的所有评论，使用北京时间
+// 新增 API：根据歌曲标题和艺术家获取 music_id
+app.get('/api/ReactDemomusic-id', async (req, res) => {
+    const { title, artist } = req.query;
+
+    if (!title || !artist) {
+        return res.status(400).json({ error: 'title and artist are required' });
+    }
+
+    try {
+        await sql.connect(config);
+        const result = await sql.query`
+            SELECT id as music_id 
+            FROM ChatApp.dbo.Music 
+            WHERE title = ${title} AND artist = ${artist}
+        `;
+        
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ error: 'Music not found' });
+        }
+        
+        res.json({ music_id: result.recordset[0].music_id });
+    } catch (err) {
+        console.error('Error fetching music ID:', err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        sql.close();
+    }
+});
+
+// 获取歌曲评论
+// GET /api/ReactDemomusic-comments (最终修正版)
 app.get('/api/ReactDemomusic-comments', async (req, res) => {
     const { music_id } = req.query;
 
@@ -9253,8 +9861,9 @@ app.get('/api/ReactDemomusic-comments', async (req, res) => {
                 music_artist,
                 user_name, 
                 comment_text, 
-                -- 转换为北京时间 (UTC+8)
-                DATEADD(HOUR, 8, created_at) as created_at
+                -- 【【【 核心修改 】】】
+                -- 直接返回数据库中原始的 created_at (UTC时间)
+                created_at 
             FROM ChatApp.dbo.MusicComments 
             WHERE music_id = ${music_id}
             ORDER BY created_at DESC
@@ -9283,6 +9892,16 @@ app.post('/api/ReactDemomusiccomments', async (req, res) => {
 
     try {
         await sql.connect(config);
+        
+        // 验证 music_id 是否存在
+        const musicCheck = await sql.query`
+            SELECT id FROM ChatApp.dbo.Music WHERE id = ${Number(music_id)}
+        `;
+        
+        if (musicCheck.recordset.length === 0) {
+            return res.status(404).json({ error: 'Music not found' });
+        }
+
         const result = await sql.query`
             INSERT INTO ChatApp.dbo.MusicComments 
             (music_id, music_title, music_artist, user_name, comment_text)

@@ -17,6 +17,7 @@ import Musicplayer from '../pages/modules/music/Player';
 import MusicplayerLyrics from '../pages/modules/music/MusicplayerLyrics';
 import MusicPlaylist from '../pages/modules/music/MusicPlaylist';
 import MusicSongReview from '../pages/modules/music/SongReview';
+import MusicTogetherRoomManager from '../pages/modules/music/TogetherRoomManager';
 
 import OutfitCloset from '../pages/modules/outfit/Closet';
 import OutfitCombos from '../pages/modules/outfit/Combos';
@@ -101,6 +102,7 @@ const AppRoutes = () => {
          <Route path="musicplayer" element={<Musicplayer />} />
          <Route path="musicplaylist" element={<MusicPlaylist />} />
          <Route path="musicsongreview" element={<MusicSongReview />} />
+         <Route path="musictogetherroommanager" element={<MusicTogetherRoomManager />} />
       </Route>
 
       <Route

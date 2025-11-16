@@ -48,6 +48,7 @@ const moduleMenus = {
     { key: 'recommend', label: '推荐', icon: '#icon-tuijian1', path: '/app/music/recommend', showInTabs: false },
     { key: 'recent', label: '最近播放', icon: '#icon-zuijinbofang', path: '/app/music/recent', showInTabs: false },
     { key: 'favorites', label: '我的喜欢', icon: '#icon-xihuan11', path: '/app/music/favorites', showInTabs: false },
+    { key: 'musictogetherroommanager', label: '一起听歌', icon: '#icon-xihuan11', path: '/app/music/musictogetherroommanager' },
     // { key: 'musicplayerlyrics', label: '歌词', icon: '#icon-xihuan11', path: '/app/music/musicplayerlyrics' },
   ],
   outfit: [

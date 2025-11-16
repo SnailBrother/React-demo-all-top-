@@ -12,3 +12,4 @@ export { default as Span } from './Span';
 export { default as BottomNav } from './BottomNav';
 export { default as Sidebar } from './Sidebar';
 export { default as Loading } from './Loading';
+export { default as ConfirmationDialog } from './ConfirmationDialog';//自定义确认对话框
