@@ -11,7 +11,8 @@ import { Loading } from '../../../components/UI';
 
 const Recent = () => {
     const { user, isAuthenticated } = useAuth();
-    const { dispatch, currentSong } = useMusic();
+   const { state, dispatch } = useMusic();
+const { currentSong } = state;
     const [recentMusics, setRecentMusics] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);

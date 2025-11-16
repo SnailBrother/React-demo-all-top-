@@ -25,14 +25,14 @@ const Player = ({ className = '' }) => {
   const navigate = useNavigate(); // 添加导航hook
   const { state, dispatch } = useMusic();
   const { user, isAuthenticated } = useAuth(); // 获取用户信息
-  const { currentSong, isPlaying, queue, volume = 1, playMode = 'repeat' } = state; 
+  const { currentSong, isPlaying, queue, volume = 1, playMode = 'repeat' } = state;
   const audioRef = useRef(null);
 
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(false);
- 
+
   // --- 记录播放历史 ---
   const recordPlayHistory = async (song) => {
     if (!isAuthenticated || !user?.email || !song) {
@@ -43,9 +43,9 @@ const Player = ({ className = '' }) => {
       // 生成正确的文件名
       const coverimageFileName = generateFileName(song.title, song.artist, 'jpg');
       const srcFileName = generateFileName(song.title, song.artist, 'mp3');
-      
+
       await axios.post('/api/reactdemoRecentlyPlayedmusic', {
-        email: user.email,         
+        email: user.email,
         title: song.title,
         artist: song.artist,
         coverimage: coverimageFileName, // 使用生成的文件名
@@ -63,23 +63,23 @@ const Player = ({ className = '' }) => {
   };
 
   // --- 增加播放量 ---
-// --- 增加播放量 ---
-const increasePlayCount = async (song) => {
-  if (!song) {
-    return;
-  }
+  // --- 增加播放量 ---
+  const increasePlayCount = async (song) => {
+    if (!song) {
+      return;
+    }
 
-  try {
-    await axios.post('/api/reactdemoIncreasePlayCount', {
-      title: song.title,
-      artist: song.artist
-    });
-    console.log('播放量统计请求已发送:', { title: song.title, artist: song.artist });
-  } catch (err) {
-    console.error('增加播放量失败:', err);
-    // 这里可以选择不提示用户，避免影响播放体验
-  }
-};
+    try {
+      await axios.post('/api/reactdemoIncreasePlayCount', {
+        title: song.title,
+        artist: song.artist
+      });
+      console.log('播放量统计请求已发送:', { title: song.title, artist: song.artist });
+    } catch (err) {
+      console.error('增加播放量失败:', err);
+      // 这里可以选择不提示用户，避免影响播放体验
+    }
+  };
 
   // --- 检查歌曲是否已被收藏 ---
   useEffect(() => {
@@ -98,9 +98,9 @@ const increasePlayCount = async (song) => {
           search: currentSong.title // 通过歌曲名搜索
         }
       });
-      
+
       // 检查当前歌曲是否在收藏列表中
-      const isSongLiked = response.data.data.some(favorite => 
+      const isSongLiked = response.data.data.some(favorite =>
         favorite.title === currentSong.title && favorite.artist === currentSong.artist
       );
       setIsLiked(isSongLiked);
@@ -119,17 +119,17 @@ const increasePlayCount = async (song) => {
   useEffect(() => {
     if (audioRef.current && currentSong) {
       audioRef.current.src = currentSong.src;
-      setProgress(0); 
+      setProgress(0);
       setDuration(0);
-      
+
       // 当歌曲切换时，记录播放历史和增加播放量
       if (isAuthenticated && user?.email) {
         recordPlayHistory(currentSong);
       }
-      
+
       // 每次切换歌曲时增加播放量
       increasePlayCount(currentSong);
-      
+
       if (isPlaying) {
         audioRef.current.play().catch(console.error);
       }
@@ -139,25 +139,25 @@ const increasePlayCount = async (song) => {
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
-  
-  // --- 事件处理函数 ---
- const handleTimeUpdate = () => {
-  if (audioRef.current) {
-    const currentProgress = audioRef.current.currentTime;
-    setProgress(currentProgress);
-    // 更新到 Context，让歌词页面也能获取
-    dispatch({ type: 'SET_PROGRESS', payload: currentProgress });
-  }
-};
 
-const handleLoadedMetadata = () => {
-  if (audioRef.current) {
-    const totalDuration = audioRef.current.duration;
-    setDuration(totalDuration);
-    // 更新到 Context
-    dispatch({ type: 'SET_DURATION', payload: totalDuration });
-  }
-};
+  // --- 事件处理函数 ---
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      const currentProgress = audioRef.current.currentTime;
+      setProgress(currentProgress);
+      // 更新到 Context，让歌词页面也能获取
+      dispatch({ type: 'SET_PROGRESS', payload: currentProgress });
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      const totalDuration = audioRef.current.duration;
+      setDuration(totalDuration);
+      // 更新到 Context
+      dispatch({ type: 'SET_DURATION', payload: totalDuration });
+    }
+  };
 
   const handleSongEnd = () => {
     // 歌曲播放结束时也增加播放量（确保完整播放）
@@ -172,12 +172,12 @@ const handleLoadedMetadata = () => {
   const playNext = () => dispatch({ type: 'NEXT_SONG' });
   const playPrev = () => dispatch({ type: 'PREV_SONG' });
   const togglePlayMode = () => dispatch({ type: 'TOGGLE_PLAY_MODE' });
-  
+
   const handleProgressChange = (e) => {
     if (audioRef.current) audioRef.current.currentTime = e.target.value;
   };
   const handleVolumeChange = (e) => dispatch({ type: 'SET_VOLUME', payload: parseFloat(e.target.value) });
-  
+
   // --- 修改喜欢功能 ---
   const handleLike = async () => {
     if (!isAuthenticated || !user?.username) {
@@ -217,23 +217,32 @@ const handleLoadedMetadata = () => {
       setLoading(false);
     }
   };
-  
-  const showComments = () => alert('评论功能待开发');
-// 修改 showLyrics 函数
-const showLyrics = () => {
-    console.log('点击歌词按钮'); // 调试信息
-    console.log('当前歌曲:', currentSong); // 调试信息
-    console.log('navigate 函数:', navigate); // 检查 navigate 是否可用
-    
+
+ //歌曲评论
+    const showComments = () => {
     if (!currentSong) {
-        alert('请先选择一首歌曲');
-        return;
+      alert('请先选择一首歌曲');
+      return;
     }
-    
-    console.log('准备导航到:', '/app/music/musicplayerlyrics'); // 调试信息
+    navigate('/app/music/musicsongreview');
+  };
+
+  // 修改 showLyrics 函数
+  const showLyrics = () => {
+    if (!currentSong) {
+      alert('请先选择一首歌曲');
+      return;
+    }
     navigate('/app/music/musicplayerlyrics');
-};
-  const showPlaylist = () => alert('播放列表功能待开发');
+  };
+
+  const showPlaylist = () => {
+    if (!currentSong) {
+      alert('请先选择一首歌曲');
+      return;
+    }
+    navigate('/app/music/musicplaylist');
+  };
 
   if (!currentSong) return null;
 
@@ -256,33 +265,33 @@ const showLyrics = () => {
       <div className={`${styles.player} ${className}`}>
         {/* --- 第一列：歌曲封面 --- */}
         <div className={styles.column1}>
-          <img 
-            src={currentSong.coverimage || 'http://121.4.22.55:80/backend/musics/default.jpg'} 
-            alt={currentSong.title} 
+          <img
+            src={currentSong.coverimage || 'http://121.4.22.55:80/backend/musics/default.jpg'}
+            alt={currentSong.title}
             className={styles.playerArtwork}
-            onError={(e) => { e.target.onerror = null; e.target.src='http://121.4.22.55:80/backend/musics/default.jpg' }}
+            onError={(e) => { e.target.onerror = null; e.target.src = 'http://121.4.22.55:80/backend/musics/default.jpg' }}
           />
         </div>
 
         {/* --- 第二列：歌曲信息与操作 --- */}
         <div className={styles.column2}>
-            <div className={styles.songDetails}>
-                <span className={styles.songTitle}>{currentSong.title}</span>
-                <span className={styles.songArtist}>{currentSong.artist}</span>
-            </div>
-            <div className={styles.songActions}>
-                <button 
-                  className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`} 
-                  onClick={handleLike} 
-                  title={isLiked ? "取消喜欢" : "喜欢"}
-                  disabled={loading}
-                >
-                  {loading ? '⏳' : (isLiked ? '❤️' : '♡')}
-                </button>
-                <button className={styles.actionButton} onClick={showComments} title="评论">
-                    💬
-                </button>
-            </div>
+          <div className={styles.songDetails}>
+            <span className={styles.songTitle}>{currentSong.title}</span>
+            <span className={styles.songArtist}>{currentSong.artist}</span>
+          </div>
+          <div className={styles.songActions}>
+            <button
+              className={`${styles.actionButton} ${isLiked ? styles.liked : ''}`}
+              onClick={handleLike}
+              title={isLiked ? "取消喜欢" : "喜欢"}
+              disabled={loading}
+            >
+              {loading ? '⏳' : (isLiked ? '❤️' : '♡')}
+            </button>
+            <button className={styles.actionButton} onClick={showComments} title="评论">
+              💬
+            </button>
+          </div>
         </div>
 
         {/* --- 第三列：主要控件和进度条 --- */}

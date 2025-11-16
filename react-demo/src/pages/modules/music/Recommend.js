@@ -11,7 +11,7 @@ import { Loading } from '../../../components/UI';
 
 const Recommend = () => {
     const { user, isAuthenticated } = useAuth();
-    const { dispatch, currentSong } = useMusic();
+    const { dispatch, currentSong } = useMusic();//修改为数据库中的id
     const [musicData, setMusicData] = useState({
         ranking: [],
         chinese: [],

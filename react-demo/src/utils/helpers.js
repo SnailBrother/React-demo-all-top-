@@ -122,3 +122,80 @@ export const deepClone = (obj) => {
   }
 };
 
+
+
+//辅助函数 北京时间 👇
+/**
+ * 将日期转换为北京时间
+ * @param {Date|string} date - 日期对象或日期字符串
+ * @param {string} format - 格式类型：'datetime' | 'date' | 'time' | 'full'
+ * @returns {string} 北京时间字符串
+ */
+export const toBeijingTime = (date, format = 'datetime') => {
+  if (!date) return '';
+  
+  let dateObj;
+  if (typeof date === 'string') {
+    dateObj = new Date(date);
+  } else {
+    dateObj = new Date(date);
+  }
+
+  // 转换为北京时间 (UTC+8)
+  const beijingTime = new Date(dateObj.getTime() + (8 * 60 * 60 * 1000));
+  
+  const year = beijingTime.getUTCFullYear();
+  const month = String(beijingTime.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(beijingTime.getUTCDate()).padStart(2, '0');
+  const hours = String(beijingTime.getUTCHours()).padStart(2, '0');
+  const minutes = String(beijingTime.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(beijingTime.getUTCSeconds()).padStart(2, '0');
+
+  switch (format) {
+    case 'date':
+      return `${year}-${month}-${day}`;
+    case 'time':
+      return `${hours}:${minutes}:${seconds}`;
+    case 'full':
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    case 'datetime':
+    default:
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+};
+
+/**
+ * 获取当前北京时间
+ * @param {string} format - 格式类型
+ * @returns {string} 当前北京时间字符串
+ */
+export const getCurrentBeijingTime = (format = 'datetime') => {
+  return toBeijingTime(new Date(), format);
+};
+
+/**
+ * 格式化相对时间（如：刚刚、5分钟前等）
+ * @param {Date|string} date - 日期
+ * @returns {string} 相对时间字符串
+ */
+export const formatRelativeTime = (date) => {
+  if (!date) return '';
+  
+  const beijingTime = new Date(new Date(date).getTime() + (8 * 60 * 60 * 1000));
+  const now = new Date(new Date().getTime() + (8 * 60 * 60 * 1000));
+  const diffInSeconds = Math.floor((now - beijingTime) / 1000);
+  
+  if (diffInSeconds < 60) {
+    return '刚刚';
+  } else if (diffInSeconds < 3600) {
+    return `${Math.floor(diffInSeconds / 60)}分钟前`;
+  } else if (diffInSeconds < 86400) {
+    return `${Math.floor(diffInSeconds / 3600)}小时前`;
+  } else if (diffInSeconds < 2592000) {
+    return `${Math.floor(diffInSeconds / 86400)}天前`;
+  } else {
+    return toBeijingTime(date, 'date');
+  }
+};
+
+//辅助函数 北京时间 👆

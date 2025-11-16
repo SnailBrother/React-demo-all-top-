@@ -9,7 +9,8 @@ import MusicGridView from './homlistviews/MusicGridView';
 import { Loading } from '../../../components/UI';
 
 const Home = () => {
-    const { dispatch, currentSong } = useMusic();
+  const { state, dispatch } = useMusic();
+const { currentSong } = state; // 从 state 中解构出 currentSong
     const [musics, setMusics] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -44,7 +45,7 @@ const Home = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await axios.get('http://121.4.22.55:5201/api/getallmusics', {
+                const response = await axios.get('/api/getallmusics', {
                     params: { page: page, pageSize: 20, search: searchTerm }
                 });
                 const newMusics = response.data.data.map(song => ({

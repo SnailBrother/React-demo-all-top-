@@ -15,6 +15,8 @@ import MusicRecent from '../pages/modules/music/Recent';
 import MusicFavorites from '../pages/modules/music/Favorites';
 import Musicplayer from '../pages/modules/music/Player';
 import MusicplayerLyrics from '../pages/modules/music/MusicplayerLyrics';
+import MusicPlaylist from '../pages/modules/music/MusicPlaylist';
+import MusicSongReview from '../pages/modules/music/SongReview';
 
 import OutfitCloset from '../pages/modules/outfit/Closet';
 import OutfitCombos from '../pages/modules/outfit/Combos';
@@ -97,6 +99,8 @@ const AppRoutes = () => {
         <Route path="favorites" element={<MusicFavorites />} />
         <Route path="musicplayerlyrics" element={<MusicplayerLyrics />} />
          <Route path="musicplayer" element={<Musicplayer />} />
+         <Route path="musicplaylist" element={<MusicPlaylist />} />
+         <Route path="musicsongreview" element={<MusicSongReview />} />
       </Route>
 
       <Route

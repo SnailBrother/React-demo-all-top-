@@ -4391,7 +4391,6 @@ app.get('/backend/api/music-comments/count', async (req, res) => {
 });
 // 提交新评论
 // 提交新评论API
-// 提交新评论API
 app.post('/backend/api/music-comments', async (req, res) => {
     console.log('Received comment data:', req.body);
     const { music_id, music_title, music_artist, user_name, comment_text } = req.body;
@@ -9234,7 +9233,191 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
 });
 //新的歌曲获取 react demo   👆
 
+ 
+//reactdemo 歌曲评论 api👇
+// 获取某首歌曲的所有评论，使用北京时间
+app.get('/api/ReactDemomusic-comments', async (req, res) => {
+    const { music_id } = req.query;
 
+    if (!music_id) {
+        return res.status(400).json({ error: 'music_id is required' });
+    }
+
+    try {
+        await sql.connect(config);
+        const result = await sql.query`
+            SELECT 
+                comment_id, 
+                music_id,
+                music_title,
+                music_artist,
+                user_name, 
+                comment_text, 
+                -- 转换为北京时间 (UTC+8)
+                DATEADD(HOUR, 8, created_at) as created_at
+            FROM ChatApp.dbo.MusicComments 
+            WHERE music_id = ${music_id}
+            ORDER BY created_at DESC
+        `;
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Error fetching comments:', err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        sql.close();
+    }
+});
+
+// 提交新评论 
+app.post('/api/ReactDemomusiccomments', async (req, res) => {
+    console.log('Received comment data:', req.body);
+    const { music_id, music_title, music_artist, user_name, comment_text } = req.body;
+
+    // 添加更严格的验证
+    if (!music_id || isNaN(music_id)) {
+        return res.status(400).json({ error: 'Valid music_id is required' });
+    }
+    if (!music_title || !music_artist || !user_name || !comment_text) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    try {
+        await sql.connect(config);
+        const result = await sql.query`
+            INSERT INTO ChatApp.dbo.MusicComments 
+            (music_id, music_title, music_artist, user_name, comment_text)
+            VALUES 
+            (${Number(music_id)}, ${music_title}, ${music_artist}, ${user_name}, ${comment_text})
+        `;
+
+        io.emit('new-comment', { music_id: Number(music_id) });
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error submitting comment:', err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        sql.close();
+    }
+});
+
+// 更新评论
+app.put('/api/ReactDemomusiccomments/update', async (req, res) => {
+    console.log('Received update comment data:', req.body);
+    const { comment_id, comment_text, user_name } = req.body;
+
+    if (!comment_id || !comment_text || !user_name) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    try {
+        await sql.connect(config);
+        // 验证用户是否有权限修改这条评论
+        const checkResult = await sql.query`
+            SELECT user_name FROM ChatApp.dbo.MusicComments 
+            WHERE comment_id = ${comment_id}
+        `;
+
+        if (checkResult.recordset.length === 0) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        if (checkResult.recordset[0].user_name !== user_name) {
+            return res.status(403).json({ error: 'No permission to update this comment' });
+        }
+
+        // 更新评论
+        const updateResult = await sql.query`
+            UPDATE ChatApp.dbo.MusicComments 
+            SET comment_text = ${comment_text}, updated_at = GETDATE()
+            WHERE comment_id = ${comment_id}
+        `;
+
+        // 获取音乐ID用于socket通知
+        const musicResult = await sql.query`
+            SELECT music_id FROM ChatApp.dbo.MusicComments 
+            WHERE comment_id = ${comment_id}
+        `;
+
+        if (musicResult.recordset.length > 0) {
+            io.emit('comment-updated', { music_id: musicResult.recordset[0].music_id });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error updating comment:', err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        sql.close();
+    }
+});
+
+// 删除评论
+app.delete('/api/ReactDemomusiccomments/delete', async (req, res) => {
+    console.log('Received delete comment data:', req.body);
+    const { comment_id, user_name } = req.body;
+
+    if (!comment_id || !user_name) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    try {
+        await sql.connect(config);
+        // 验证用户是否有权限删除这条评论
+        const checkResult = await sql.query`
+            SELECT user_name, music_id FROM ChatApp.dbo.MusicComments 
+            WHERE comment_id = ${comment_id}
+        `;
+
+        if (checkResult.recordset.length === 0) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        if (checkResult.recordset[0].user_name !== user_name) {
+            return res.status(403).json({ error: 'No permission to delete this comment' });
+        }
+
+        const music_id = checkResult.recordset[0].music_id;
+
+        // 删除评论
+        const deleteResult = await sql.query`
+            DELETE FROM ChatApp.dbo.MusicComments 
+            WHERE comment_id = ${comment_id}
+        `;
+
+        io.emit('comment-updated', { music_id: music_id });
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting comment:', err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        sql.close();
+    }
+});
+
+// 获取某首歌曲的评论数量
+app.get('/api/ReactDemomusic-comments/count', async (req, res) => {
+    const { music_id } = req.query;
+
+    if (!music_id) {
+        return res.status(400).json({ error: 'music_id is required' });
+    }
+
+    try {
+        await sql.connect(config);
+        const result = await sql.query`
+            SELECT COUNT(*) as count 
+            FROM ChatApp.dbo.MusicComments 
+            WHERE music_id = ${music_id}
+        `;
+        res.json({ count: result.recordset[0].count });
+    } catch (err) {
+        console.error('Error fetching comment count:', err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        sql.close();
+    }
+});
+//reactdemo 歌曲评论 👆
 
 
 //reactdemo 登录注册 👇
