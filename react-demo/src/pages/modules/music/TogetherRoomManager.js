@@ -1,18 +1,19 @@
 // src/components/modules/music/TogetherRoomManager.js
+// src/components/modules/music/TogetherRoomManager.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import axios from 'axios';
 import { ConfirmationDialog } from '../../../components/UI';
 import styles from './TogetherRoomManager.module.css';
+import io from 'socket.io-client';
+
+// 创建 Socket.IO 实例
+const socket = io('http://121.4.22.55:5201');
 
 const TogetherRoomManager = () => {
-    // 1. 使用 useState 建立组件自己的、独立的房间列表状态
     const [rooms, setRooms] = useState([]);
-
-    // 仅保留 useAuth 用于获取当前用户信息
     const { user, isAuthenticated } = useAuth();
     
-    // 组件内部的其他状态，用于控制UI和表单
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showJoinForm, setShowJoinForm] = useState(false);
     const [roomName, setRoomName] = useState('');
@@ -23,13 +24,60 @@ const TogetherRoomManager = () => {
     const [error, setError] = useState('');
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [pendingRoomAction, setPendingRoomAction] = useState(null);
+    const [socketConnected, setSocketConnected] = useState(false);
+   const currentUserRoom = rooms.find(room => room.users?.some(u => u.email === user.email));
+    // Socket.IO 连接和事件监听
+    useEffect(() => {
+        // 连接成功
+        socket.on('connect', () => {
+            console.log('Socket.IO 连接成功');
+            setSocketConnected(true);
+        });
+
+        // 连接断开
+        socket.on('disconnect', () => {
+            console.log('Socket.IO 连接断开');
+            setSocketConnected(false);
+        });
+
+        // 监听房间列表更新事件
+        socket.on('rooms-updated', () => {
+            console.log('收到房间列表更新通知，重新获取数据');
+            fetchRooms();
+        });
+
+        // 监听房间解散事件
+        socket.on('room-dissolved', () => {
+            console.log('收到房间解散通知');
+            fetchRooms();
+            alert('您所在的房间已被解散');
+        });
+
+        // 监听房间关闭事件
+        socket.on('room-closed', () => {
+            console.log('收到房间关闭通知');
+            fetchRooms();
+            alert('房间已关闭');
+        });
+
+        // 清理事件监听器
+        return () => {
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('rooms-updated');
+            socket.off('room-dissolved');
+            socket.off('room-closed');
+            socket.off('room-users-update');
+            socket.off('room-state-update');
+            socket.off('new-message');
+        };
+    }, []);
 
     // 获取房间列表的函数
     const fetchRooms = useCallback(async () => {
         if (!isAuthenticated) return;
         try {
             const response = await axios.get('/api/ReactDemomusic-rooms');
-            // 2. 直接更新组件自己的 rooms state
             setRooms(response.data);
         } catch (err) {
             console.error('获取房间列表失败:', err);
@@ -40,9 +88,24 @@ const TogetherRoomManager = () => {
     // 组件首次挂载和定时刷新逻辑
     useEffect(() => {
         fetchRooms();
-        const interval = setInterval(fetchRooms, 10000);
+        
+        // 由于有了 Socket.IO 实时通知，可以延长轮询间隔或完全移除
+        const interval = setInterval(fetchRooms, 30000); // 延长到30秒
+        
         return () => clearInterval(interval);
     }, [fetchRooms]);
+
+    // 加入房间后加入对应的 Socket.IO 房间
+    useEffect(() => {
+        if (currentUserRoom && socketConnected) {
+            // 离开所有房间
+            socket.emit('leave-all-rooms');
+            
+            // 加入当前房间
+            socket.emit('join-room', `room-${currentUserRoom.id}`);
+            console.log(`加入 Socket.IO 房间: room-${currentUserRoom.id}`);
+        }
+    }, [currentUserRoom, socketConnected]);
 
     // --- 数据操作函数 ---
 
@@ -52,7 +115,7 @@ const TogetherRoomManager = () => {
         setLoading(true);
         setError('');
         try {
-            await axios.post('/api/ReactDemomusic-rooms', {
+            const response = await axios.post('/api/ReactDemomusic-rooms', {
                 room_name: roomName.trim(),
                 password: password || null,
                 host: user.email,
@@ -61,7 +124,9 @@ const TogetherRoomManager = () => {
             setShowCreateForm(false);
             setRoomName('');
             setPassword('');
-            await fetchRooms(); // 操作成功后，重新获取最新列表以刷新UI
+            
+            // 创建成功后，Socket.IO 会自动广播 rooms-updated 事件
+            // 我们只需要等待事件触发重新获取数据
             alert('房间创建成功！');
         } catch (err) {
             const errorMsg = err.response?.data?.error || '创建房间失败';
@@ -77,7 +142,7 @@ const TogetherRoomManager = () => {
         setLoading(true);
         setError('');
         try {
-            await axios.post('/api/ReactDemomusic-rooms/join', {
+            const response = await axios.post('/api/ReactDemomusic-rooms/join', {
                 room_name: joinRoomName,
                 password: joinPassword || null,
                 email: user.email
@@ -85,7 +150,8 @@ const TogetherRoomManager = () => {
             setShowJoinForm(false);
             setJoinRoomName('');
             setJoinPassword('');
-            await fetchRooms(); // 操作成功后，重新获取最新列表以刷新UI
+            
+            // 加入成功后，Socket.IO 会自动广播 rooms-updated 事件
             alert('加入房间成功！');
         } catch (err) {
             const errorMsg = err.response?.data?.error || '加入房间失败';
@@ -101,7 +167,7 @@ const TogetherRoomManager = () => {
             await axios.delete(`/api/ReactDemomusic-rooms/${roomName}`, {
                 data: { email: user.email }
             });
-            await fetchRooms();
+            // 解散成功后，Socket.IO 会自动广播 rooms-updated 和 room-dissolved 事件
             alert('房间已成功解散');
         } catch (err) {
             const errorMsg = err.response?.data?.error || '解散房间失败';
@@ -115,7 +181,7 @@ const TogetherRoomManager = () => {
                 room_name: roomName,
                 email: user.email
             });
-            await fetchRooms();
+            // 离开成功后，Socket.IO 会自动广播 rooms-updated 事件
             alert('已成功离开房间');
         } catch (err) {
             const errorMsg = err.response?.data?.error || '离开房间失败';
@@ -149,20 +215,23 @@ const TogetherRoomManager = () => {
         setPendingRoomAction(null);
     };
 
-
     // --- 渲染逻辑 ---
 
     if (!isAuthenticated) {
         return <div className={styles.roomManager}><p>请先登录以使用一起听歌功能</p></div>;
     }
 
-    // 3. 所有派生数据都基于组件自己的 `rooms` state
-    const currentUserRoom = rooms.find(room => room.users?.some(u => u.email === user.email));
+ 
 
     return (
         <div className={styles.roomManager}>
             <div className={styles.header}>
                 <h3>一起听歌 🎵</h3>
+                <div className={styles.connectionStatus}>
+                    <span className={`${styles.statusIndicator} ${socketConnected ? styles.connected : styles.disconnected}`}>
+                        {socketConnected ? '● 实时连接' : '○ 连接断开'}
+                    </span>
+                </div>
                 {currentUserRoom && (
                     <div className={styles.currentRoom}>
                         <span>当前房间: <strong>{currentUserRoom.room_name}</strong></span>
@@ -172,8 +241,27 @@ const TogetherRoomManager = () => {
                     </div>
                 )}
                 <div className={styles.buttons}>
-                    <button className={styles.primaryButton} onClick={() => setShowCreateForm(true)} disabled={loading || !!currentUserRoom}>创建房间</button>
-                    <button className={styles.secondaryButton} onClick={() => setShowJoinForm(true)} disabled={loading || !!currentUserRoom}>加入房间</button>
+                    <button 
+                        className={styles.primaryButton} 
+                        onClick={() => setShowCreateForm(true)} 
+                        disabled={loading || !!currentUserRoom}
+                    >
+                        创建房间
+                    </button>
+                    <button 
+                        className={styles.secondaryButton} 
+                        onClick={() => setShowJoinForm(true)} 
+                        disabled={loading || !!currentUserRoom}
+                    >
+                        加入房间
+                    </button>
+                    <button 
+                        className={styles.refreshButton} 
+                        onClick={fetchRooms} 
+                        disabled={loading}
+                    >
+                        刷新列表
+                    </button>
                 </div>
             </div>
 
@@ -189,29 +277,89 @@ const TogetherRoomManager = () => {
             />
 
             {showCreateForm && (
-                <div className={styles.modal}><div className={styles.modalContent}>
-                    <h4>创建房间</h4>
-                    <form onSubmit={createRoom}>
-                        <div className={styles.formGroup}><label>房间名称:</label><input type="text" value={roomName} onChange={(e) => setRoomName(e.target.value)} required disabled={loading} /></div>
-                        <div className={styles.formGroup}><label>房间密码 (可选):</label><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} /></div>
-                        <div className={styles.modalButtons}><button type="submit" disabled={loading}>{loading ? '创建中...' : '创建'}</button><button type="button" onClick={() => setShowCreateForm(false)} disabled={loading}>取消</button></div>
-                    </form>
-                </div></div>
+                <div className={styles.modal}>
+                    <div className={styles.modalContent}>
+                        <h4>创建房间</h4>
+                        <form onSubmit={createRoom}>
+                            <div className={styles.formGroup}>
+                                <label>房间名称:</label>
+                                <input 
+                                    type="text" 
+                                    value={roomName} 
+                                    onChange={(e) => setRoomName(e.target.value)} 
+                                    required 
+                                    disabled={loading} 
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label>房间密码 (可选):</label>
+                                <input 
+                                    type="password" 
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)} 
+                                    disabled={loading} 
+                                />
+                            </div>
+                            <div className={styles.modalButtons}>
+                                <button type="submit" disabled={loading}>
+                                    {loading ? '创建中...' : '创建'}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowCreateForm(false)} 
+                                    disabled={loading}
+                                >
+                                    取消
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
 
             {showJoinForm && (
-                <div className={styles.modal}><div className={styles.modalContent}>
-                    <h4>加入房间</h4>
-                    <form onSubmit={joinRoom}>
-                        <div className={styles.formGroup}><label>房间名称:</label><input type="text" value={joinRoomName} onChange={(e) => setJoinRoomName(e.target.value)} required disabled={loading} /></div>
-                        <div className={styles.formGroup}><label>房间密码:</label><input type="password" value={joinPassword} onChange={(e) => setJoinPassword(e.target.value)} placeholder="(无密码可不填)" disabled={loading} /></div>
-                        <div className={styles.modalButtons}><button type="submit" disabled={loading}>{loading ? '加入中...' : '加入'}</button><button type="button" onClick={() => setShowJoinForm(false)} disabled={loading}>取消</button></div>
-                    </form>
-                </div></div>
+                <div className={styles.modal}>
+                    <div className={styles.modalContent}>
+                        <h4>加入房间</h4>
+                        <form onSubmit={joinRoom}>
+                            <div className={styles.formGroup}>
+                                <label>房间名称:</label>
+                                <input 
+                                    type="text" 
+                                    value={joinRoomName} 
+                                    onChange={(e) => setJoinRoomName(e.target.value)} 
+                                    required 
+                                    disabled={loading} 
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label>房间密码:</label>
+                                <input 
+                                    type="password" 
+                                    value={joinPassword} 
+                                    onChange={(e) => setJoinPassword(e.target.value)} 
+                                    placeholder="(无密码可不填)" 
+                                    disabled={loading} 
+                                />
+                            </div>
+                            <div className={styles.modalButtons}>
+                                <button type="submit" disabled={loading}>
+                                    {loading ? '加入中...' : '加入'}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowJoinForm(false)} 
+                                    disabled={loading}
+                                >
+                                    取消
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
 
             <div className={styles.roomList}>
-                {/* 4. 渲染逻辑现在直接使用 `rooms` state，非常可靠 */}
                 <h4>可用房间 ({rooms?.length || 0})</h4>
                 {!rooms || rooms.length === 0 ? (
                     <p>{loading ? '正在加载房间...' : '暂无房间，点击上方按钮创建一个吧！'}</p>
@@ -229,11 +377,43 @@ const TogetherRoomManager = () => {
                                     <span className={styles.users}>{room.current_users || 0}/{room.max_users} 人</span>
                                     {room.password && <span className={styles.locked}>🔒</span>}
                                 </div>
-                                <div className={styles.roomStatus}>{isInRoom ? <span className={styles.statusIn}>✅ 在房间内</span> : <span className={styles.statusOut}>- 未加入 -</span>}</div>
+                                <div className={styles.roomStatus}>
+                                    {isInRoom ? 
+                                        <span className={styles.statusIn}>✅ 在房间内</span> : 
+                                        <span className={styles.statusOut}>- 未加入 -</span>
+                                    }
+                                </div>
                                 <div className={styles.roomActions}>
-                                    {isHost && (<button className={styles.deleteButton} onClick={() => promptAction('delete', room.room_name)} disabled={loading}>解散</button>)}
-                                    {isInRoom && !isHost && (<button className={styles.leaveButton} onClick={() => promptAction('leave', room.room_name)} disabled={loading}>退出</button>)}
-                                    {!isInRoom && (<button className={styles.joinButton} onClick={() => { setJoinRoomName(room.room_name); setShowJoinForm(true); }} disabled={isFull || loading}>{isFull ? '已满' : '加入'}</button>)}
+                                    {isHost && (
+                                        <button 
+                                            className={styles.deleteButton} 
+                                            onClick={() => promptAction('delete', room.room_name)} 
+                                            disabled={loading}
+                                        >
+                                            解散
+                                        </button>
+                                    )}
+                                    {isInRoom && !isHost && (
+                                        <button 
+                                            className={styles.leaveButton} 
+                                            onClick={() => promptAction('leave', room.room_name)} 
+                                            disabled={loading}
+                                        >
+                                            退出
+                                        </button>
+                                    )}
+                                    {!isInRoom && (
+                                        <button 
+                                            className={styles.joinButton} 
+                                            onClick={() => { 
+                                                setJoinRoomName(room.room_name); 
+                                                setShowJoinForm(true); 
+                                            }} 
+                                            disabled={isFull || loading}
+                                        >
+                                            {isFull ? '已满' : '加入'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         );
