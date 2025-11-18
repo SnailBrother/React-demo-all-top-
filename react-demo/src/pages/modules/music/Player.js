@@ -4,6 +4,10 @@ import { useAuth } from '../../../context/AuthContext'; // 导入 AuthContext
 import axios from 'axios';
 import styles from './Player.module.css';
 import { useNavigate } from 'react-router-dom'; // 添加导入
+import io from 'socket.io-client';
+
+// 创建 Socket.IO 实例
+const socket = io('http://121.4.22.55:5201');
 
 // 辅助函数：格式化时间
 const formatTime = (seconds) => {
@@ -25,13 +29,14 @@ const Player = ({ className = '' }) => {
   const navigate = useNavigate(); // 添加导航hook
   const { state, dispatch } = useMusic();
   const { user, isAuthenticated } = useAuth(); // 获取用户信息
-  const { currentSong, isPlaying, queue, volume = 1, playMode = 'repeat' } = state;
+  const { currentSong, isPlaying, queue, volume = 1, playMode = 'repeat', currentRoom, isInRoom, roomUsers, isHost } = state;
   const audioRef = useRef(null);
 
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(false);
+ 
 
   // --- 记录播放历史 ---
   const recordPlayHistory = async (song) => {
@@ -244,7 +249,7 @@ const Player = ({ className = '' }) => {
     navigate('/app/music/musicplaylist');
   };
 
-  if (!currentSong) return null;
+  if (!currentSong) return null; // 如果没有当前歌曲，不渲染播放器
 
   const getPlayModeIcon = () => {
     if (playMode === 'repeat-one') return '🔂';
@@ -278,6 +283,14 @@ const Player = ({ className = '' }) => {
           <div className={styles.songDetails}>
             <span className={styles.songTitle}>{currentSong.title}</span>
             <span className={styles.songArtist}>{currentSong.artist}</span>
+
+            {/* 一起听歌的房间 */}
+            {isInRoom && currentRoom && (
+              <span className={styles.roomNameLabel}>
+               {currentRoom?.room_name}  {isInRoom ? '在房间' : '不在房间'}
+              </span>
+            )}
+            
           </div>
           <div className={styles.songActions}>
             <button

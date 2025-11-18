@@ -1,16 +1,24 @@
 // src/components/modules/music/Home.js
-// src/components/modules/music/Home.js
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import styles from './Home.module.css';
 import { useMusic } from '../../../context/MusicContext';
+import { useAuth } from '../../../context/AuthContext'; // 导入 AuthContext
 import MusicTableView from './homlistviews/MusicTableView';
 import MusicGridView from './homlistviews/MusicGridView';
 import { Loading } from '../../../components/UI';
 
+import io from 'socket.io-client';
+
+// 创建 Socket.IO 实例
+const socket = io('http://121.4.22.55:5201');
+
+
 const Home = () => {
-  const { state, dispatch } = useMusic();
-const { currentSong } = state; // 从 state 中解构出 currentSong
+    const { state, dispatch } = useMusic();
+     const { user, isAuthenticated } = useAuth(); //获取用户名 
+    //const { currentSong } = state; // 从 state 中解构出 currentSong
+    const { currentSong, isPlaying, queue, volume = 1, playMode = 'repeat', currentRoom, isInRoom, roomUsers, isHost } = state;
     const [musics, setMusics] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -76,6 +84,21 @@ const { currentSong } = state; // 从 state 中解构出 currentSong
     }, [page, searchTerm]);
 
     const handlePlayMusic = (songToPlay) => {
+
+        // 👇 打印当前完整的 music context 状态
+    console.log('【当前音乐播放状态】', {
+        currentSong: state.currentSong,  // 单条歌单信息 当前播放的歌曲artist coverimage genre id liked src title 
+        isPlaying: state.isPlaying,
+        queue: state.queue,  //单条歌单信息（数组） 整个清单 很多条的那种
+        volume: state.volume,
+        playMode: state.playMode,
+        currentRoom: state.currentRoom,//一起听歌的房间信所有信息
+        isInRoom: state.isInRoom,//是否在房间 布尔值
+        roomUsers: state.roomUsers,//房间里面的所有用户
+        isHost: state.isHost //是否是房主 布尔值
+    });
+
+
         const actualIndex = musics.findIndex(music => music.id === songToPlay.id);
         dispatch({
             type: 'PLAY_SONG',
@@ -109,7 +132,13 @@ const { currentSong } = state; // 从 state 中解构出 currentSong
                 <div className={styles.sectionHeader}>
                     {/* 1. 标题 - 固定在左侧 */}
                     <h2 className={styles.sectionTitle}>音乐 ({musics.length})</h2>
-
+                    {user.email}
+                    {/* 一起听歌的房间 */}
+                    {isInRoom && currentRoom && (
+                        <span className={styles.roomNameLabel}>
+                            {currentRoom?.room_name}  {isInRoom ? '在房间' : '不在房间'}
+                        </span>
+                    )}
                     {/* 2. 右侧容器 - 搜索框和视图切换右对齐 */}
                     <div className={styles.sectionHeaderRight}>
                         {/* 搜索框 */}
