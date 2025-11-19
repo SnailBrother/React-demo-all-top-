@@ -27,7 +27,7 @@ const TogetherRoomManager = () => {
     const [pendingRoomAction, setPendingRoomAction] = useState(null);
     const [socketConnected, setSocketConnected] = useState(false);
     const currentUserRoom = rooms.find(room => room.users?.some(u => u.email === user.email));
-    
+
     // Socket.IO 连接和事件监听
     useEffect(() => {
         // 连接成功
@@ -245,12 +245,12 @@ const TogetherRoomManager = () => {
     return (
         <div className={styles.roomManager}>
             <div className={styles.header}>
-                <h3>一起听歌 🎵</h3>
-                <div className={styles.connectionStatus}>
+                {/* <h3>一起听歌 🎵</h3> */}
+                {/* <div className={styles.connectionStatus}>
                     <span className={`${styles.statusIndicator} ${socketConnected ? styles.connected : styles.disconnected}`}>
                         {socketConnected ? '● 实时连接' : '○ 连接断开'}
                     </span>
-                </div>
+                </div> */}
                 {currentUserRoom && (
                     <div className={styles.currentRoom}>
                         <span>当前房间: <strong>{currentUserRoom.room_name}</strong></span>
@@ -267,20 +267,20 @@ const TogetherRoomManager = () => {
                     >
                         创建房间
                     </button>
-                    <button
+                    {/* <button
                         className={styles.secondaryButton}
                         onClick={() => setShowJoinForm(true)}
                         disabled={loading || !!currentUserRoom}
                     >
                         加入房间
-                    </button>
-                    <button
+                    </button> */}
+                    {/* <button
                         className={styles.refreshButton}
                         onClick={fetchRooms}
                         disabled={loading}
                     >
                         刷新列表
-                    </button>
+                    </button> */}
                 </div>
             </div>
 
@@ -391,17 +391,21 @@ const TogetherRoomManager = () => {
                         return (
                             <div key={room.id} className={`${styles.roomItem} ${isInRoom ? styles.inRoom : ''}`}>
                                 <div className={styles.roomInfo}>
-                                    <span className={styles.roomName}>🎵 {room.room_name}</span>
-                                    <span className={styles.host}>主持人: {room.host.split('@')[0]}</span>
-                                    <span className={styles.users}>{room.current_users || 0}/{room.max_users} 人</span>
-                                    {room.password && <span className={styles.locked}>🔒</span>}
+                                    <span className={styles.roomName}>
+                                        <svg className={styles.roomNameicon}  aria-hidden="true">
+                                            <use xlinkHref="#icon-house" />
+                                        </svg>
+                                        {room.room_name}</span>
+                                    <span className={styles.host}>房主: {room.host.split('@')[0]}</span>
+                                    <span className={styles.users}>人数: {room.current_users || 0}/{room.max_users} 人</span>
+                                    {/* {room.password && <span className={styles.locked}>🔒</span>} */}
                                 </div>
-                                <div className={styles.roomStatus}>
+                                {/* <div className={styles.roomStatus}>
                                     {isInRoom ?
                                         <span className={styles.statusIn}>✅ 在房间内</span> :
                                         <span className={styles.statusOut}>- 未加入 -</span>
                                     }
-                                </div>
+                                </div> */}
                                 <div className={styles.roomActions}>
                                     {isHost && (
                                         <button

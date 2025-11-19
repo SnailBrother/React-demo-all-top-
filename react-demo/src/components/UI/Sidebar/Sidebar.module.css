@@ -22,10 +22,10 @@
 .sidebarHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px;
+  justify-content: end;
+  padding: 10px;
   border-bottom: 1px solid var(--border_color);
-  height: 60px;
+  height: 20px;
   background: var(--background-color);
 }
 
@@ -68,7 +68,7 @@
   flex: 1;
   padding: 8px 0;
   overflow-y: auto;
-  background: var(--secondary-background-color);
+  background: var(--background-color);
 }
 
 /* 菜单项基础样式 */

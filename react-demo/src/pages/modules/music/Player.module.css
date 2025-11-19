@@ -10,7 +10,7 @@
   /* 定义严格的四列布局: */
   grid-template-columns: auto 1.5fr 2fr 1fr;
   gap: 24px;
-  overflow: hidden;
+ 
   box-sizing: border-box;
 }
 
@@ -129,4 +129,59 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-moz-range-thumb {
   width: 14px; height: 14px; background: var(--hover_font-color, #007bff);
   border-radius: 50%; cursor: pointer; border: 2px solid var(--background-color, #fff);
+}
+/* 音量控制包装器 */
+.volumeControlWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* 垂直音量滑块 */
+.verticalVolumeSlider {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--background-color, #fff);
+  border: 0px solid var(--border_color, #ddd);
+  border-radius: 8px;
+  padding: 2px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  margin-bottom: 10px;
+}
+
+/* 音量轨道 */
+.volumeTrack {
+  width: 6px;
+  height: 120px;
+  background: var(--secondary-border_color, #dee2e6);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+}
+
+/* 音量进度 */
+.volumeProgress {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: var(--hover_font-color, #007bff);
+  border-radius: 3px;
+  transition: height 0.1s ease;
+  display: flex;
+  justify-content: center;
+}
+
+/* 音量滑块拇指 */
+.volumeThumb {
+  width: 12px;
+  height: 12px;
+  background: var(--hover_font-color, #007bff);
+  border: 2px solid var(--background-color, #fff);
+  border-radius: 50%;
+  position: absolute;
+  top: -2px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }

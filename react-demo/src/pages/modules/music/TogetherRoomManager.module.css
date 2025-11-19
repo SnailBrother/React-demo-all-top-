@@ -18,16 +18,19 @@
 
 .header h3 {
   margin: 0;
-  color: #333;
+  color: var(--font-color);
   font-size: 24px;
 }
 
 .buttons {
   display: flex;
   gap: 10px;
+  justify-content: flex-end;
+  align-items: flex-end;
 }
 
-.primaryButton, .secondaryButton {
+.primaryButton,
+.secondaryButton {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
@@ -37,24 +40,26 @@
 }
 
 .primaryButton {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--secondary-background-color);
+  color: var(--font-color);
+  max-width: 150px;
 }
 
 .primaryButton:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: var(--secondary-background-color);
 }
 
 .secondaryButton {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--secondary-background-color);
+  color: var(--font-color);
 }
 
 .secondaryButton:hover:not(:disabled) {
-  background-color: #545b62;
+  background-color: var(--secondary-background-color);
 }
 
-.primaryButton:disabled, .secondaryButton:disabled {
+.primaryButton:disabled,
+.secondaryButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -74,7 +79,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -92,7 +97,7 @@
 
 .modalContent h4 {
   margin: 0 0 20px 0;
-  color: #333;
+  color: var(--font-color);
   font-size: 20px;
   text-align: center;
 }
@@ -133,8 +138,9 @@
 .modalButtons {
   display: flex;
   gap: 10px;
-  justify-content: flex-end;
+  justify-content: center;
   margin-top: 25px;
+  align-items: center;
 }
 
 .modalButtons button {
@@ -175,7 +181,7 @@
 
 .roomList h4 {
   margin: 0 0 15px 0;
-  color: #333;
+  color: var(--font-color);
   font-size: 18px;
 }
 
@@ -184,10 +190,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border_color);
   border-radius: 8px;
   margin-bottom: 10px;
-  background: #ffffff;
+  background: var(--secondary-background-color);
   transition: box-shadow 0.3s;
 }
 
@@ -198,19 +204,30 @@
 .roomInfo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
   flex: 1;
 }
 
 .roomName {
   font-weight: bold;
   font-size: 16px;
-  color: #333;
+ color: var(--font-color);
+ 
 }
 
-.host, .status, .users {
+.roomNameicon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  margin-right: 5px;
+}
+
+.host,
+.status,
+.users {
   font-size: 14px;
-  color: #666;
+  color: var(--font-color);
 }
 
 .locked {
@@ -221,7 +238,7 @@
 
 .joinButton {
   padding: 8px 16px;
-  background-color: #28a745;
+  background-color: var(--secondary-background-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -232,7 +249,7 @@
 }
 
 .joinButton:hover:not(:disabled) {
-  background-color: #218838;
+  background-color: var(--hover_background-color);
 }
 
 .joinButton:disabled {
@@ -245,57 +262,60 @@
   .roomManager {
     padding: 15px;
   }
-  
+
   .header {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .buttons {
     width: 100%;
-    justify-content: space-between;
+     
   }
-  
-  .primaryButton, .secondaryButton {
+
+  .primaryButton,
+  .secondaryButton {
     flex: 1;
     text-align: center;
   }
-  
+
   .roomItem {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
     gap: 15px;
   }
-  
+
   .joinButton {
     align-self: flex-end;
   }
-  
+
   .modalContent {
     padding: 20px;
     margin: 20px;
   }
-  
+
   .modalButtons {
     flex-direction: column;
   }
-  
+
   .modalButtons button {
     width: 100%;
   }
 }
+
 /* TogetherRoomManager.module.css 新增样式 */
 
 .roomActions {
   display: flex;
   gap: 8px;
   align-items: center;
+  justify-content: center;
 }
 
 .deleteButton {
   padding: 8px 16px;
-  background-color: #dc3545;
-  color: white;
+  background-color: var(--secondary-background-color);
+  color:var(--font-color);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -336,7 +356,7 @@
 
 .joinButton {
   padding: 8px 16px;
-  background-color: #28a745;
+  background-color: var(--secondary-background-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -347,7 +367,7 @@
 }
 
 .joinButton:hover:not(:disabled) {
-  background-color: #218838;
+  background-color: var(--hover_background-color);
 }
 
 .joinButton:disabled {

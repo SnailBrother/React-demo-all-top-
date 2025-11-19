@@ -42,12 +42,15 @@ const Sidebar = ({
 }) => {
   return (
     <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
+
       <div className={styles.sidebarHeader}>
-        {!collapsed && <h3 className={styles.sidebarTitle}>
+
+        {/* {!collapsed && <h3 className={styles.sidebarTitle}>
           <svg className={styles.SidebarLayouticon} aria-hidden="true">
             <use xlinkHref="#icon-shouye3"></use>
           </svg>
-        </h3>}
+        </h3>} */}
+
         <IconButton
           icon={collapsed ? "#icon-zhankaizhedieyou" : "#icon-zhankaizhediezuo"}
           onClick={onToggle}

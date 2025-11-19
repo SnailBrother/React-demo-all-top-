@@ -93,7 +93,12 @@ function musicReducer(state, action) {
         roomUsers: [],
         isHost: false,
       };
-
+    //音量调整
+    case 'SET_VOLUME':
+      return {
+        ...state,
+        volume: action.payload, // 确保 payload 是 0~1 之间的数字
+      };
     // 新增：更新房间用户列表 有新用户进房间，或老用户退房间时
     //把 roomUsers 改成最新的用户列表（action.payload.users）
     case 'UPDATE_ROOM_USERS':

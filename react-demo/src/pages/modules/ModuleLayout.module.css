@@ -13,6 +13,8 @@
   /* 将背景置于最底层 */
   pointer-events: none;
   /* 确保背景层本身不可点击，不干扰上层元素的交互 */
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* 统一布局容器 - 整个应用的骨架 */

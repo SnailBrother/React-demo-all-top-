@@ -36,7 +36,74 @@ const Player = ({ className = '' }) => {
   const [duration, setDuration] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(false);
- 
+
+  // --- 第四列：附加控件 ---
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const volumeSliderRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const volumeTrackRef = useRef(null); // 用于获取轨道 DOM
+
+  // 点击外部关闭音量控制
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (volumeSliderRef.current && !volumeSliderRef.current.contains(event.target)) {
+        setShowVolumeSlider(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleVolumeSlider = () => {
+    setShowVolumeSlider(!showVolumeSlider);
+  };
+
+  // 根据鼠标位置计算并设置音量
+  const updateVolumeFromMouseEvent = (clientY) => {
+    if (!volumeTrackRef.current) return;
+
+    const trackRect = volumeTrackRef.current.getBoundingClientRect();
+    let relativeY = (trackRect.bottom - clientY) / trackRect.height;
+    relativeY = Math.max(0, Math.min(1, relativeY)); // 限制在 [0, 1]
+
+    dispatch({ type: 'SET_VOLUME', payload: relativeY });
+  };
+
+  // 开始拖动
+  const handleThumbMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    document.body.style.userSelect = 'none'; // 禁止文字选中
+    updateVolumeFromMouseEvent(e.clientY);
+  };
+
+  // 拖动中
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      updateVolumeFromMouseEvent(e.clientY);
+    }
+  };
+
+  // 停止拖动
+  const handleMouseUp = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      document.body.style.userSelect = '';
+    }
+  };
+
+  // 绑定全局鼠标事件
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging]);
 
   // --- 记录播放历史 ---
   const recordPlayHistory = async (song) => {
@@ -67,7 +134,7 @@ const Player = ({ className = '' }) => {
     }
   };
 
-  // --- 增加播放量 ---
+
   // --- 增加播放量 ---
   const increasePlayCount = async (song) => {
     if (!song) {
@@ -181,7 +248,7 @@ const Player = ({ className = '' }) => {
   const handleProgressChange = (e) => {
     if (audioRef.current) audioRef.current.currentTime = e.target.value;
   };
-  const handleVolumeChange = (e) => dispatch({ type: 'SET_VOLUME', payload: parseFloat(e.target.value) });
+
 
   // --- 修改喜欢功能 ---
   const handleLike = async () => {
@@ -223,8 +290,8 @@ const Player = ({ className = '' }) => {
     }
   };
 
- //歌曲评论
-    const showComments = () => {
+  //歌曲评论
+  const showComments = () => {
     if (!currentSong) {
       alert('请先选择一首歌曲');
       return;
@@ -290,7 +357,7 @@ const Player = ({ className = '' }) => {
                {currentRoom?.room_name}  {isInRoom ? '在房间' : '不在房间'}
               </span>
             )} */}
-            
+
           </div>
           <div className={styles.songActions}>
             <button
@@ -329,13 +396,35 @@ const Player = ({ className = '' }) => {
 
         {/* --- 第四列：附加控件 --- */}
         <div className={styles.column4}>
-          <button className={styles.controlButton} onClick={showLyrics} title="歌词">詞</button>
-          <div className={styles.volumeControl}>
-            <span className={styles.volumeIcon}>🔊</span>
-            <input
-              type="range" min="0" max="1" step="0.01" value={volume}
-              onChange={handleVolumeChange} className={styles.volumeSlider}
-            />
+           <button className={styles.controlButton} onClick={showLyrics} title="歌词">詞</button>
+          <div className={styles.volumeControlWrapper} ref={volumeSliderRef}>
+            <button
+              className={styles.controlButton}
+              onClick={toggleVolumeSlider}
+              title="音量"
+            >
+              {volume === 0 ? '🔇' : volume < 0.5 ? '🔈' : '🔊'}
+            </button>
+
+            {showVolumeSlider && (
+              <div className={styles.verticalVolumeSlider}>
+                <div
+                  className={styles.volumeTrack}
+                  ref={volumeTrackRef} // 关键：绑定 ref
+                >
+                  <div
+                    className={styles.volumeProgress}
+                    style={{ height: `${volume * 100}%` }}
+                  >
+                    <div
+                      className={styles.volumeThumb}
+                      onMouseDown={handleThumbMouseDown}
+                      style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <button className={styles.controlButton} onClick={showPlaylist} title="播放列表">☰</button>
         </div>
