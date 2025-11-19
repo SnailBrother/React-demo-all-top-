@@ -16,7 +16,7 @@ const socket = io('http://121.4.22.55:5201');
 
 const Home = () => {
     const { state, dispatch } = useMusic();
-     const { user, isAuthenticated } = useAuth(); //获取用户名 
+    const { user, isAuthenticated } = useAuth(); //获取用户名 
     //const { currentSong } = state; // 从 state 中解构出 currentSong
     const { currentSong, isPlaying, queue, volume = 1, playMode = 'repeat', currentRoom, isInRoom, roomUsers, isHost } = state;
     const [musics, setMusics] = useState([]);
@@ -86,17 +86,17 @@ const Home = () => {
     const handlePlayMusic = (songToPlay) => {
 
         // 👇 打印当前完整的 music context 状态
-    console.log('【当前音乐播放状态】', {
-        currentSong: state.currentSong,  // 单条歌单信息 当前播放的歌曲artist coverimage genre id liked src title 
-        isPlaying: state.isPlaying,
-        queue: state.queue,  //单条歌单信息（数组） 整个清单 很多条的那种
-        volume: state.volume,
-        playMode: state.playMode,
-        currentRoom: state.currentRoom,//一起听歌的房间信所有信息
-        isInRoom: state.isInRoom,//是否在房间 布尔值
-        roomUsers: state.roomUsers,//房间里面的所有用户
-        isHost: state.isHost //是否是房主 布尔值
-    });
+        console.log('【当前音乐播放状态】', {
+            currentSong: state.currentSong,  // 单条歌单信息 当前播放的歌曲artist coverimage genre id liked src title 
+            isPlaying: state.isPlaying,
+            queue: state.queue,  //单条歌单信息（数组） 整个清单 很多条的那种
+            volume: state.volume,
+            playMode: state.playMode,
+            currentRoom: state.currentRoom,//一起听歌的房间信所有信息
+            isInRoom: state.isInRoom,//是否在房间 布尔值
+            roomUsers: state.roomUsers,//房间里面的所有用户
+            isHost: state.isHost //是否是房主 布尔值
+        });
 
 
         const actualIndex = musics.findIndex(music => music.id === songToPlay.id);
