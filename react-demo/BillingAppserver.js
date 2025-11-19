@@ -8814,7 +8814,7 @@ app.get('/backend/api/reactdemofavorites', async (req, res) => {
 
         const totalPages = Math.ceil(total / pageSize);
 
-        console.log(`找到 ${result.recordset.length} 条收藏记录，总计: ${total}，总页数: ${totalPages}`);
+       // console.log(`找到 ${result.recordset.length} 条收藏记录，总计: ${total}，总页数: ${totalPages}`);
 
         res.json({
             data: result.recordset,
@@ -8893,7 +8893,7 @@ app.get('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
 
         const totalPages = Math.ceil(total / pageSize);
 
-        console.log(`找到 ${result.recordset.length} 条最近播放记录，总计: ${total}，总页数: ${totalPages}`);
+      //  console.log(`找到 ${result.recordset.length} 条最近播放记录，总计: ${total}，总页数: ${totalPages}`);
 
         res.json({
             data: result.recordset,
@@ -9088,7 +9088,7 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
                 WHERE email = @email AND title = @title AND artist = @artist
             `;
             await checkRequest.query(deleteQuery);
-            console.log('删除旧的播放记录:', { email, title, artist });
+         //   console.log('删除旧的播放记录:', { email, title, artist });
         }
 
         // 检查当前用户的记录数量（包括刚刚删除的那条）
@@ -9118,7 +9118,7 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
             const deleteRequest = new sql.Request();
             deleteRequest.input('email', sql.NVarChar, email);
             await deleteRequest.query(deleteOldestQuery);
-            console.log('删除最早的一条记录，邮箱:', email);
+         //   console.log('删除最早的一条记录，邮箱:', email);
         }
         
         // 插入新记录（无论是否已存在，都重新插入）
@@ -9137,7 +9137,7 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
         insertRequest.input('genre', sql.NVarChar, genre || '');
         
         await insertRequest.query(insertQuery);
-        console.log('新增最近播放记录:', { email, title, artist });
+       // console.log('新增最近播放记录:', { email, title, artist });
         
         res.json({ 
             success: true, 
@@ -9146,7 +9146,7 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
         });
 
     } catch (err) {
-        console.error('添加最近播放记录错误:', err);
+       // console.error('添加最近播放记录错误:', err);
         res.status(500).json({ 
             success: false,
             error: '服务器错误' 
@@ -9204,7 +9204,7 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
             const countResult = await updateRequest.query(getCountQuery);
             const newPlayCount = countResult.recordset[0].playcount;
             
-            console.log('更新播放量成功:', { title, artist, newPlayCount });
+            //console.log('更新播放量成功:', { title, artist, newPlayCount });
             
             res.json({ 
                 success: true, 
@@ -9213,7 +9213,7 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
             });
         } else {
             // 如果歌曲不存在，不创建新记录，直接返回成功但跳过计数
-            console.log('歌曲不存在，跳过播放量统计:', { title, artist });
+          //  console.log('歌曲不存在，跳过播放量统计:', { title, artist });
             
             res.json({ 
                 success: true, 
@@ -9224,7 +9224,7 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
         }
 
     } catch (err) {
-        console.error('更新播放量错误:', err);
+      //  console.error('更新播放量错误:', err);
         res.status(500).json({ 
             success: false,
             error: '服务器错误' 
@@ -10034,6 +10034,162 @@ app.get('/api/ReactDemomusic-comments/count', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     } finally {
         sql.close();
+    }
+});
+
+
+
+//一起听改变房间歌曲
+// 后端 /api/ListenTogetherMusic/ChangePlaySong POST 接口
+app.post('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
+    // 设置响应头，支持UTF-8编码
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    
+    const { 
+        room_name, 
+        title, 
+        host, 
+        artist, 
+        coverimage, 
+        src, 
+        genre, 
+        is_playing, 
+        play_mode, 
+        email, 
+        is_host 
+    } = req.body;
+
+    console.log('接收到的播放歌曲数据:', {
+        room_name, title, artist, genre, email
+    });
+
+    try {
+        const pool = await poolConnect;
+
+        // 第一步：检查用户是否在房间中
+        const userCheckQuery = `
+            SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
+            WHERE room_name = @room_name AND email = @email
+        `;
+        
+        const userCheckResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name) // 使用 NVARCHAR 支持Unicode
+            .input('email', sql.NVarChar, email) // 使用 NVARCHAR 支持Unicode
+            .query(userCheckQuery);
+
+        if (userCheckResult.recordset.length === 0) {
+            return res.status(403).json({ error: '用户不在该房间中' });
+        }
+
+        // 第二步：更新房间播放信息 - 使用 NVARCHAR 类型
+        const updateRoomQuery = `
+            UPDATE reactDemoApp.dbo.ListenMusicTogetherMusicRooms 
+            SET 
+                title = @title,
+                artist = @artist,
+                coverimage = @coverimage,
+                src = @src,
+                genre = @genre,
+                is_playing = @is_playing,
+                play_mode = @play_mode
+            WHERE room_name = @room_name
+        `;
+
+        await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .input('title', sql.NVarChar, title) // 使用 NVARCHAR 支持韩语等Unicode字符
+            .input('artist', sql.NVarChar, artist)
+            .input('coverimage', sql.NVarChar, coverimage)
+            .input('src', sql.NVarChar, src)
+            .input('genre', sql.NVarChar, genre)
+            .input('is_playing', sql.Bit, is_playing)
+            .input('play_mode', sql.NVarChar, play_mode)
+            .query(updateRoomQuery);
+
+        console.log('成功更新房间播放信息:', { room_name, title, artist });
+
+        // 返回成功响应
+        res.status(201).json({ message: 'TogetherMusicRoomUsersChangePlaySong' });
+        
+        // 广播消息给所有客户端
+        io.emit('TogetherMusicRoomUsersChangePlaySong', {
+            room_name,
+            title,
+            host,
+            artist,
+            coverimage,
+            src,
+            genre,
+            is_playing,
+            play_mode,
+            email,
+            is_host
+        });
+
+    } catch (err) {
+        console.error('更新播放歌曲失败:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 后端 /api/ListenTogetherMusic/ChangePlaySong GET 接口
+app.get('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
+    // 设置响应头，支持UTF-8编码
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    
+    const { room_name, email } = req.query;
+
+    console.log('获取房间播放信息:', { room_name, email });
+
+    try {
+        const pool = await poolConnect;
+
+        // 检查用户是否在房间中
+        const userCheckQuery = `
+            SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
+            WHERE room_name = @room_name AND email = @email
+        `;
+        
+        const userCheckResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .input('email', sql.NVarChar, email)
+            .query(userCheckQuery);
+
+        if (userCheckResult.recordset.length === 0) {
+            return res.status(403).json({ error: '用户不在该房间中' });
+        }
+
+        // 获取房间播放信息
+        const roomQuery = `
+            SELECT 
+                room_name,
+                title,
+                host,
+                artist,
+                coverimage,
+                src,
+                genre,
+                is_playing,
+                play_mode
+            FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms 
+            WHERE room_name = @room_name
+        `;
+
+        const roomResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query(roomQuery);
+
+        if (roomResult.recordset.length > 0) {
+            const roomData = roomResult.recordset[0];
+            console.log('返回房间播放信息:', roomData);
+            res.json(roomData);
+        } else {
+            res.status(404).json({ error: '房间不存在' });
+        }
+
+    } catch (err) {
+        console.error('获取房间播放信息失败:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 //reactdemo 歌曲评论 👆

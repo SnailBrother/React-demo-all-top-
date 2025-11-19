@@ -285,11 +285,11 @@ const Player = ({ className = '' }) => {
             <span className={styles.songArtist}>{currentSong.artist}</span>
 
             {/* 一起听歌的房间 */}
-            {isInRoom && currentRoom && (
+            {/* {isInRoom && currentRoom && (
               <span className={styles.roomNameLabel}>
                {currentRoom?.room_name}  {isInRoom ? '在房间' : '不在房间'}
               </span>
-            )}
+            )} */}
             
           </div>
           <div className={styles.songActions}>

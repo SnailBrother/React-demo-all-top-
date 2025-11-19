@@ -3,21 +3,24 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import styles from './Home.module.css';
 import { useMusic } from '../../../context/MusicContext';
-import { useAuth } from '../../../context/AuthContext'; // 导入 AuthContext
+import { useAuth } from '../../../context/AuthContext';
 import MusicTableView from './homlistviews/MusicTableView';
 import MusicGridView from './homlistviews/MusicGridView';
 import { Loading } from '../../../components/UI';
-
 import io from 'socket.io-client';
 
 // 创建 Socket.IO 实例
 const socket = io('http://121.4.22.55:5201');
 
+// 编码处理辅助函数
+const encodeForURL = (str) => {
+    if (!str) return str;
+    return encodeURIComponent(str);
+};
 
 const Home = () => {
     const { state, dispatch } = useMusic();
-    const { user, isAuthenticated } = useAuth(); //获取用户名 
-    //const { currentSong } = state; // 从 state 中解构出 currentSong
+    const { user, isAuthenticated } = useAuth();
     const { currentSong, isPlaying, queue, volume = 1, playMode = 'repeat', currentRoom, isInRoom, roomUsers, isHost } = state;
     const [musics, setMusics] = useState([]);
     const [page, setPage] = useState(1);
@@ -28,6 +31,155 @@ const Home = () => {
     const [viewMode, setViewMode] = useState('table');
 
     const observer = useRef();
+
+    // 发送播放歌曲变更通知到后端
+    const sendPlaySongChange = async (songToPlay) => {
+        if (!isInRoom || !currentRoom) return; // 只有在房间内才发送通知
+        
+        try {
+            // 对可能包含特殊字符和多语言字符的字段进行编码处理
+            const requestData = {
+                room_name: currentRoom.room_name,
+                title: songToPlay.title, // 后端使用 NVARCHAR，不需要编码
+                host: currentRoom.host,
+                artist: songToPlay.artist,
+                coverimage: songToPlay.coverimage,
+                src: songToPlay.src,
+                genre: songToPlay.genre,
+                is_playing: true,
+                play_mode: playMode,
+                email: user.email,
+                is_host: isHost,
+                currentSong: songToPlay,
+                isPlaying: true,
+                queue: musics,
+                volume: volume,
+                currentRoom: currentRoom,
+                isInRoom: isInRoom,
+                roomUsers: roomUsers,
+                isHost: isHost
+            };
+
+            console.log('发送播放歌曲变更:', {
+                title: songToPlay.title,
+                artist: songToPlay.artist,
+                genre: songToPlay.genre
+            });
+
+            // 设置请求头，确保支持UTF-8编码
+            await axios.post('/api/ListenTogetherMusic/ChangePlaySong', requestData, {
+                headers: {
+                    'Content-Type': 'application/json; charset=utf-8'
+                }
+            });
+        } catch (error) {
+            console.error('发送播放歌曲变更通知失败:', error);
+            if (error.response) {
+                console.error('错误响应:', error.response.data);
+            }
+        }
+    };
+
+    const handlePlayMusic = async (songToPlay) => {
+        console.log('【当前音乐播放状态】', {
+            currentSong: state.currentSong,
+            isPlaying: state.isPlaying,
+            queue: state.queue,
+            volume: state.volume,
+            playMode: state.playMode,
+            currentRoom: state.currentRoom,
+            isInRoom: state.isInRoom,
+            roomUsers: state.roomUsers,
+            isHost: state.isHost
+        });
+
+        const actualIndex = musics.findIndex(music => music.id === songToPlay.id);
+        dispatch({
+            type: 'PLAY_SONG',
+            payload: { song: songToPlay, queue: musics, index: actualIndex }
+        });
+
+        // 发送播放变更通知
+        await sendPlaySongChange(songToPlay);
+    };
+
+    // 监听 socket 广播消息
+    useEffect(() => {
+        const handleTogetherMusicRoomUsersChangePlaySong = async (data) => {
+            // 检查是否是自己的操作，如果是则忽略
+            if (data.email === user.email && data.room_name === currentRoom?.room_name) {
+                return;
+            }
+
+            // 检查当前房间是否匹配
+            if (data.room_name !== currentRoom?.room_name) {
+                return;
+            }
+
+            try {
+                console.log('接收到播放变更广播:', data);
+
+                // 从数据库获取最新的播放状态
+                const response = await axios.get('/api/ListenTogetherMusic/ChangePlaySong', {
+                    params: {
+                        room_name: data.room_name,
+                        email: user.email
+                    },
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    }
+                });
+
+                const roomData = response.data;
+                console.log('从数据库获取的房间数据:', roomData);
+                
+                // 更新音乐上下文状态
+                if (roomData) {
+                    // 创建歌曲对象
+                    const newSong = {
+                        title: roomData.title,
+                        artist: roomData.artist,
+                        coverimage: roomData.coverimage,
+                        src: roomData.src,
+                        genre: roomData.genre,
+                        id: roomData.id || Date.now()
+                    };
+
+                    console.log('更新播放状态为:', newSong);
+
+                    // 更新播放状态
+                    dispatch({
+                        type: 'PLAY_SONG',
+                        payload: { 
+                            song: newSong, 
+                            queue: [newSong],
+                            index: 0 
+                        }
+                    });
+
+                    // 如果需要更新播放模式
+                    if (roomData.play_mode && roomData.play_mode !== playMode) {
+                        console.log('播放模式需要更新为:', roomData.play_mode);
+                    }
+
+                    console.log('已同步房间播放状态:', roomData);
+                }
+            } catch (error) {
+                console.error('同步播放状态失败:', error);
+                if (error.response) {
+                    console.error('错误响应:', error.response.data);
+                }
+            }
+        };
+
+        // 注册事件监听器
+        socket.on('TogetherMusicRoomUsersChangePlaySong', handleTogetherMusicRoomUsersChangePlaySong);
+
+        // 清理函数
+        return () => {
+            socket.off('TogetherMusicRoomUsersChangePlaySong', handleTogetherMusicRoomUsersChangePlaySong);
+        };
+    }, [user.email, currentRoom, dispatch, playMode]);
 
     const lastMusicElementRef = useCallback(node => {
         if (loading) return;
@@ -54,7 +206,14 @@ const Home = () => {
             setError(null);
             try {
                 const response = await axios.get('/api/getallmusics', {
-                    params: { page: page, pageSize: 20, search: searchTerm }
+                    params: { 
+                        page: page, 
+                        pageSize: 20, 
+                        search: searchTerm 
+                    },
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    }
                 });
                 const newMusics = response.data.data.map(song => ({
                     id: song.id,
@@ -83,29 +242,6 @@ const Home = () => {
         fetchMusics();
     }, [page, searchTerm]);
 
-    const handlePlayMusic = (songToPlay) => {
-
-        // 👇 打印当前完整的 music context 状态
-        console.log('【当前音乐播放状态】', {
-            currentSong: state.currentSong,  // 单条歌单信息 当前播放的歌曲artist coverimage genre id liked src title 
-            isPlaying: state.isPlaying,
-            queue: state.queue,  //单条歌单信息（数组） 整个清单 很多条的那种
-            volume: state.volume,
-            playMode: state.playMode,
-            currentRoom: state.currentRoom,//一起听歌的房间信所有信息
-            isInRoom: state.isInRoom,//是否在房间 布尔值
-            roomUsers: state.roomUsers,//房间里面的所有用户
-            isHost: state.isHost //是否是房主 布尔值
-        });
-
-
-        const actualIndex = musics.findIndex(music => music.id === songToPlay.id);
-        dispatch({
-            type: 'PLAY_SONG',
-            payload: { song: songToPlay, queue: musics, index: actualIndex }
-        });
-    };
-
     const handleLike = (e, musicId) => {
         e.stopPropagation();
         console.log('喜欢歌曲:', musicId);
@@ -130,18 +266,14 @@ const Home = () => {
         <div className={styles.home}>
             <div className={styles.allMusicSection}>
                 <div className={styles.sectionHeader}>
-                    {/* 1. 标题 - 固定在左侧 */}
                     <h2 className={styles.sectionTitle}>音乐 ({musics.length})</h2>
-                    {user.email}
-                    {/* 一起听歌的房间 */}
+                    {/* {user.email}
                     {isInRoom && currentRoom && (
                         <span className={styles.roomNameLabel}>
                             {currentRoom?.room_name}  {isInRoom ? '在房间' : '不在房间'}
                         </span>
-                    )}
-                    {/* 2. 右侧容器 - 搜索框和视图切换右对齐 */}
+                    )} */}
                     <div className={styles.sectionHeaderRight}>
-                        {/* 搜索框 */}
                         <div className={styles.searchContainer}>
                             <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path>
@@ -155,7 +287,6 @@ const Home = () => {
                             />
                         </div>
 
-                        {/* 视图切换 */}
                         <div className={styles.viewModeToggle}>
                             <button
                                 className={`${styles.viewModeButton} ${viewMode === 'table' ? styles.active : ''}`}
@@ -177,14 +308,12 @@ const Home = () => {
 
                 {error && <div className={styles.error}>{error}</div>}
 
-                {/* 搜索或首次加载时的加载状态 */}
                 {loading && musics.length === 0 && (
                     <div className={styles.loadingOverlay}>
                         <Loading message={searchTerm ? `正在搜索 "${searchTerm}"...` : "正在加载音乐..."} />
                     </div>
                 )}
 
-                {/* 内容区域 */}
                 <div className={styles.contentArea}>
                     {viewMode === 'table' ? (
                         <MusicTableView
@@ -205,7 +334,6 @@ const Home = () => {
                     )}
                 </div>
 
-                {/* 滚动加载时的加载提示 */}
                 {loading && musics.length > 0 && (
                     <div className={styles.loadingMore}>
                         <Loading message="正在加载更多音乐..." />

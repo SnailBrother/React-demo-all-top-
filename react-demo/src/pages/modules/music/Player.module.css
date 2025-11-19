@@ -1,10 +1,10 @@
 /* 主播放器容器，使用 Grid 布局 */
 .player {
-     background: var(--secondary-background-color, #f8f9fa);   
- 
-  border-top: 1px solid var(--border_color, #e9ecef);
+     /* background: var(--secondary-background-color, #f8f9fa);    */
+   background: var(--secondary-background-color);  
+  border-top: 1px solid var(--border_color);
   height: 80px;
-  padding: 0 24px;
+  padding: 0 10px;
   display: grid;
   align-items: center;
   /* 定义严格的四列布局: */
