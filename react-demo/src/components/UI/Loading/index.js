@@ -23,12 +23,6 @@ const LoadingAnimation = ({ message = '加载中...' }) => {
             <span className={styles.dot}>.</span>
           </div>
         </div>
-        
-        {/* 背景装饰元素 */}
-        <div className={styles.backgroundElements}>
-          <div className={styles.orbitalRing}></div>
-          <div className={styles.pulseRing}></div>
-        </div>
       </div>
     </div>
   );

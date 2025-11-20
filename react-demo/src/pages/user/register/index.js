@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../../components/UI';  
 import styles from './register.module.css';
 
 const Register = () => {
@@ -199,29 +198,25 @@ const Register = () => {
                         <div className={styles.submitError}>{errors.submit}</div>
                     )}
 
-                    <Button
+                    <button
                         type="submit"
-                        variant="primary"
-                        size="large"
-                        fullWidth
-                        loading={loading}
-                        className={styles.registerButton}
+                        disabled={loading}
+                        className={`${styles.registerButton} ${loading ? styles.loading : ''}`}
                     >
                         {loading ? '注册中...' : '注册'}
-                    </Button>
+                    </button>
                 </form>
 
                 <div className={styles.registerFooter}>
                     <p className={styles.switchMode}>
                         已有账户？
-                        <Button
+                        <button
                             type="button"
-                            variant="text"
                             onClick={goToLogin}
                             className={styles.switchButton}
                         >
                             立即登录
-                        </Button>
+                        </button>
                     </p>
 
                     <div className={styles.divider}>
@@ -229,10 +224,8 @@ const Register = () => {
                     </div>
 
                     <div className={styles.socialRegister}>
-                        <Button
+                        <button
                             type="button"
-                            variant="secondary"
-                            fullWidth
                             className={styles.socialButton}
                         >
                             <span className={styles.socialIcon}>
@@ -241,11 +234,9 @@ const Register = () => {
                                 </svg>
                             </span>
                             使用 QQ 注册
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                             type="button"
-                            variant="secondary"
-                            fullWidth
                             className={styles.socialButton}
                         >
                             <span className={styles.socialIcon}>
@@ -254,7 +245,7 @@ const Register = () => {
                                 </svg>
                             </span>
                             使用 微信 注册
-                        </Button>
+                        </button>
                     </div>
                 </div>
             </div>
