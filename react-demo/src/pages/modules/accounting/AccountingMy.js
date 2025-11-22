@@ -85,7 +85,8 @@ const AccountingMy = () => {
     };
 
     return (
-        <div className="accountingmy-tab-content">
+        <div className="accountingmy-tab-content"
+        >
             <div className="accountingmy-profile">
                 <div className="accountingmy-profile-avatar">
                     {!imageError && username && (

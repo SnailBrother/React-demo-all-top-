@@ -144,7 +144,16 @@ const AccountingHomePage = () => {
     }
 
     return (
-        <div className="accountinghomepage-tab-content">
+        <div className="accountinghomepage-tab-content"
+        //  style={{
+        //             backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${process.env.PUBLIC_URL}/images/lifebookkeeping-background-image.jpg)`,
+        //             backgroundRepeat: 'no-repeat',
+        //             backgroundPosition: 'center',
+        //             backgroundSize: 'contain'  
+                    
+        //         }}
+                >
+                 
             <div className="accountinghomepage-summary">
                 <div className="accountinghomepage-date-selector" onClick={openModal}>
                     {getDateDisplay()}

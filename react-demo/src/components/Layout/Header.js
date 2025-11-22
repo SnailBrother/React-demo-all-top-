@@ -16,7 +16,7 @@ const Header = ({ title = "React-Demo" }) => {
   };
 
     const handlethemset = () => {
-    navigate('/app/chat/conversations', { replace: true });
+    navigate('/app/chat/ChatChat', { replace: true });
   };
 
   return (
@@ -59,7 +59,7 @@ const Header = ({ title = "React-Demo" }) => {
         <IconButton
           icon="#icon-shezhi2"
           onClick={handlethemset}
-          title="主题设置"
+          title="聊天"
           variant="ghost"
           size="medium"
         />

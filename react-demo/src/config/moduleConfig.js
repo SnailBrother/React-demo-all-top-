@@ -5,11 +5,11 @@ export const moduleConfig = {
     label: '记账',
     defaultRoute: 'overview',
     routes: [
-       { key: 'AccountingHomePage', label: '首页', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingHomePage') },
-      { key: 'AccountingDetails', label: '明细', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingDetails') },
-    { key: 'AccountingCharts', label: '添加', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingCharts') },
-     { key: 'AccountingAdd', label: '图标', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingAdd') },
-      { key: 'AccountingMy', label: '我的', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingMy') },
+      { key: 'overview', label: '首页', icon: '#icon-shouye3', component: () => import('../pages/modules/accounting/AccountingHomePage'), showInTabs: false },
+      { key: 'AccountingDetails', label: '明细', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingDetails'), showInTabs: false },
+       { key: 'AccountingAdd', label: '添加', icon: '#icon-tianjia5', component: () => import('../pages/modules/accounting/AccountingAdd'), showInTabs: false },
+      { key: 'AccountingCharts', label: '图标', icon: '#icon-baobiao', component: () => import('../pages/modules/accounting/AccountingCharts'), showInTabs: false },  
+      { key: 'AccountingMy', label: '我的', icon: '#icon-drxx88', component: () => import('../pages/modules/accounting/AccountingMy'), showInTabs: false },
     ]
   },
   music: {
@@ -47,8 +47,8 @@ export const moduleConfig = {
     label: '聊天',
     defaultRoute: 'conversations',
     routes: [
-      { key: 'conversations', label: '聊天', icon: '#icon-liaotian12', component: () => import('../pages/modules/chat/Chat'), showInTabs: false  },
-      { key: 'contacts', label: '动态', icon: '#icon-dongtai', component: () => import('../pages/modules/chat/DressingGuidelines'), showInTabs: false  },
+      { key: 'conversations', label: '聊天', icon: '#icon-liaotian12', component: () => import('../pages/modules/chat/Chat'), showInTabs: false },
+      { key: 'contacts', label: '动态', icon: '#icon-dongtai', component: () => import('../pages/modules/chat/DressingGuidelines'), showInTabs: false },
     ]
   },
   system: {

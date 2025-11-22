@@ -21,8 +21,8 @@ const AccountingAdd = () => {
         description: ''
     });
     const [showLoader, setShowLoader] = useState(false);;//添加WordReportGeneratorLoader的引用
-   const { user } = useAuth();
-           const username = user?.username; // 从 user 对象中获取 username
+    const { user } = useAuth();
+    const username = user?.username; // 从 user 对象中获取 username
     const { socket } = useAccounting();
 
     // 创建通知组件的引用
@@ -96,7 +96,8 @@ const AccountingAdd = () => {
     };
 
     return (
-        <div className="accountingadd-tab-content">
+        <div className="accountingadd-tab-content"
+            >
             {/* 添加通知管理器 */}
             <NotificationManager ref={notificationRef} />
             {/* 添加加载遮罩组件 */}

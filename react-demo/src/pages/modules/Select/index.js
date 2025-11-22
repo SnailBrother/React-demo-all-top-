@@ -9,7 +9,7 @@ const modules = [
     title: '智能记账', 
     desc: '专业财务分析与报表管理', 
     emoji: '📊',
-    defaultPath: '/app/accounting/overview',
+    defaultPath: '/app/accounting/AccountingHomePage',
     color: '#10b981',
     gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
   },
@@ -45,7 +45,7 @@ const modules = [
     title: '即时通讯', 
     desc: '安全可靠的实时沟通平台', 
     emoji: '💬',
-    defaultPath: '/app/chat/conversations',
+    defaultPath: '/app/chat/ChatChat',
     color: '#ec4899',
     gradient: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)'
   },

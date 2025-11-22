@@ -197,7 +197,15 @@ const AccountingDetails = () => {
     }
 
     return (
-        <div className="accountingdetails-container">
+        <div className="accountingdetails-container"
+  style={{
+                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${process.env.PUBLIC_URL}/images/lifebookkeeping-background-image.jpg)`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'center',
+                    backgroundSize: 'contain'  // 改为 contain 保持原始尺寸
+                }}
+            >
+
             <div className="accountingdetails-header">
                 <div className="accountingdetails-date-selector" onClick={openDateModal}>
                     <div className="date-display-wrapper">

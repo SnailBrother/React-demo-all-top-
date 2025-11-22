@@ -221,7 +221,9 @@ const AccountingCharts = () => {
     if (error) return <div className="accountingcharts-error">{error}</div>;
 
     return (
-        <div className="accountingcharts-tab-content">
+        <div className="accountingcharts-tab-content"
+        
+        >
             {/* 时间选择器 */}
             <div className="accountingcharts-date-selector" onClick={() => setIsModalOpen(true)}>
                 {getDateDisplay()}
