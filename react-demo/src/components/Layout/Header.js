@@ -15,6 +15,10 @@ const Header = ({ title = "React-Demo" }) => {
     navigate('/apps', { replace: true });
   };
 
+    const handlethemset = () => {
+    navigate('/app/chat/conversations', { replace: true });
+  };
+
   return (
     <header className={styles.header}>
       <div>
@@ -54,8 +58,8 @@ const Header = ({ title = "React-Demo" }) => {
         {/* 点击时直接调用从 context 来的 logout 函数 */}
         <IconButton
           icon="#icon-shezhi2"
-          onClick={logout}
-          title="返回首页"
+          onClick={handlethemset}
+          title="主题设置"
           variant="ghost"
           size="medium"
         />

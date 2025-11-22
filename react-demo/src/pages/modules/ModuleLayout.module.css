@@ -181,6 +181,7 @@
   /* Flexbox 布局中的一个重要技巧，防止子元素在空间不足时无法正确缩小 */
     overflow: hidden;
   box-sizing: border-box;
+  flex: 1; /* 这会让它填充父容器的剩余空间 */
   
 }
 
@@ -214,7 +215,8 @@
   /* 占据所有可用的垂直空间 */
   overflow-y: auto;
   /* 如果页面内容超出，只在此容器内部产生滚动条 */
-  padding: 16px;
+  /* padding: 16px; */
+  padding: 0px;
   min-height: 0;
 }
 

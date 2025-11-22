@@ -1,0 +1,150 @@
+.accounting-details-change-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.accounting-details-change-modal-content {
+    background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.accounting-details-change-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.accounting-details-change-modal-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.accounting-details-change-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+}
+
+.accounting-details-change-form-group {
+    margin-bottom: 16px;
+    padding: 0 20px;
+}
+
+.accounting-details-change-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #444;
+}
+
+.accounting-details-change-form-group input,
+.accounting-details-change-form-group select,
+.accounting-details-change-form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.accounting-details-change-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.accounting-details-change-error {
+    color: #f44336;
+    padding: 0 20px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+}
+
+.accounting-details-change-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-top: 1px solid #eee;
+    margin-top: 16px;
+}
+
+.accounting-details-change-modal-footer > div {
+    display: flex;
+    gap: 10px;
+}
+
+.accounting-details-change-save-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.accounting-details-change-save-btn:hover {
+    background-color: #45a049;
+}
+
+.accounting-details-change-save-btn:disabled {
+    background-color: #a5d6a7;
+    cursor: not-allowed;
+}
+
+.accounting-details-change-cancel-btn {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.accounting-details-change-cancel-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.accounting-details-change-cancel-btn:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.accounting-details-change-delete-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.accounting-details-change-delete-btn:hover {
+    background-color: #d32f2f;
+}
+
+.accounting-details-change-delete-btn:disabled {
+    background-color: #ef9a9a;
+    cursor: not-allowed;
+}

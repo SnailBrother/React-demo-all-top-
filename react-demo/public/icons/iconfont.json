@@ -6,6 +6,195 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "599908",
+      "name": "朋友圈",
+      "font_class": "pengyouquan",
+      "unicode": "ea9d",
+      "unicode_decimal": 60061
+    },
+    {
+      "icon_id": "2982696",
+      "name": "新闻动态",
+      "font_class": "xinwendongtai",
+      "unicode": "ea9e",
+      "unicode_decimal": 60062
+    },
+    {
+      "icon_id": "4635029",
+      "name": "聊天",
+      "font_class": "liaotian12",
+      "unicode": "ea9f",
+      "unicode_decimal": 60063
+    },
+    {
+      "icon_id": "5318740",
+      "name": "社交动态",
+      "font_class": "shejiaodongtai",
+      "unicode": "eaa0",
+      "unicode_decimal": 60064
+    },
+    {
+      "icon_id": "8945208",
+      "name": "动态",
+      "font_class": "dongtai",
+      "unicode": "eaa1",
+      "unicode_decimal": 60065
+    },
+    {
+      "icon_id": "12830052",
+      "name": "社区-动态话题",
+      "font_class": "shequ-dongtaihuati",
+      "unicode": "eaa2",
+      "unicode_decimal": 60066
+    },
+    {
+      "icon_id": "13815491",
+      "name": "朋友圈",
+      "font_class": "pengyouquan1",
+      "unicode": "eaa3",
+      "unicode_decimal": 60067
+    },
+    {
+      "icon_id": "15559661",
+      "name": "朋友圈",
+      "font_class": "shejiaotubiao-02",
+      "unicode": "eaa4",
+      "unicode_decimal": 60068
+    },
+    {
+      "icon_id": "2887305",
+      "name": "房间管理",
+      "font_class": "fangjianguanli",
+      "unicode": "ea89",
+      "unicode_decimal": 60041
+    },
+    {
+      "icon_id": "2929181",
+      "name": "歌词",
+      "font_class": "lrc",
+      "unicode": "ea8b",
+      "unicode_decimal": 60043
+    },
+    {
+      "icon_id": "2931662",
+      "name": "退出账号",
+      "font_class": "tuichuzhanghao2",
+      "unicode": "ea8c",
+      "unicode_decimal": 60044
+    },
+    {
+      "icon_id": "3612172",
+      "name": "歌词调整",
+      "font_class": "gecitiaozheng",
+      "unicode": "ea8d",
+      "unicode_decimal": 60045
+    },
+    {
+      "icon_id": "4320971",
+      "name": "离线",
+      "font_class": "lixian",
+      "unicode": "ea8e",
+      "unicode_decimal": 60046
+    },
+    {
+      "icon_id": "6799805",
+      "name": "解散",
+      "font_class": "jiesan",
+      "unicode": "ea8f",
+      "unicode_decimal": 60047
+    },
+    {
+      "icon_id": "7180580",
+      "name": "歌词_24",
+      "font_class": "geci24",
+      "unicode": "ea90",
+      "unicode_decimal": 60048
+    },
+    {
+      "icon_id": "8543310",
+      "name": "在线",
+      "font_class": "zaixian",
+      "unicode": "ea91",
+      "unicode_decimal": 60049
+    },
+    {
+      "icon_id": "9675204",
+      "name": "加入群",
+      "font_class": "jiaruqun",
+      "unicode": "ea92",
+      "unicode_decimal": 60050
+    },
+    {
+      "icon_id": "11750312",
+      "name": "离线",
+      "font_class": "lixian1",
+      "unicode": "ea93",
+      "unicode_decimal": 60051
+    },
+    {
+      "icon_id": "12062187",
+      "name": "离线",
+      "font_class": "lixian2",
+      "unicode": "ea94",
+      "unicode_decimal": 60052
+    },
+    {
+      "icon_id": "18130719",
+      "name": "房间",
+      "font_class": "fangjian",
+      "unicode": "ea95",
+      "unicode_decimal": 60053
+    },
+    {
+      "icon_id": "20826365",
+      "name": "房间",
+      "font_class": "fangjian1",
+      "unicode": "ea96",
+      "unicode_decimal": 60054
+    },
+    {
+      "icon_id": "24639621",
+      "name": "音乐",
+      "font_class": "yinle2",
+      "unicode": "ea97",
+      "unicode_decimal": 60055
+    },
+    {
+      "icon_id": "24919021",
+      "name": "离线",
+      "font_class": "lixian3",
+      "unicode": "ea98",
+      "unicode_decimal": 60056
+    },
+    {
+      "icon_id": "26160181",
+      "name": "房间",
+      "font_class": "tubiao11-24-49",
+      "unicode": "ea99",
+      "unicode_decimal": 60057
+    },
+    {
+      "icon_id": "28251857",
+      "name": "房间号",
+      "font_class": "fangjianhao",
+      "unicode": "ea9a",
+      "unicode_decimal": 60058
+    },
+    {
+      "icon_id": "31727998",
+      "name": "加入",
+      "font_class": "jiaru",
+      "unicode": "ea9b",
+      "unicode_decimal": 60059
+    },
+    {
+      "icon_id": "37420226",
+      "name": "房间",
+      "font_class": "fangjian2",
+      "unicode": "ea9c",
+      "unicode_decimal": 60060
+    },
+    {
       "icon_id": "5003290",
       "name": "推荐",
       "font_class": "tuijian",

@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4797853 */
-  src: url('iconfont.woff2?t=1762860509003') format('woff2'),
-       url('iconfont.woff?t=1762860509003') format('woff'),
-       url('iconfont.ttf?t=1762860509003') format('truetype');
+  src: url('iconfont.woff2?t=1763787041465') format('woff2'),
+       url('iconfont.woff?t=1763787041465') format('woff'),
+       url('iconfont.ttf?t=1763787041465') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,114 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-pengyouquan:before {
+  content: "\ea9d";
+}
+
+.icon-xinwendongtai:before {
+  content: "\ea9e";
+}
+
+.icon-liaotian12:before {
+  content: "\ea9f";
+}
+
+.icon-shejiaodongtai:before {
+  content: "\eaa0";
+}
+
+.icon-dongtai:before {
+  content: "\eaa1";
+}
+
+.icon-shequ-dongtaihuati:before {
+  content: "\eaa2";
+}
+
+.icon-pengyouquan1:before {
+  content: "\eaa3";
+}
+
+.icon-shejiaotubiao-02:before {
+  content: "\eaa4";
+}
+
+.icon-fangjianguanli:before {
+  content: "\ea89";
+}
+
+.icon-lrc:before {
+  content: "\ea8b";
+}
+
+.icon-tuichuzhanghao2:before {
+  content: "\ea8c";
+}
+
+.icon-gecitiaozheng:before {
+  content: "\ea8d";
+}
+
+.icon-lixian:before {
+  content: "\ea8e";
+}
+
+.icon-jiesan:before {
+  content: "\ea8f";
+}
+
+.icon-geci24:before {
+  content: "\ea90";
+}
+
+.icon-zaixian:before {
+  content: "\ea91";
+}
+
+.icon-jiaruqun:before {
+  content: "\ea92";
+}
+
+.icon-lixian1:before {
+  content: "\ea93";
+}
+
+.icon-lixian2:before {
+  content: "\ea94";
+}
+
+.icon-fangjian:before {
+  content: "\ea95";
+}
+
+.icon-fangjian1:before {
+  content: "\ea96";
+}
+
+.icon-yinle2:before {
+  content: "\ea97";
+}
+
+.icon-lixian3:before {
+  content: "\ea98";
+}
+
+.icon-tubiao11-24-49:before {
+  content: "\ea99";
+}
+
+.icon-fangjianhao:before {
+  content: "\ea9a";
+}
+
+.icon-jiaru:before {
+  content: "\ea9b";
+}
+
+.icon-fangjian2:before {
+  content: "\ea9c";
 }
 
 .icon-tuijian:before {
