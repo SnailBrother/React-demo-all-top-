@@ -8,7 +8,7 @@ import { MessageProvider } from './components/UI/Message';
 import AppRoutes from './routes';
 import './assets/styles/variables.css';
 import styles from './App.module.css';
-
+import { AccountingProvider } from './pages/modules/accounting/AccountingDataContext/AccountingContext';//记账配置
 function App() {
   return (
     <Router>
@@ -16,11 +16,12 @@ function App() {
         <ThemeProvider>
           <MusicProvider>
             <MessageProvider>
+              <AccountingProvider>
+                <div className={styles.app}>
+                  <AppRoutes />
 
-              <div className={styles.app}>
-                <AppRoutes />
-              </div>
-
+                </div>
+              </AccountingProvider>
             </MessageProvider>
           </MusicProvider>
         </ThemeProvider>

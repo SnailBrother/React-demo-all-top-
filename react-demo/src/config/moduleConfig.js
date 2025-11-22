@@ -5,10 +5,11 @@ export const moduleConfig = {
     label: '记账',
     defaultRoute: 'overview',
     routes: [
-      { key: 'overview', label: '总览', icon: '#icon-shouye3', component: () => import('../pages/modules/accounting/Overview') },
-      { key: 'transactions', label: '总览', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingDetails') },
-    //   { key: 'transactions', label: '账目', icon: 'icon-guge', component: () => import('../pages/modules/accounting/Transactions') },
-      { key: 'reports', label: '报表', icon: 'icon-guge', component: () => import('../pages/modules/accounting/Reports') },
+       { key: 'AccountingHomePage', label: '首页', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingHomePage') },
+      { key: 'AccountingDetails', label: '明细', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingDetails') },
+    { key: 'AccountingCharts', label: '添加', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingCharts') },
+     { key: 'AccountingAdd', label: '图标', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingAdd') },
+      { key: 'AccountingMy', label: '我的', icon: '#icon-shouruzhengmingshenqingdan', component: () => import('../pages/modules/accounting/AccountingMy') },
     ]
   },
   music: {
