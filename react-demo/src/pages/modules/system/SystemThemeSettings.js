@@ -99,9 +99,9 @@ const SystemThemeSettings = () => {
       });
 
       if (response.data && response.data.success) {
-        const updatedThemes = allThemes.map(t => ({ 
-          ...t, 
-          is_active: t.id === themeId 
+        const updatedThemes = allThemes.map(t => ({
+          ...t,
+          is_active: t.id === themeId
         }));
         const newActiveTheme = updatedThemes.find(t => t.id === themeId);
 
@@ -128,9 +128,9 @@ const SystemThemeSettings = () => {
       });
 
       if (response.data && response.data.success) {
-        const updatedThemes = allThemes.map(t => ({ 
-          ...t, 
-          is_default: t.id === themeId 
+        const updatedThemes = allThemes.map(t => ({
+          ...t,
+          is_default: t.id === themeId
         }));
         updateThemes(updatedThemes);
         return { success: true };
@@ -183,69 +183,69 @@ const SystemThemeSettings = () => {
   }, []);
 
   // 上传背景图片
-// 上传背景图片函数
-const uploadBackgroundImage = useCallback(async (themeId) => {
-  if (!imageFile || !isAuthenticated || !user) {
-    throw new Error('请先选择图片并登录');
-  }
-
-  const imageFormData = new FormData();
-  imageFormData.append('backgroundImage', imageFile);
-  imageFormData.append('email', user.email);
-  imageFormData.append('themeId', themeId.toString()); // 确保是字符串
-
-  console.log('ReactDemo 上传图片数据:', {
-    email: user.email,
-    themeId: themeId,
-    fileName: imageFile.name
-  });
-
-  // 使用新的独立路由
-  const response = await axios.post('/api/react-demo/upload-background', imageFormData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
+  // 上传背景图片函数
+  const uploadBackgroundImage = useCallback(async (themeId) => {
+    if (!imageFile || !isAuthenticated || !user) {
+      throw new Error('请先选择图片并登录');
     }
-  });
 
-  if (response.data && response.data.success) {
-    setImageTimestamp(Date.now());
-    return response.data;
-  } else {
-    throw new Error(response.data?.message || 'ReactDemo: 图片上传失败');
-  }
-}, [imageFile, isAuthenticated, user]);
+    const imageFormData = new FormData();
+    imageFormData.append('backgroundImage', imageFile);
+    imageFormData.append('email', user.email);
+    imageFormData.append('themeId', themeId.toString()); // 确保是字符串
+
+    console.log('ReactDemo 上传图片数据:', {
+      email: user.email,
+      themeId: themeId,
+      fileName: imageFile.name
+    });
+
+    // 使用新的独立路由
+    const response = await axios.post('/api/react-demo/upload-background', imageFormData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (response.data && response.data.success) {
+      setImageTimestamp(Date.now());
+      return response.data;
+    } else {
+      throw new Error(response.data?.message || 'ReactDemo: 图片上传失败');
+    }
+  }, [imageFile, isAuthenticated, user]);
 
   // 创建新主题
-const createNewTheme = useCallback(async (themeName, themeSettings, setAsActive = false) => {
-  if (!isAuthenticated || !user) throw new Error('用户未登录');
-  
-  try {
-    // 转换CSS主题设置到数据库格式
-    const dbTheme = transformCssToDbTheme(themeSettings);
-    
-    // 创建主题数据 - 确保 is_active 是布尔值
-    const themeData = {
-      email: user.email,
-      theme_name: themeName,
-      is_active: setAsActive, // 这里应该是布尔值 true/false
-      ...dbTheme
-    };
-      
+  const createNewTheme = useCallback(async (themeName, themeSettings, setAsActive = false) => {
+    if (!isAuthenticated || !user) throw new Error('用户未登录');
+
+    try {
+      // 转换CSS主题设置到数据库格式
+      const dbTheme = transformCssToDbTheme(themeSettings);
+
+      // 创建主题数据 - 确保 is_active 是布尔值
+      const themeData = {
+        email: user.email,
+        theme_name: themeName,
+        is_active: setAsActive, // 这里应该是布尔值 true/false
+        ...dbTheme
+      };
+
       // 创建主题
       const response = await axios.post('/api/UserThemeSettings', themeData);
-      
+
       if (response.data && response.data.success && response.data.theme) {
         const newTheme = response.data.theme;
-        
+
         // 如果有自定义背景图片，上传图片
         if (backgroundAnimation === 'CustomBackground' && imageFile) {
           await uploadBackgroundImage(newTheme.id);
         }
-        
+
         // 更新主题列表
         let newThemesList = [...allThemes, newTheme];
         if (setAsActive) {
-          newThemesList = newThemesList.map(t => ({...t, is_active: t.id === newTheme.id}));
+          newThemesList = newThemesList.map(t => ({ ...t, is_active: t.id === newTheme.id }));
           updateActiveTheme(newTheme);
         }
         updateThemes(newThemesList);
@@ -260,20 +260,72 @@ const createNewTheme = useCallback(async (themeName, themeSettings, setAsActive 
   }, [isAuthenticated, user, backgroundAnimation, imageFile, allThemes, transformCssToDbTheme, updateThemes, updateActiveTheme, uploadBackgroundImage]);
 
   // 更新主题
+  // const updateThemeById = useCallback(async (themeId, updateData) => {
+  //   try {
+  //     console.log('调用 updateThemeById:', { themeId, updateData, user });
+
+  //     // 确保包含用户邮箱
+  //     const requestData = {
+  //       email: user?.email,
+  //       ...updateData
+  //     };
+
+  //     const response = await axios.put(`/api/UserThemeSettings/${themeId}`, requestData);
+
+  //     console.log('更新主题响应:', response.data);
+
+  //     if (response.data && response.data.success && response.data.theme) {
+  //       const updatedTheme = response.data.theme;
+  //       const newThemesList = allThemes.map(t => t.id === themeId ? updatedTheme : t);
+  //       updateThemes(newThemesList);
+
+  //       if (activeTheme && activeTheme.id === themeId) {
+  //         updateActiveTheme(updatedTheme);
+  //       }
+
+  //       // 如果有自定义背景图片，上传图片
+  //       if (backgroundAnimation === 'CustomBackground' && imageFile) {
+  //         try {
+  //           console.log('开始上传背景图片...');
+  //           await uploadBackgroundImage(themeId);
+  //           console.log('背景图片上传成功');
+  //           message.success('主题和背景图片更新成功！');
+  //         } catch (uploadError) {
+  //           console.error('背景图片上传失败:', uploadError);
+  //           // 主题更新成功，但图片上传失败，显示警告而不是错误
+  //           message.warning('主题更新成功，但背景图片上传失败');
+  //         }
+  //       } else {
+  //         message.success('主题更新成功！');
+  //       }
+
+  //       return { success: true, theme: updatedTheme };
+  //     } else {
+  //       throw new Error(response.data?.message || '更新主题失败');
+  //     }
+  //   } catch (error) {
+  //     console.error('updateThemeById 错误详情:', {
+  //       error: error,
+  //       response: error.response,
+  //       data: error.response?.data,
+  //       status: error.response?.status
+  //     });
+  //     throw error;
+  //   }
+  // }, [allThemes, activeTheme, updateThemes, updateActiveTheme, backgroundAnimation, imageFile, uploadBackgroundImage, user]);
 const updateThemeById = useCallback(async (themeId, updateData) => {
   try {
     console.log('调用 updateThemeById:', { themeId, updateData, user });
-    
-    // 确保包含用户邮箱
+
     const requestData = {
       email: user?.email,
       ...updateData
     };
-    
+
     const response = await axios.put(`/api/UserThemeSettings/${themeId}`, requestData);
-    
+
     console.log('更新主题响应:', response.data);
-    
+
     if (response.data && response.data.success && response.data.theme) {
       const updatedTheme = response.data.theme;
       const newThemesList = allThemes.map(t => t.id === themeId ? updatedTheme : t);
@@ -292,58 +344,52 @@ const updateThemeById = useCallback(async (themeId, updateData) => {
           message.success('主题和背景图片更新成功！');
         } catch (uploadError) {
           console.error('背景图片上传失败:', uploadError);
-          // 主题更新成功，但图片上传失败，显示警告而不是错误
           message.warning('主题更新成功，但背景图片上传失败');
         }
       } else {
         message.success('主题更新成功！');
       }
 
+      // 关键：返回更新后的主题数据
       return { success: true, theme: updatedTheme };
     } else {
       throw new Error(response.data?.message || '更新主题失败');
     }
   } catch (error) {
-    console.error('updateThemeById 错误详情:', {
-      error: error,
-      response: error.response,
-      data: error.response?.data,
-      status: error.response?.status
-    });
+    console.error('updateThemeById 错误详情:', error);
     throw error;
   }
 }, [allThemes, activeTheme, updateThemes, updateActiveTheme, backgroundAnimation, imageFile, uploadBackgroundImage, user]);
-
   // 删除主题
-// 在 deleteThemeById 函数中也添加邮箱
-const deleteThemeById = useCallback(async (themeId) => {
-  try {
-    const response = await axios.delete(`/api/UserThemeSettings/${themeId}`, {
-      data: { email: user?.email } // 在请求体中传递邮箱
-    });
-    
-    if (response.data && response.data.success) {
-      const newThemesList = allThemes.filter(t => t.id !== themeId);
-      updateThemes(newThemesList);
+  // 在 deleteThemeById 函数中也添加邮箱
+  const deleteThemeById = useCallback(async (themeId) => {
+    try {
+      const response = await axios.delete(`/api/UserThemeSettings/${themeId}`, {
+        data: { email: user?.email } // 在请求体中传递邮箱
+      });
 
-      if (activeTheme && activeTheme.id === themeId) {
-        const defaultForUser = newThemesList.find(t => t.is_default && t.email === user.email);
-        if (defaultForUser) {
-          updateActiveTheme(defaultForUser);
-        } else {
-          updateActiveTheme(null);
-          applyThemeToRoot(defaultTheme);
+      if (response.data && response.data.success) {
+        const newThemesList = allThemes.filter(t => t.id !== themeId);
+        updateThemes(newThemesList);
+
+        if (activeTheme && activeTheme.id === themeId) {
+          const defaultForUser = newThemesList.find(t => t.is_default && t.email === user.email);
+          if (defaultForUser) {
+            updateActiveTheme(defaultForUser);
+          } else {
+            updateActiveTheme(null);
+            applyThemeToRoot(defaultTheme);
+          }
         }
+        return { success: true };
+      } else {
+        throw new Error(response.data?.message || '删除主题失败');
       }
-      return { success: true };
-    } else {
-      throw new Error(response.data?.message || '删除主题失败');
+    } catch (error) {
+      console.error('删除主题失败:', error);
+      throw error;
     }
-  } catch (error) {
-    console.error('删除主题失败:', error);
-    throw error;
-  }
-}, [isAuthenticated, user, allThemes, activeTheme, updateThemes, updateActiveTheme, applyThemeToRoot, defaultTheme]);
+  }, [isAuthenticated, user, allThemes, activeTheme, updateThemes, updateActiveTheme, applyThemeToRoot, defaultTheme]);
 
   // 监听活动主题变化
   useEffect(() => {
@@ -393,26 +439,26 @@ const deleteThemeById = useCallback(async (themeId) => {
     }
   }, [setDefaultThemeById]);
 
-const startEditing = useCallback((themeId) => {
-  const themeToEdit = userThemes.find(t => t.id === themeId);
-  if (themeToEdit) {
-    setEditingTheme(themeId);
-    setCreatingNew(false);
-    setNewThemeName(themeToEdit.theme_name);
-    setCustomThemeSettings(transformDbThemeToCss(themeToEdit));
-    setBackgroundAnimation(themeToEdit.background_animation || 'WaterWave');
-    setShowImageUpload(themeToEdit.background_animation === 'CustomBackground');
-    
-    // 加载自定义背景图片 - 使用新路由
-    if (themeToEdit.background_animation === 'CustomBackground') {
-      const imageUrl = `/api/react-demo/background-image/${user.email}/${themeId}?t=${Date.now()}`;
-      setSelectedImage(imageUrl);
-    } else {
-      setSelectedImage(null);
-      setImageFile(null);
+  const startEditing = useCallback((themeId) => {
+    const themeToEdit = userThemes.find(t => t.id === themeId);
+    if (themeToEdit) {
+      setEditingTheme(themeId);
+      setCreatingNew(false);
+      setNewThemeName(themeToEdit.theme_name);
+      setCustomThemeSettings(transformDbThemeToCss(themeToEdit));
+      setBackgroundAnimation(themeToEdit.background_animation || 'WaterWave');
+      setShowImageUpload(themeToEdit.background_animation === 'CustomBackground');
+
+      // 加载自定义背景图片 - 使用新路由
+      if (themeToEdit.background_animation === 'CustomBackground') {
+        const imageUrl = `/api/react-demo/background-image/${user.email}/${themeId}?t=${Date.now()}`;
+        setSelectedImage(imageUrl);
+      } else {
+        setSelectedImage(null);
+        setImageFile(null);
+      }
     }
-  }
-}, [userThemes, transformDbThemeToCss, user]);
+  }, [userThemes, transformDbThemeToCss, user]);
 
   const cancelEditingAndCreating = useCallback(() => {
     setEditingTheme(null);
@@ -425,51 +471,117 @@ const startEditing = useCallback((themeId) => {
     cancelPreview();
   }, [cancelPreview]);
 
-  const handleSaveEdit = useCallback(async () => {
+  // const handleSaveEdit = useCallback(async () => {
+  //   if (!editingTheme || !newThemeName.trim()) {
+  //     message.error('请输入主题名称');
+  //     return;
+  //   }
+
+  //   setSaving(true);
+  //   try {
+  //     const dbTheme = transformCssToDbTheme(customThemeSettings);
+
+  //     // 添加调试信息
+  //     console.log('更新主题数据:', {
+  //       themeId: editingTheme,
+  //       themeName: newThemeName,
+  //       backgroundAnimation: backgroundAnimation,
+  //       dbTheme: dbTheme
+  //     });
+
+  //     await updateThemeById(editingTheme, {
+  //       ...dbTheme,
+  //       theme_name: newThemeName,
+  //       background_animation: backgroundAnimation
+  //     });
+  //     message.success('主题更新成功！');
+  //     cancelEditingAndCreating();
+  //   } catch (error) {
+  //     // 详细错误日志
+  //     console.error('更新主题失败详情:', {
+  //       error: error,
+  //       response: error.response,
+  //       data: error.response?.data,
+  //       status: error.response?.status
+  //     });
+
+  //     const errorMessage = error.response?.data?.message || error.message || '更新主题失败';
+  //     message.error(errorMessage);
+  //   } finally {
+  //     setSaving(false);
+  //   }
+  // }, [editingTheme, newThemeName, customThemeSettings, backgroundAnimation, updateThemeById, transformCssToDbTheme, cancelEditingAndCreating]);
+const handleSaveEdit = useCallback(async () => {
   if (!editingTheme || !newThemeName.trim()) {
-    message.error('请输入主题名称'); 
+    message.error('请输入主题名称');
     return;
   }
-  
+
   setSaving(true);
   try {
     const dbTheme = transformCssToDbTheme(customThemeSettings);
-    
-    // 添加调试信息
+
     console.log('更新主题数据:', {
       themeId: editingTheme,
       themeName: newThemeName,
       backgroundAnimation: backgroundAnimation,
       dbTheme: dbTheme
     });
-    
-    await updateThemeById(editingTheme, { 
-      ...dbTheme, 
+
+    // 保存主题更新
+    const result = await updateThemeById(editingTheme, {
+      ...dbTheme,
       theme_name: newThemeName,
       background_animation: backgroundAnimation
     });
-    message.success('主题更新成功！');
-    cancelEditingAndCreating();
+
+    if (result.success) {
+      message.success('主题更新成功！');
+      
+      // 关键修改：保存成功后立即应用更新后的主题
+      const updatedTheme = result.theme;
+      
+      // 如果当前编辑的主题是活动主题，更新活动主题
+      if (activeTheme && activeTheme.id === editingTheme) {
+        updateActiveTheme(updatedTheme);
+        applyThemeToRoot(transformDbThemeToCss(updatedTheme));
+      }
+      
+      // 取消编辑状态，但保持主题应用
+      setEditingTheme(null);
+      setCreatingNew(false);
+      setNewThemeName('');
+      setSelectedImage(null);
+      setImageFile(null);
+      setShowImageUpload(false);
+      
+      // 不要调用 cancelPreview()，这样会重置到旧的主题
+      // 而是直接应用更新后的主题
+      if (activeTheme && activeTheme.id === editingTheme) {
+        // 已经是活动主题，不需要额外操作
+      } else {
+        // 如果不是活动主题，取消预览会重置到当前活动主题，这是正确的行为
+        cancelPreview();
+      }
+    }
   } catch (error) {
-    // 详细错误日志
     console.error('更新主题失败详情:', {
       error: error,
       response: error.response,
       data: error.response?.data,
       status: error.response?.status
     });
-    
+
     const errorMessage = error.response?.data?.message || error.message || '更新主题失败';
     message.error(errorMessage);
   } finally {
     setSaving(false);
   }
-}, [editingTheme, newThemeName, customThemeSettings, backgroundAnimation, updateThemeById, transformCssToDbTheme, cancelEditingAndCreating]);
-
+}, [editingTheme, newThemeName, customThemeSettings, backgroundAnimation, updateThemeById, transformCssToDbTheme, activeTheme, updateActiveTheme, applyThemeToRoot, transformDbThemeToCss, cancelPreview]);
   const handleCreateNewTheme = useCallback(() => {
-    if (!isAuthenticated) { 
-      message.error('请先登录'); 
-      return; 
+    if (!isAuthenticated) {
+      message.error('请先登录');
+      return;
     }
     setCreatingNew(true);
     setEditingTheme(null);
@@ -482,13 +594,13 @@ const startEditing = useCallback((themeId) => {
   }, [isAuthenticated, defaultTheme]);
 
   const handleSaveNewTheme = useCallback(async () => {
-    if (!newThemeName.trim()) { 
-      message.error('请输入主题名称'); 
-      return; 
+    if (!newThemeName.trim()) {
+      message.error('请输入主题名称');
+      return;
     }
-    if (!isAuthenticated) { 
-      message.error('请先登录'); 
-      return; 
+    if (!isAuthenticated) {
+      message.error('请先登录');
+      return;
     }
 
     setSaving(true);
@@ -536,8 +648,8 @@ const startEditing = useCallback((themeId) => {
       <div className={styles.content}>
         {/* 左侧：主题编辑器 */}
         <div className={styles.editor}>
-          <p><strong>用户名:</strong> {user?.username}</p>
-          <p><strong>邮箱:</strong> {user?.email}</p>
+          {/* <p><strong>用户名:</strong> {user?.username}</p>
+          <p><strong>邮箱:</strong> {user?.email}</p> */}
 
           {/* 背景颜色设置 */}
           <div className={styles.section}>
@@ -555,7 +667,7 @@ const startEditing = useCallback((themeId) => {
 
           {/* 字体颜色设置 */}
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}><svg className={styles.icon} aria-hidden="true"><use xlinkHref="#icon-ziti"></use></svg>字体颜色</h2>
+            <h2 className={styles.sectionTitle}><svg className={styles.icon} aria-hidden="true"><use xlinkHref="#icon-wenziyanse"></use></svg>字体颜色</h2>
             <div className={styles.colorGrid}>
               <div className={styles.colorItem}><label>常规颜色</label><ColorPicker value={customThemeSettings['font-color']} onChange={handleColorChange('font-color')} showText className={styles.colorPicker} /></div>
               <div className={styles.colorItem}><label>次常规颜色</label><ColorPicker value={customThemeSettings['secondary-font-color']} onChange={handleColorChange('secondary-font-color')} showText className={styles.colorPicker} /></div>
@@ -588,17 +700,17 @@ const startEditing = useCallback((themeId) => {
 
           {/* 字体设置 */}
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}><svg className={styles.icon} aria-hidden="true"><use xlinkHref="#icon-ziti"></use></svg>字体设置</h2>
+            <h2 className={styles.sectionTitle}><svg className={styles.icon} aria-hidden="true"><use xlinkHref="#icon--zitixieti"></use></svg>字体设置</h2>
             <div className={styles.settingsGrid}>
               <div className={styles.settingItem}>
                 <label>字体家族</label>
                 <select value={customThemeSettings['font-family']} onChange={(e) => handleSettingChange('font-family', e.target.value)} className={styles.select}>
-                  <option value="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">系统字体</option>
-                  <option value="Arial, Helvetica, sans-serif">Arial</option>
-                  <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
-                  <option value="'SimSun', serif">宋体</option>
-                  <option value="'KaiTi', serif">楷体</option>
-                  <option value="'SimHei', sans-serif">黑体</option>
+                  <option value="SimSun">宋体</option>
+                  <option value="KaiTi">楷体</option>
+                  <option value="KaiTi_GB2312">楷体_GB2312</option>
+                  <option value="FZKaKai-GBK">方正楷体</option>
+                  <option value="FZMWFont">方正喵呜体</option>
+                  <option value="AlimamaDongFangDaKai">阿里妈妈东方大楷</option>
                 </select>
               </div>
             </div>
@@ -712,12 +824,12 @@ const startEditing = useCallback((themeId) => {
               {creatingNew && (
                 <div className={`${styles.item} ${styles.creatingItem}`}>
                   <div className={styles.itemInfo}>
-                    <input 
-                      type="text" 
-                      value={newThemeName} 
-                      onChange={(e) => setNewThemeName(e.target.value)} 
-                      className={styles.nameInput} 
-                      placeholder="输入主题名称" 
+                    <input
+                      type="text"
+                      value={newThemeName}
+                      onChange={(e) => setNewThemeName(e.target.value)}
+                      className={styles.nameInput}
+                      placeholder="输入主题名称"
                     />
                   </div>
                   <div className={styles.itemActions}>
@@ -735,11 +847,11 @@ const startEditing = useCallback((themeId) => {
                   <div key={theme.id} className={`${styles.item} ${isActive ? styles.itemActive : ''}`}>
                     <div className={styles.itemInfo}>
                       {editingTheme === theme.id ? (
-                        <input 
-                          type="text" 
-                          value={newThemeName} 
-                          onChange={(e) => setNewThemeName(e.target.value)} 
-                          className={styles.nameInput} 
+                        <input
+                          type="text"
+                          value={newThemeName}
+                          onChange={(e) => setNewThemeName(e.target.value)}
+                          className={styles.nameInput}
                         />
                       ) : (
                         <div className={styles.itemName}>

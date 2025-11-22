@@ -405,6 +405,7 @@
   flex-direction: column;
   gap: 0px;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .dressing-result-card {
@@ -412,6 +413,7 @@
   background: var(--dressing-background-main);
   border-radius: 12px;
   overflow: hidden;
+   box-sizing: border-box;
 }
 
 .dressing-result-card .ant-card-body {

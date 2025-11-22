@@ -1,12 +1,13 @@
 /* src/pages/modules/Select/select.module.css */
- 
+
 .wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #f5f7fa 0%, #f6f6f7 100%);
   padding: 40px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-family: var(--font-family);
 }
 
 .header {
@@ -150,7 +151,7 @@
 }
 
 .card:hover .enterButton {
-  
+
   color: white;
   transform: translateX(2px);
 }
@@ -201,24 +202,24 @@
   .wrapper {
     padding: 20px 16px;
   }
-  
+
   .title {
     font-size: 2rem;
   }
-  
+
   .subtitle {
     font-size: 1rem;
   }
-  
+
   .cardHeader {
-     
+
     gap: 12px;
   }
-  
+
   .enterButton {
     align-self: flex-end;
   }
-  
+
   .moduleInfo {
     width: 100%;
   }
@@ -228,32 +229,32 @@
   .title {
     font-size: 1.75rem;
   }
-  
+
   .card {
     padding: 20px;
   }
-  
+
   .iconCircle {
     width: 44px;
     height: 44px;
   }
-  
+
   .emoji {
     font-size: 18px;
   }
-  
+
   .cardTitle {
     font-size: 1.125rem;
   }
-  
+
   .moduleDesc {
     font-size: 0.8rem;
   }
-  
+
   .tagsContainer {
     gap: 6px;
   }
-  
+
   .tag {
     font-size: 0.7rem;
     padding: 3px 8px;

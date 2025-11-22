@@ -17,7 +17,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px;
+    padding: 5px;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
     flex-shrink: 0;
@@ -41,6 +41,7 @@
 
 .songInfo {
     flex: 1;
+    color: var(secondary-font-color);
 }
 
 .songTitle {
@@ -48,12 +49,14 @@
     font-weight: bold;
     margin: 0 0 6px 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    color: var(secondary-font-color);
 }
 
 .songArtist {
     font-size: 14px;
     opacity: 0.8;
     margin: 0 0 8px 0;
+    color: var(secondary-font-color);
 }
 
 .timeInfo {
@@ -63,8 +66,8 @@
 
 .backButton {
     padding: 10px 10px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* background: rgba(255, 255, 255, 0.15); */
+    border: 0px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
     color: white;
     font-size: 14px;
@@ -73,13 +76,24 @@
     backdrop-filter: blur(10px);
     white-space: nowrap;
     margin-left: 5px;
+    background-color: transparent;
 }
 
 .backButton:hover {
-    background: rgba(255, 255, 255, 0.25);
+    /* background: rgba(255, 255, 255, 0.25); */
+    background-color: transparent;
     transform: translateY(-1px);
 }
-
+.backButtonicon {
+  width: 2em;
+    height: 2em;
+    vertical-align: -0.15em;
+    fill: currentColor;
+    overflow: hidden;
+    padding-left: 2px;
+    text-align: center;
+      
+}
 /* 歌词显示区域 - 占据剩余全部空间 */
 .lyricsContainer {
     flex: 1;

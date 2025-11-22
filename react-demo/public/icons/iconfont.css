@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4797853 */
-  src: url('iconfont.woff2?t=1763787041465') format('woff2'),
-       url('iconfont.woff?t=1763787041465') format('woff'),
-       url('iconfont.ttf?t=1763787041465') format('truetype');
+  src: url('iconfont.woff2?t=1763808900094') format('woff2'),
+       url('iconfont.woff?t=1763808900094') format('woff'),
+       url('iconfont.ttf?t=1763808900094') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,42 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-pro-yinying:before {
+  content: "\eaa8";
+}
+
+.icon-yinyingfenxi:before {
+  content: "\eaaa";
+}
+
+.icon-yinying:before {
+  content: "\eaab";
+}
+
+.icon-tianjiayinying:before {
+  content: "\eaad";
+}
+
+.icon-yinying1:before {
+  content: "\eaae";
+}
+
+.icon-yinyingfenxi1:before {
+  content: "\eaaf";
+}
+
+.icon-icon-test-copy:before {
+  content: "\eaa5";
+}
+
+.icon-lvhangshe:before {
+  content: "\eaa6";
+}
+
+.icon-lvyoulvhang:before {
+  content: "\eaa7";
 }
 
 .icon-pengyouquan:before {

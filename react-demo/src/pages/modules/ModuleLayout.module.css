@@ -15,6 +15,7 @@
   /* 确保背景层本身不可点击，不干扰上层元素的交互 */
   box-sizing: border-box;
   overflow: hidden;
+    font-family: var(--font-family);
 }
 
 /* 统一布局容器 - 整个应用的骨架 */
@@ -33,6 +34,7 @@
   /* 当侧边栏折叠时，列宽变化有平滑的过渡动画 */
   position: relative;
   /* 确保内容层在背景层之上 */
+  font-family: var(--font-family);
 }
 
 /* #endregion end */
@@ -228,3 +230,38 @@
 }
 
 /* #endregion end */
+/* src: url('/fonts/FZMWFont/FZMWFont.ttf') format('truetype');
+ src: url('%PUBLIC_URL%/fonts/FZMWFont/FZMWFont.ttf') format('truetype'); */
+
+@font-face {
+    font-family: FZMWFont;
+     src: url('./fonts/FZMWFont/FZMWFont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+/* 自定义字体 */
+
+/* 定义阿里妈妈东方大楷字体 */
+@font-face {
+    font-family: 'AlimamaDongFangDaKai';
+    src: url('./fonts/AlimamaDongFangDaKai-Regular/AlimamaDongFangDaKai-Regular.ttf') format('truetype'),
+        url('./fonts/AlimamaDongFangDaKai-Regular/AlimamaDongFangDaKai-Regular.woff') format('woff'),
+        url('./fonts/AlimamaDongFangDaKai-Regular/AlimamaDongFangDaKai-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+/* 引入LED字体 */
+@font-face {
+    font-family: KaiTi_GB2312;
+    src: url('./fonts/KaiTi/KaiTi.TTF');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+/* src: url('%PUBLIC_URL%/fonts/FZMWFont/FZMWFont.ttf') format('truetype'); */

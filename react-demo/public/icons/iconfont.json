@@ -6,6 +6,69 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "4228909",
+      "name": "pro03-02阴影",
+      "font_class": "pro-yinying",
+      "unicode": "eaa8",
+      "unicode_decimal": 60072
+    },
+    {
+      "icon_id": "12568181",
+      "name": "阴影分析",
+      "font_class": "yinyingfenxi",
+      "unicode": "eaaa",
+      "unicode_decimal": 60074
+    },
+    {
+      "icon_id": "18759553",
+      "name": "阴影",
+      "font_class": "yinying",
+      "unicode": "eaab",
+      "unicode_decimal": 60075
+    },
+    {
+      "icon_id": "29327684",
+      "name": "添加阴影",
+      "font_class": "tianjiayinying",
+      "unicode": "eaad",
+      "unicode_decimal": 60077
+    },
+    {
+      "icon_id": "31323084",
+      "name": "阴影",
+      "font_class": "yinying1",
+      "unicode": "eaae",
+      "unicode_decimal": 60078
+    },
+    {
+      "icon_id": "35428884",
+      "name": "阴影分析",
+      "font_class": "yinyingfenxi1",
+      "unicode": "eaaf",
+      "unicode_decimal": 60079
+    },
+    {
+      "icon_id": "6126871",
+      "name": "旅行",
+      "font_class": "icon-test-copy",
+      "unicode": "eaa5",
+      "unicode_decimal": 60069
+    },
+    {
+      "icon_id": "22684839",
+      "name": "旅行社",
+      "font_class": "lvhangshe",
+      "unicode": "eaa6",
+      "unicode_decimal": 60070
+    },
+    {
+      "icon_id": "26394946",
+      "name": "旅游旅行",
+      "font_class": "lvyoulvhang",
+      "unicode": "eaa7",
+      "unicode_decimal": 60071
+    },
+    {
       "icon_id": "599908",
       "name": "朋友圈",
       "font_class": "pengyouquan",

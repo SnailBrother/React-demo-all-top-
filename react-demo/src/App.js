@@ -8,22 +8,27 @@ import { MessageProvider } from './components/UI/Message';
 import AppRoutes from './routes';
 import './assets/styles/variables.css';
 import styles from './App.module.css';
+import { TravelThemeProvider } from './pages/modules/travel/ThemeContext'; // 根据你的实际路径调整
 import { AccountingProvider } from './pages/modules/accounting/AccountingDataContext/AccountingContext';//记账配置
 function App() {
   return (
     <Router>
       <AuthProvider>
         <ThemeProvider>
-          <MusicProvider>
-            <MessageProvider>
-              <AccountingProvider>
-                <div className={styles.app}>
-                  <AppRoutes />
 
-                </div>
-              </AccountingProvider>
-            </MessageProvider>
-          </MusicProvider>
+          <TravelThemeProvider>
+            <MusicProvider>
+              <MessageProvider>
+                <AccountingProvider>
+                  <div className={styles.app}>
+                    <AppRoutes />
+
+                  </div>
+                </AccountingProvider>
+              </MessageProvider>
+            </MusicProvider>
+          </TravelThemeProvider>
+
         </ThemeProvider>
       </AuthProvider>
     </Router>

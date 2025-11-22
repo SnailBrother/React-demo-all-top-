@@ -39,7 +39,17 @@ const MusicplayerLyrics = () => {
             ? lyrics.sort((a, b) => a.time - b.time)
             : [{ time: 0, text: '暂无歌词' }];
     };
-
+const handleBack = () => {
+  // 直接返回，如果还在当前页面说明没有历史记录，再跳转首页
+  window.history.back();
+  
+  // 设置一个延时检查，如果还在当前页面就跳转首页
+  setTimeout(() => {
+    if (window.location.pathname.includes('/app/music/musicplayerlyrics')) {
+      window.location.href = '/app/music/home';
+    }
+  }, 100);
+};
     // 加载歌词
     useEffect(() => {
         const loadLyrics = async () => {
@@ -134,9 +144,13 @@ const MusicplayerLyrics = () => {
             <div className={styles.songHeader}>
                 <button 
                     className={styles.backButton}
-                    onClick={() => window.history.back()}
+                    // onClick={() => window.history.back()}
+                     onClick={handleBack}
                 >
-                    返回
+                    {/* 返回 */}
+                    <svg  className={styles.backButtonicon} aria-hidden="true">
+                                <use xlinkHref="#icon-quxiaoquanping" />
+                            </svg>
                 </button>
 
                 <div className={styles.headerLeft}>
@@ -148,9 +162,9 @@ const MusicplayerLyrics = () => {
                     <div className={styles.songInfo}>
                         <h1 className={styles.songTitle}>{currentSong.title}</h1>
                         <p className={styles.songArtist}>{currentSong.artist}</p>
-                        <div className={styles.timeInfo}>
+                        {/* <div className={styles.timeInfo}>
                             <span>{formatTime(progress)}</span>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
                 
