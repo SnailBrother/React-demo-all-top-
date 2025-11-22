@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '../../../components/UI'; 
 import styles from './login.module.css';
 
 const Login = () => {
@@ -195,30 +194,25 @@ const Login = () => {
                         <div className={styles.submitError}>{errors.submit}</div>
                     )}
 
-                    <Button
+                    <button
                         type="submit"
-                        variant="primary"
-                        size="large"
-                        fullWidth
-                        style={{ width: '100%' }}  
-                        loading={loading}
-                        className={styles.loginButton}
+                        disabled={loading}
+                        className={`${styles.loginButton} ${loading ? styles.loading : ''}`}
                     >
                         {loading ? '登录中...' : '登录'}
-                    </Button>
+                    </button>
                 </form>
 
                 <div className={styles.loginFooter}>
                     <p className={styles.switchMode}>
                         还没有账户？
-                        <Button
+                        <button
                             type="button"
-                            variant="text"
                             onClick={goToRegister}
                             className={styles.switchButton}
                         >
                             立即注册
-                        </Button>
+                        </button>
                     </p>
 
                     <div className={styles.divider}>
@@ -226,10 +220,8 @@ const Login = () => {
                     </div>
 
                     <div className={styles.socialLogin}>
-                        <Button
+                        <button
                             type="button"
-                            variant="secondary"
-                            fullWidth
                             className={styles.socialButton}
                         >
                             <span className={styles.socialIcon}>
@@ -238,11 +230,9 @@ const Login = () => {
                                 </svg>
                             </span>
                             使用 QQ 登录
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                             type="button"
-                            variant="secondary"
-                            fullWidth
                             className={styles.socialButton}
                         >
                             <span className={styles.socialIcon}>
@@ -251,7 +241,7 @@ const Login = () => {
                                 </svg>
                             </span>
                             使用 微信 登录
-                        </Button>
+                        </button>
                     </div>
                 </div>
             </div>

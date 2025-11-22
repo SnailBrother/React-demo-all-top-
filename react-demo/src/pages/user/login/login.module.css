@@ -107,6 +107,7 @@
 
 .formGroup {
     margin-bottom: 20px;
+    margin-right: 40px;
 }
 
 .formLabel {
@@ -347,4 +348,97 @@
     .formInput {
         transition: none;
     }
+}
+/* 登录按钮样式 */
+.loginButton {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 16px;
+}
+
+.loginButton:hover:not(:disabled) {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+.loginButton:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.loginButton.loading {
+    position: relative;
+    color: transparent;
+}
+
+.loginButton.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 切换按钮样式 */
+.switchButton {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: inherit;
+    text-decoration: underline;
+    padding: 0;
+    margin-left: 4px;
+}
+
+.switchButton:hover {
+    color: #0056b3;
+}
+
+/* 社交登录按钮样式 */
+.socialButton {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.socialButton:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.socialButton:last-child {
+    margin-bottom: 0;
 }
