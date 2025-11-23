@@ -16,29 +16,35 @@ const ModuleSelect = () => {
     color: getModuleColor(key)
   }));
 
-  function getModuleEmoji(key) {
-    const emojiMap = {
-      accounting: '📊',
-      music: '🎵',
-      outfit: '👗',
-      office: '💼',
-      chat: '💬',
-      system: '⚙️'
-    };
-    return emojiMap[key] || '📱';
-  }
+function getModuleEmoji(key) {
+  const emojiMap = {
+    accounting: '📊',
+    music: '🎵',
+    outfit: '👗',
+    office: '💼',
+    chat: '💬',
+    travelmanager: '✈️',  // 旅行改为飞机图标
+    system: '⚙️',
+    tool: '🛠️',          // 工具改为工具箱图标
+    travel: '🧳',         // 单独的旅行改为行李箱图标
+  };
+  return emojiMap[key] || '📱';
+}
 
-  function getModuleColor(key) {
-    const colorMap = {
-      accounting: '#10b981',
-      music: '#8b5cf6',
-      outfit: '#f59e0b',
-      office: '#3b82f6',
-      chat: '#ec4899',
-      system: '#6b7280'
-    };
-    return colorMap[key] || '#6b7280';
-  }
+function getModuleColor(key) {
+  const colorMap = {
+    accounting: '#10b981',  // 绿色
+    music: '#8b5cf6',       // 紫色
+    outfit: '#f59e0b',      // 橙色
+    office: '#3b82f6',      // 蓝色
+    chat: '#ec4899',        // 粉色
+    travelmanager: '#06b6d4', // 青色（旅行管理）
+    system: '#6b7280',      // 灰色
+    tool: '#84cc16',        // 青绿色（工具）
+    travel: '#f97316'       // 橙红色（旅行）
+  };
+  return colorMap[key] || '#6b7280';
+}
 
   const go = (defaultPath) => navigate(defaultPath);
 

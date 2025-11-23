@@ -11,6 +11,7 @@ import ModuleSelect from '../pages/modules/Select';
 import ModuleLayout from '../pages/modules/ModuleLayout';
 import Login from '../pages/user/login';
 import Register from '../pages/user/register';
+import Reportqrcodepag from '../pages/modules/office/WordReportGenerator/ReportQrCodePage';
 
 // 导入配置
 import { moduleConfig, MODULE_KEYS } from '../config/moduleConfig';
@@ -22,10 +23,10 @@ const isLazyComponent = (component) => {
 
 // 优化的加载组件
 const OptimizedLoadingFallback = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     height: '200px',
     background: 'transparent',
     color: '#666'
@@ -41,7 +42,7 @@ const AppRoutes = () => {
   const renderModuleRoutes = () => {
     return MODULE_KEYS.map(moduleKey => {
       const module = moduleConfig[moduleKey];
-      
+
       return (
         <Route
           key={moduleKey}
@@ -90,12 +91,15 @@ const AppRoutes = () => {
           isAuthenticated ? <Navigate to="/apps" replace /> : <Register />
         }
       />
-
       <Route
         path="/home"
         element={
           isAuthenticated ? <Home /> : <Navigate to="/login" replace />
         }
+      />
+      <Route
+        path="/app/office/reportqrcodepage"
+        element={<Reportqrcodepag />}
       />
 
       {/* 登录后选择模块的入口 */}

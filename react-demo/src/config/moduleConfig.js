@@ -8,35 +8,65 @@ import MusicHome from '../pages/modules/music/Home';
 import MusicRecommend from '../pages/modules/music/Recommend';
 import ChatChat from '../pages/modules/chat/Chat';
 import Musicplayer from '../pages/modules/music/Player';
- 
+
 // 非核心页面 - 懒加载（不常用页面）
 const AccountingAdd = lazy(() => import('../pages/modules/accounting/AccountingAdd'));
 const AccountingCharts = lazy(() => import('../pages/modules/accounting/AccountingCharts'));
 const AccountingMy = lazy(() => import('../pages/modules/accounting/AccountingMy'));
+
+//------------------------------听歌------------------------------
 const MusicRecent = lazy(() => import('../pages/modules/music/Recent'));
 const MusicFavorites = lazy(() => import('../pages/modules/music/Favorites'));
 const MusicTogetherRoomManager = lazy(() => import('../pages/modules/music/TogetherRoomManager'));
 
+//------------------------------穿搭------------------------------
 const OutfitPreviewWardrobe = lazy(() => import('../pages/modules/outfit/PreviewWardrobe'));
 const OutfitUpdateWardrobe = lazy(() => import('../pages/modules/outfit/UpdateWardrobe'));
 const OutfitCloset = lazy(() => import('../pages/modules/outfit/Closet'));
 const OutfitCombos = lazy(() => import('../pages/modules/outfit/Combos'));
-const OfficeDashboard = lazy(() => import('../pages/modules/office/Dashboard'));
-const OfficeDocs = lazy(() => import('../pages/modules/office/Docs'));
-const OfficeTasks = lazy(() => import('../pages/modules/office/Tasks'));
+
+//------------------------------办公------------------------------
+const OfficePublicNews = lazy(() => import('../pages/modules/office/PublicNews'));
+//const OfficeMessageDetail = lazy(() => import('../pages/modules/office/MessageDetail'));
+const OfficeFeeCalculation = lazy(() => import('../pages/modules/office/FeeCalculation'));
+const OfficeEvaluationFilePreview = lazy(() => import('../pages/modules/office/EvaluationFilePreview'));
+const OfficeSearchPrice = lazy(() => import('../pages/modules/office/SearchPrice'));
+const OfficeLookHousePricePicture = lazy(() => import('../pages/modules/office/SearchPrice/LookHousePricePicture'));
+const OfficeUploadHousePricePicture = lazy(() => import('../pages/modules/office/SearchPrice/UploadHousePricePicture'));
+const OfficeTemplateManagement = lazy(() => import('../pages/modules/office/TemplateManagement'));
+const OfficeSpecialtips = lazy(() => import('../pages/modules/office/Specialtips'));
+const OfficeSiteLinks = lazy(() => import('../pages/modules/office/SiteLinks'));
+const OfficeWordReportGenerator = lazy(() => import('../pages/modules/office/WordReportGenerator'));
+
+
+
+//------------------------------聊天------------------------------
 const ChatDressingGuidelines = lazy(() => import('../pages/modules/chat/DressingGuidelines'));
 const ChatUpdateWear = lazy(() => import('../pages/modules/chat/UpdateWear'));
 const SystemThemeSettings = lazy(() => import('../pages/modules/system/SystemThemeSettings'));
 const SystemProfile = lazy(() => import('../pages/modules/system/Profile'));
+
+//------------------------------旅行------------------------------
 const FirstTimeTravel = lazy(() => import('../pages/modules/travel/FirstTime/HomeContainer'));
 const SecondTimeTravel = lazy(() => import('../pages/modules/travel/SecondTime/DetailsHomeContainer'));
 const TravelManager = lazy(() => import('../pages/modules/travel/TravelManager'));
- 
+
+//------------------------------游戏------------------------------
+const ToolAuntFlo = lazy(() => import('../pages/modules/tool/AuntFlo'));
+const ToolDeepseekAi = lazy(() => import('../pages/modules/tool/DeepseekAi'));
+const ToolDoubleChromosphere = lazy(() => import('../pages/modules/tool/DoubleChromosphere'));
+const ToolImageCompressionTool = lazy(() => import('../pages/modules/tool/ImageCompressionTool'));
+const ToolFunGames = lazy(() => import('../pages/modules/tool/FunGames'));
+
+
+
+
+
 // 隐藏页面 - 不显示在导航中
 const MusicplayerLyrics = lazy(() => import('../pages/modules/music/MusicplayerLyrics'));
 const MusicPlaylist = lazy(() => import('../pages/modules/music/MusicPlaylist'));
 const MusicSongReview = lazy(() => import('../pages/modules/music/SongReview'));
- 
+
 export const moduleConfig = {
   accounting: {
     label: '记账',
@@ -45,7 +75,7 @@ export const moduleConfig = {
       { key: 'AccountingHomePage', label: '首页', icon: '#icon-shouye3', component: AccountingHomePage, showInTabs: false, showInNavigation: true },
       { key: 'AccountingDetails', label: '明细', icon: '#icon-shouruzhengmingshenqingdan', component: AccountingDetails, showInTabs: false, showInNavigation: true },
       { key: 'AccountingAdd', label: '添加', icon: '#icon-tianjia5', component: AccountingAdd, showInTabs: false, showInNavigation: true },
-      { key: 'AccountingCharts', label: '图表', icon: '#icon-baobiao', component: AccountingCharts, showInTabs: false, showInNavigation: true },  
+      { key: 'AccountingCharts', label: '图表', icon: '#icon-baobiao', component: AccountingCharts, showInTabs: false, showInNavigation: true },
       { key: 'AccountingMy', label: '我的', icon: '#icon-drxx88', component: AccountingMy, showInTabs: false, showInNavigation: true },
     ]
   },
@@ -62,8 +92,8 @@ export const moduleConfig = {
       { key: 'musicplayerlyrics', label: '歌词', component: MusicplayerLyrics, showInTabs: false, showInNavigation: false },
       { key: 'musicplayer', label: '播放器', component: Musicplayer, showInTabs: false, showInNavigation: false },
       { key: 'musicplaylist', label: '播放列表', component: MusicPlaylist, showInTabs: false, showInNavigation: false },
-     { key: 'musicsongreview', label: '播放列表', component: MusicSongReview, showInTabs: false, showInNavigation: false },
-       
+      { key: 'musicsongreview', label: '播放列表', component: MusicSongReview, showInTabs: false, showInNavigation: false },
+
     ]
   },
   outfit: {
@@ -78,11 +108,22 @@ export const moduleConfig = {
   },
   office: {
     label: '办公',
-    defaultRoute: 'dashboard',
+    defaultRoute: 'SearchPrice',
     routes: [
-      { key: 'dashboard', label: '面板', icon: 'icon-guge', component: OfficeDashboard, showInNavigation: true },
-      { key: 'docs', label: '文档', icon: 'icon-guge', component: OfficeDocs, showInNavigation: true },
-      { key: 'tasks', label: '任务', icon: 'icon-guge', component: OfficeTasks, showInNavigation: true },
+        { key: 'SearchPrice', label: '价格查询', icon: '#icon-chakantupian4', component: OfficeSearchPrice, showInNavigation: true },
+      { key: 'PublicNews', label: '消息通知', icon: '#icon-tongzhi4', component: OfficePublicNews, showInNavigation: true },
+      // { key: 'MessageDetail/:messageId', label: '消息详情', icon: '#icon-yinliang2',  component: OfficeMessageDetail, showInNavigation: false, showInTabs: false },
+      // { key: 'MessageDetail', label: '消息通知', icon: '#icon-yinliang2', component: OfficeMessageDetail,  showInNavigation: false, showInTabs: false },
+    
+      { key: 'LookHousePricePicture', label: '查看图片', icon: '#icon-chakantupian4', component: OfficeLookHousePricePicture, showInNavigation: false  },
+      { key: 'UploadHousePricePicture', label: '上传图片', icon: '#icon-chakantupian4', component: OfficeUploadHousePricePicture, showInNavigation: false  },
+
+      { key: 'TemplateManagement', label: '模板下载', icon: '#icon-a-bianzu10', component: OfficeTemplateManagement, showInNavigation: true },
+      { key: 'Specialtips', label: '特别提示', icon: '#icon-tishi', component: OfficeSpecialtips, showInNavigation: true },
+      { key: 'SiteLinks', label: '常用网站', icon: '#icon-web', component: OfficeSiteLinks, showInNavigation: true },
+      { key: 'FeeCalculation', label: '收费计算', icon: '#icon-jisuanji', component: OfficeFeeCalculation, showInNavigation: true },
+      { key: 'EvaluationFilePreview', label: '参考文献', icon: '#icon-bendiwenjianziyuan', component: OfficeEvaluationFilePreview, showInNavigation: true },
+      { key: 'WordReportGenerator', label: '撰写报告', icon: '#icon-xiti', component: OfficeWordReportGenerator, showInNavigation: true },
     ]
   },
   chat: {
@@ -94,13 +135,13 @@ export const moduleConfig = {
       { key: 'ChatUpdateWear', label: '发布', icon: '#icon-logo2', component: ChatUpdateWear, showInTabs: false, showInNavigation: true },
     ]
   },
-  travelmanager: {
+  travel: {
     label: '旅行',
     defaultRoute: 'TravelManager',
     routes: [
-       { key: 'TravelManager', label: '美好时光', icon: '#icon-icon-test-copy', component: TravelManager, showInTabs: false, showInNavigation: true }, 
+      { key: 'TravelManager', label: '美好时光', icon: '#icon-icon-test-copy', component: TravelManager, showInTabs: false, showInNavigation: true },
       { key: 'FirstTimeTravel', label: '第一卷', icon: '#icon-lvhang', component: FirstTimeTravel, showInTabs: false, showInNavigation: false },
-      { key: 'SecondTimeTravel', label: '第二卷', icon: '#icon-icon-test-copy', component: SecondTimeTravel, showInTabs: false, showInNavigation: false }, 
+      { key: 'SecondTimeTravel', label: '第二卷', icon: '#icon-icon-test-copy', component: SecondTimeTravel, showInTabs: false, showInNavigation: false },
     ]
   },
   system: {
@@ -109,6 +150,17 @@ export const moduleConfig = {
     routes: [
       { key: 'theme', label: '主题设置', icon: '#icon-zhuti1', component: SystemThemeSettings, showInNavigation: true },
       { key: 'profile', label: '个人资料', icon: '#icon-user-01', component: SystemProfile, showInNavigation: true },
+    ]
+  },
+  tool: {
+    label: '小工具',
+    defaultRoute: 'imagecompressiontool',
+    routes: [
+      { key: 'imagecompressiontool', label: '图片压缩', icon: '#icon-gongju1', component: ToolImageCompressionTool, showInNavigation: true },
+      { key: 'doublechromosphere', label: '双色球', icon: '#icon-shuangseqiu', component: ToolDoubleChromosphere, showInNavigation: true },
+       { key: 'deepseekai', label: 'AI', icon: '#icon-Ai', component: ToolDeepseekAi, showInNavigation: true },
+      { key: 'auntflo', label: '经期', icon: '#icon-tianjiabiao', component: ToolAuntFlo, showInNavigation: true },
+      { key: 'fungames', label: '游戏', icon: '#icon-yigui1', component: ToolFunGames, showInNavigation: true },
     ]
   }
 };

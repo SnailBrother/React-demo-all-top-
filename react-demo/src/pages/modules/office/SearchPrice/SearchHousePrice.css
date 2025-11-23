@@ -1,0 +1,485 @@
+/* SearchHousePrice.css */
+.shprice-out-container {
+    margin: 0 auto;
+    /* background: #f5f7fa; */
+    width: 100%;
+    height: 100%;
+    
+}
+
+
+.shprice-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: "Microsoft YaHei", "SimHei", "PingFang SC", sans-serif;
+    /* background: #f5f7fa; */
+    min-height: 100vh;
+}
+
+ 
+.shprice-search-section {
+    /* background: white; */
+    padding: 25px;
+    border-radius: 10px;
+    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
+    margin-bottom: 20px;
+}
+
+.shprice-search-form {
+    width: 100%;
+}
+
+.shprice-search-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.shprice-search-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid var(--borderBrush);
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+    color: var(--fontColor);
+    background-color: transparent;
+}
+
+.shprice-search-input:focus {
+    outline: none;
+    border-color: var(--hoverBorderBrush);
+}
+
+.shprice-search-button {
+    padding: 12px 25px;
+    /* background: #1a5fb4; */
+    color: var(--fontColor);
+     background: #2d7bc6;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+    white-space: nowrap;
+}
+
+.shprice-search-button:hover:not(:disabled) {
+    background: #2d7bc6;
+}
+
+.shprice-search-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.shprice-error {
+    background: #fee;
+    color: #c53030;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #c53030;
+}
+
+.shprice-loading {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+    font-size: 16px;
+}
+
+.shprice-stats {
+    /* background: #e8f4fd; */
+    color: var(--fontColor);
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.shprice-results {
+    /* background: white; */
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.shprice-table-container {
+    overflow-x: auto;
+}
+
+.shprice-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+       color: var(--fontColor);
+     text-align: center;
+}
+
+.shprice-table th {
+    background:transparent;
+    color: var(--fontColor);
+    padding: 15px 12px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--fontColor);
+    border-bottom: 2px solid var(--borderBrush);
+    white-space: nowrap;
+}
+
+.shprice-table td {
+    padding: 12px;
+     color: var(--fontColor);
+    border-bottom: 1px solid solid var(--borderBrush);
+    vertical-align: top;
+     text-align: center;
+}
+
+.shprice-table tr:hover {
+    background: var(--hoverBackground);
+}
+
+.shprice-detail-button {
+    padding: 6px 12px;
+    /* background: #48bb78; */
+    background: transparent;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.shprice-detail-button:hover {
+    background: #38a169;
+}
+
+.shprice-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    gap: 5px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.shprice-page-button {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    background: white;
+    color: #4b5563;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.shprice-page-button:hover:not(:disabled) {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.shprice-page-button:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+    background: #f9fafb;
+}
+
+.shprice-page-active {
+    background: #1a5fb4;
+    color: white;
+    border-color: #1a5fb4;
+}
+
+.shprice-page-info {
+    margin-left: 15px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.shprice-no-data {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--fontColor);
+    font-size: 16px;
+    background: transparent;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.shprice-tips {
+    background: transparent;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    color: var(--fontColor);
+}
+
+.shprice-suggest-icon {
+    color: #1a5fb4;
+    width: 30em;
+    height: 30em;
+    vertical-align: -0.15em;
+    fill: currentColor;
+    overflow: hidden;
+}
+ 
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .shprice-container {
+        padding: 10px;
+    }
+    
+  
+    
+    
+    
+    .shprice-search-input-group {
+        flex-direction: column;
+    }
+    
+    .shprice-search-input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .shprice-search-button {
+        width: 100%;
+    }
+    
+    .shprice-table {
+        font-size: 12px;
+    }
+    
+    .shprice-table th,
+    .shprice-table td {
+        padding: 8px 6px;
+    }
+    
+    .shprice-pagination {
+        flex-wrap: wrap;
+        gap: 3px;
+    }
+    
+    .shprice-page-button {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    
+    
+    .shprice-table-container {
+        font-size: 11px;
+    }
+    
+    .shprice-pagination {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+/* 添加到 SearchHousePrice.css 中 */
+
+/* 完整分页样式 */
+.shprice-pagination-complete {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-top: 1px solid var(--borderBrush);
+    background: transparent;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.shprice-pagination-left {
+    font-size: 14px;
+    color: var(--fontColor);
+    font-weight: 500;
+}
+
+.shprice-pagination-center {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.shprice-pagination-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.shprice-page-size-selector {
+    display: flex;
+    align-items: center;
+}
+
+.shprice-page-size-select {
+    padding: 6px 10px;
+    border: 1px solid var(--borderBrush);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--fontColor);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.shprice-page-size-select:focus {
+    outline: none;
+    border-color: var(--hoverBorderBrush);
+}
+
+.shprice-page-jump {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--fontColor);
+}
+
+.shprice-jump-input {
+    width: 60px;
+    padding: 6px 8px;
+    border: 1px solid var(--borderBrush);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+    background-color: transparent;
+}
+
+.shprice-jump-input:focus {
+    outline: none;
+    border-color: var(--hoverBorderBrush);
+}
+
+.shprice-jump-button {
+    padding: 6px 12px;
+    background: #1a5fb4;
+    color: var(--fontColor);
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.shprice-jump-button:hover {
+    background: var(--hoverBackground);
+}
+
+/* 分页按钮样式 */
+.shprice-page-button {
+    padding: 8px 12px;
+    border: 1px solid var(--borderBrush);
+    background: transparent;
+    color: var(--fontColor);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.shprice-page-button:hover:not(:disabled) {
+    background: transparent;
+    border-color: #9ca3af;
+}
+
+.shprice-page-button:disabled {
+    color: var(--fontColor);
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.shprice-page-active {
+    background: transparent;
+    color: var(--fontColor);
+    border-color: var(--borderBrush);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .shprice-pagination-complete {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .shprice-pagination-center {
+        order: 1;
+    }
+    
+    .shprice-pagination-left {
+        order: 2;
+    }
+    
+    .shprice-pagination-right {
+        order: 3;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .shprice-page-jump {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .shprice-pagination-center {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .shprice-page-button {
+        padding: 6px 10px;
+        min-width: 35px;
+        font-size: 12px;
+    }
+    
+    .shprice-jump-input {
+        width: 50px;
+    }
+}
+
+/* 序号列样式 */
+.shprice-table th:first-child,
+.shprice-table td:first-child {
+    width: 60px; /* 序号列宽度 */
+    text-align: center; /* 居中显示 */
+    font-weight: bold; /* 加粗显示 */
+    
+    /* background-color: #f8f9fa;  */
+    /* 背景色 */
+}
+
+ 
+ 
+
+ 
+
+/* 响应式设计：小屏幕时调整序号列宽度 */
+@media (max-width: 768px) {
+    .shprice-table th:first-child,
+    .shprice-table td:first-child {
+        width: 50px;
+        font-size: 0.9em;
+    }
+}
+.shprice-icon {
+    width: 1.2em;
+  height: 1.2em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
