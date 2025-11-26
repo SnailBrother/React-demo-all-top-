@@ -11,18 +11,32 @@ import { Loading } from '../../../components/UI';
 
 const Recent = () => {
     const { user, isAuthenticated } = useAuth();
-   const { state, dispatch } = useMusic();
-const { currentSong } = state;
+    const { state, dispatch } = useMusic();
+    const { currentSong } = state;
     const [recentMusics, setRecentMusics] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchInput, setSearchInput] = useState(''); // 新增：输入框临时值
     const [viewMode, setViewMode] = useState('table');
 
     const observer = useRef();
+    // 处理搜索提交
+    const handleSearchSubmit = () => {
+        setSearchTerm(searchInput); // 只有提交时才更新搜索词
+        setPage(1);
+        setRecentMusics([]);
+        setHasMore(true);
+    };
 
+    // 处理回车键
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearchSubmit();
+        }
+    };
     const lastMusicElementRef = useCallback(node => {
         if (loading) return;
         if (observer.current) observer.current.disconnect();
@@ -58,7 +72,7 @@ const { currentSong } = state;
                     search: searchTerm
                 }
             });
-            
+
             const newRecentMusics = response.data.data.map(song => ({
                 id: song.id,
                 title: song.title,
@@ -66,8 +80,8 @@ const { currentSong } = state;
                 genre: song.genre,
                 src: `http://121.4.22.55:80/backend/musics/${song.src}`,
                 coverimage: song.coverimage
-                            ? `http://121.4.22.55:80/backend/musics/${song.coverimage}`
-                            : 'http://121.4.22.55:80/backend/musics/default.jpg',
+                    ? `http://121.4.22.55:80/backend/musics/${song.coverimage}`
+                    : 'http://121.4.22.55:80/backend/musics/default.jpg',
                 playtime: song.playtime,
                 play_count: song.play_count || 0
             }));
@@ -79,7 +93,7 @@ const { currentSong } = state;
                 const unique = Array.from(new Set(all.map(m => m.id))).map(id => all.find(m => m.id === id));
                 return unique;
             });
-            
+
             setHasMore(response.data.data.length > 0 && response.data.page < response.data.totalPages);
 
         } catch (err) {
@@ -92,7 +106,7 @@ const { currentSong } = state;
 
     const handlePlayMusic = (songToPlay) => {
         const actualIndex = recentMusics.findIndex(music => music.id === songToPlay.id);
-        
+
         dispatch({
             type: 'PLAY_SONG',
             payload: {
@@ -182,9 +196,16 @@ const { currentSong } = state;
                                 type="text"
                                 placeholder="搜索最近播放的歌曲、艺术家..."
                                 className={styles.searchInput}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={searchInput} // 绑定临时值
+                                onChange={(e) => setSearchInput(e.target.value)} // 只更新临时值
+                                onKeyDown={handleKeyDown} // 监听回车键
                             />
+                            {/* <button
+                                className={styles.searchButton}
+                                onClick={handleSearchSubmit}
+                            >
+                                搜索
+                            </button> */}
                         </div>
 
                         {/* 视图切换 */}
@@ -195,7 +216,7 @@ const { currentSong } = state;
                                 title="列表视图"
                             >
                                 <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
+                                    <path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z" />
                                 </svg>
                             </button>
                             <button
@@ -204,7 +225,7 @@ const { currentSong } = state;
                                 title="网格视图"
                             >
                                 <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10 0h8v8h-8v-8zm0-10h8v8h-8V3z"/>
+                                    <path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10 0h8v8h-8v-8zm0-10h8v8h-8V3z" />
                                 </svg>
                             </button>
                         </div>

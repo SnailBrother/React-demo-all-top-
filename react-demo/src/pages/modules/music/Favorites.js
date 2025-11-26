@@ -18,10 +18,25 @@ const Favorites = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchInput, setSearchInput] = useState(''); // 新增：输入框临时值
+
     const [viewMode, setViewMode] = useState('table');
 
     const observer = useRef();
+// 处理搜索提交
+const handleSearchSubmit = () => {
+  setSearchTerm(searchInput); // 只有提交时才更新搜索词
+  setPage(1);
+  setFavorites([]);
+  setHasMore(true);
+};
 
+// 处理回车键
+const handleKeyDown = (e) => {
+  if (e.key === 'Enter') {
+    handleSearchSubmit();
+  }
+};
     const lastMusicElementRef = useCallback(node => {
         if (loading) return;
         if (observer.current) observer.current.disconnect();
@@ -145,13 +160,14 @@ const Favorites = () => {
                             <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path>
                             </svg>
-                            <input
-                                type="text"
-                                placeholder="搜索收藏的歌曲、艺术家..."
-                                className={styles.searchInput}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                           <input
+  type="text"
+  placeholder="搜索收藏的歌曲、艺术家..."
+  className={styles.searchInput}
+  value={searchInput} // 绑定临时值
+  onChange={(e) => setSearchInput(e.target.value)} // 只更新临时值
+  onKeyDown={handleKeyDown} // 监听回车键
+/>
                         </div>
 
                         {/* 视图切换 */}

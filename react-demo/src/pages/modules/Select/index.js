@@ -16,35 +16,35 @@ const ModuleSelect = () => {
     color: getModuleColor(key)
   }));
 
-function getModuleEmoji(key) {
-  const emojiMap = {
-    accounting: '📊',
-    music: '🎵',
-    outfit: '👗',
-    office: '💼',
-    chat: '💬',
-    travelmanager: '✈️',  // 旅行改为飞机图标
-    system: '⚙️',
-    tool: '🛠️',          // 工具改为工具箱图标
-    travel: '🧳',         // 单独的旅行改为行李箱图标
-  };
-  return emojiMap[key] || '📱';
-}
+  function getModuleEmoji(key) {
+    const emojiMap = {
+      accounting: '📊',
+      music: '🎵',
+      outfit: '👗',
+      office: '💼',
+      chat: '💬',
+      travelmanager: '✈️',  // 旅行改为飞机图标
+      system: '⚙️',
+      tool: '🛠️',          // 工具改为工具箱图标
+      travel: '🧳',         // 单独的旅行改为行李箱图标
+    };
+    return emojiMap[key] || '📱';
+  }
 
-function getModuleColor(key) {
-  const colorMap = {
-    accounting: '#10b981',  // 绿色
-    music: '#8b5cf6',       // 紫色
-    outfit: '#f59e0b',      // 橙色
-    office: '#3b82f6',      // 蓝色
-    chat: '#ec4899',        // 粉色
-    travelmanager: '#06b6d4', // 青色（旅行管理）
-    system: '#6b7280',      // 灰色
-    tool: '#84cc16',        // 青绿色（工具）
-    travel: '#f97316'       // 橙红色（旅行）
-  };
-  return colorMap[key] || '#6b7280';
-}
+  function getModuleColor(key) {
+    const colorMap = {
+      accounting: '#10b981',  // 绿色
+      music: '#8b5cf6',       // 紫色
+      outfit: '#f59e0b',      // 橙色
+      office: '#3b82f6',      // 蓝色
+      chat: '#ec4899',        // 粉色
+      travelmanager: '#06b6d4', // 青色（旅行管理）
+      system: '#6b7280',      // 灰色
+      tool: '#84cc16',        // 青绿色（工具）
+      travel: '#f97316'       // 橙红色（旅行）
+    };
+    return colorMap[key] || '#6b7280';
+  }
 
   const go = (defaultPath) => navigate(defaultPath);
 
@@ -54,22 +54,22 @@ function getModuleColor(key) {
         <h1 className={styles.title}>功能模块</h1>
         <p className={styles.subtitle}>选择您要使用的功能</p>
       </div> */}
-      
+
       <div className={styles.container}>
         {modules.map((module, index) => (
-          <div 
-            key={module.key} 
+          <div
+            key={module.key}
             className={styles.cardWrapper}
             style={{ animationDelay: `${index * 0.1}s` }}
           >
-            <div 
+            <div
               className={styles.card}
               onClick={() => go(module.defaultPath)}
             >
               {/* 模块头部 */}
               <div className={styles.cardHeader}>
                 <div className={styles.moduleInfo}>
-                  <div 
+                  <div
                     className={styles.iconCircle}
                     style={{ backgroundColor: module.color }}
                   >
@@ -81,20 +81,20 @@ function getModuleColor(key) {
                   </div>
                 </div>
                 <div className={styles.enterButton}>
- 
-                   <svg className={styles.arrowIcon} aria-hidden="true">
-                                    <use xlinkHref="#icon-jiantou_xiangyouliangci"></use>
-                                </svg>
+
+                  <svg className={styles.arrowIcon} aria-hidden="true">
+                    <use xlinkHref="#icon-jiantou_xiangyouliangci"></use>
+                  </svg>
                 </div>
               </div>
 
               {/* 功能标签区域 */}
               <div className={styles.tagsContainer}>
                 {module.routes.slice(0, 5).map((route, routeIndex) => (
-                  <span 
-                    key={route.key} 
+                  <span
+                    key={route.key}
                     className={styles.tag}
-                    style={{ 
+                    style={{
                       backgroundColor: `${module.color}20`,
                       color: module.color,
                       borderColor: `${module.color}40`

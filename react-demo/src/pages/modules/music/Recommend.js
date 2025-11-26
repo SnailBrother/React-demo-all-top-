@@ -37,10 +37,23 @@ const Recommend = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchInput, setSearchInput] = useState(''); // 新增：输入框临时值
     const [viewMode, setViewMode] = useState('table');
 
     const observer = useRef();
+    // 处理搜索提交
+    const handleSearchSubmit = () => {
+        setSearchTerm(searchInput); // 只有提交时才更新搜索词
+        setPages({ ranking: 1, chinese: 1, western: 1, japaneseKorean: 1, other: 1 });
+        setMusicData({ ranking: [], chinese: [], western: [], japaneseKorean: [], other: [] });
+    };
 
+    // 处理回车键
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearchSubmit();
+        }
+    };
     const lastMusicElementRef = useCallback(node => {
         if (loading) return;
         if (observer.current) observer.current.disconnect();
@@ -262,9 +275,18 @@ const Recommend = () => {
                                 type="text"
                                 placeholder="搜索推荐歌曲、艺术家..."
                                 className={styles.searchInput}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={searchInput} // 绑定临时值
+                                onChange={(e) => setSearchInput(e.target.value)} // 只更新临时值
+                                onKeyDown={handleKeyDown} // 监听回车键
                             />
+
+
+                            {/* <button 
+  className={styles.searchButton}
+  onClick={handleSearchSubmit}
+>
+  搜索
+</button> */}
                         </div>
 
                         {/* 视图切换 */}

@@ -8699,6 +8699,69 @@ app.use('/images/ReactWardrobeStewar', express.static(path.join(__dirname, 'imag
 
 //新的歌曲获取 react demo  👇
 
+//获取所有歌单 随机排序
+app.get('/api/getallmusics-bug', async (req, res) => {
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 20; // 修改为20首
+    const searchTerm = req.query.search || '';
+
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+
+        if (searchTerm) {
+            // 搜索时使用原来的分页逻辑
+            const offset = (page - 1) * pageSize;
+            let whereClause = `WHERE title LIKE @searchTerm OR artist LIKE @searchTerm`;
+            request.input('searchTerm', sql.NVarChar, `%${searchTerm}%`);
+
+            const countResult = await request.query(`SELECT COUNT(*) as totalCount FROM ChatApp.dbo.Music ${whereClause}`);
+            const totalCount = countResult.recordset[0].totalCount;
+
+            const dataResult = await request.query(`
+                SELECT * 
+                FROM ChatApp.dbo.Music 
+                ${whereClause}
+                ORDER BY id ASC
+                OFFSET ${offset} ROWS
+                FETCH NEXT ${pageSize} ROWS ONLY;
+            `);
+
+            return res.json({
+                totalCount: totalCount,
+                page: page,
+                pageSize: pageSize,
+                totalPages: Math.ceil(totalCount / pageSize),
+                data: dataResult.recordset
+            });
+        }
+
+        // 非搜索时：一次性获取所有数据，然后在内存中随机分页
+        const allResult = await request.query(`SELECT * FROM ChatApp.dbo.Music`);
+        const allMusics = allResult.recordset;
+        
+        // 随机打乱数组
+        const shuffledMusics = [...allMusics].sort(() => Math.random() - 0.5);
+        
+        // 计算分页
+        const totalCount = allMusics.length;
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const pageData = shuffledMusics.slice(startIndex, endIndex);
+
+        res.json({
+            totalCount: totalCount,
+            page: page,
+            pageSize: pageSize,
+            totalPages: Math.ceil(totalCount / pageSize),
+            data: pageData
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
 //获取所有歌单
 app.get('/api/getallmusics', async (req, res) => {
     // 1. 从查询参数中获取 page 和 pageSize，并提供默认值

@@ -45,7 +45,7 @@ const ChatDressingGuidelines = lazy(() => import('../pages/modules/chat/Dressing
 const ChatUpdateWear = lazy(() => import('../pages/modules/chat/UpdateWear'));
 const SystemThemeSettings = lazy(() => import('../pages/modules/system/SystemThemeSettings'));
 const SystemProfile = lazy(() => import('../pages/modules/system/Profile'));
-
+const SystemBackendSettings = lazy(() => import('../pages/modules/system/BackendSettings'));
 //------------------------------旅行------------------------------
 const FirstTimeTravel = lazy(() => import('../pages/modules/travel/FirstTime/HomeContainer'));
 const SecondTimeTravel = lazy(() => import('../pages/modules/travel/SecondTime/DetailsHomeContainer'));
@@ -150,6 +150,7 @@ export const moduleConfig = {
     routes: [
       { key: 'theme', label: '主题设置', icon: '#icon-zhuti1', component: SystemThemeSettings, showInNavigation: true },
       { key: 'profile', label: '个人资料', icon: '#icon-user-01', component: SystemProfile, showInNavigation: true },
+      { key: 'BackendSettings', label: '数据更新', icon: '#icon-gongjuxuanzhong', component: SystemBackendSettings, showInNavigation: true },
     ]
   },
   tool: {

@@ -34,7 +34,7 @@
   max-width: 800px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .cardWrapper {
@@ -53,7 +53,7 @@
 .card {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 10px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid #e5e7eb;
@@ -231,7 +231,7 @@
   }
 
   .card {
-    padding: 20px;
+    padding: 8px;
   }
 
   .iconCircle {

@@ -28,14 +28,32 @@ const Home = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchInput, setSearchInput] = useState(''); // 新增：用于输入框的临时值
     const [viewMode, setViewMode] = useState('table');
 
+    // 处理搜索提交
+    const handleSearchSubmit = () => {
+        setSearchTerm(searchInput); // 只有按下回车时才更新实际的搜索词
+        setPage(1);
+        setMusics([]);
+        setHasMore(true);
+    };
+
+    // 处理输入框按键事件
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearchSubmit();
+        }
+    };
+
+
     const observer = useRef();
+
 
     // 发送播放歌曲变更通知到后端
     const sendPlaySongChange = async (songToPlay) => {
         if (!isInRoom || !currentRoom) return; // 只有在房间内才发送通知
-        
+
         try {
             // 对可能包含特殊字符和多语言字符的字段进行编码处理
             const requestData = {
@@ -132,7 +150,7 @@ const Home = () => {
 
                 const roomData = response.data;
                 console.log('从数据库获取的房间数据:', roomData);
-                
+
                 // 更新音乐上下文状态
                 if (roomData) {
                     // 创建歌曲对象
@@ -150,10 +168,10 @@ const Home = () => {
                     // 更新播放状态
                     dispatch({
                         type: 'PLAY_SONG',
-                        payload: { 
-                            song: newSong, 
+                        payload: {
+                            song: newSong,
                             queue: [newSong],
-                            index: 0 
+                            index: 0
                         }
                     });
 
@@ -206,10 +224,10 @@ const Home = () => {
             setError(null);
             try {
                 const response = await axios.get('/api/getallmusics', {
-                    params: { 
-                        page: page, 
-                        pageSize: 20, 
-                        search: searchTerm 
+                    params: {
+                        page: page,
+                        pageSize: 20,
+                        search: searchTerm
                     },
                     headers: {
                         'Content-Type': 'application/json; charset=utf-8'
@@ -278,13 +296,28 @@ const Home = () => {
                             <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path>
                             </svg>
-                            <input
+                            {/* <input
                                 type="text"
                                 placeholder="搜索歌曲、艺术家..."
                                 className={styles.searchInput}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
+                            /> */}
+                            <input
+                                type="text"
+                                placeholder="搜索歌曲、艺术家..."
+                                className={styles.searchInput}
+                                value={searchInput} // 使用临时值
+                                onChange={(e) => setSearchInput(e.target.value)} // 只更新临时值
+                                onKeyDown={handleKeyPress} // 监听回车键
                             />
+                            {/* 可选：添加搜索按钮
+<button 
+  className={styles.searchButton}
+  onClick={handleSearchSubmit}
+>
+  搜索
+</button> */}
                         </div>
 
                         <div className={styles.viewModeToggle}>
