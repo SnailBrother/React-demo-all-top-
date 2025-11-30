@@ -1,8 +1,5 @@
 /* ==================== 全局样式 ==================== */
-:root {
-
-  font-family: var(--fontFamily);
-}
+ 
 
 /* ==================== 主容器 ==================== */
 /* 整个组件的容器样式 */
@@ -11,12 +8,13 @@
   margin: 5px auto;
   padding: 20px;
   /* background-color: #fff; */
-  /* background-color: var(--my-bg-color); */
+  /* background-color: var(--background-color); */
   background-color: transparent;
 
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   min-width: 800px;
+  box-sizing: border-box;
 }
 
 /* ==================== 顶部导航栏 ==================== */
@@ -69,20 +67,20 @@
   border-style: solid;
   border-width: 1px;
   border-radius: 5px;
-  font-family: var(--fontFamily);
-  border-color: var(--borderBrush);
-  color: var(--fontColor);
+  font-family: var(--font-family);
+  border-color: var(--border_color);
+  color: var(--font-color);
 }
 /* 增加选择器特异性 */
 
 .reportgenerator-search-input:hover {
-border-color:var(--hoverBorderBrush) !important;
-  color: var(--hoverFontColor);
-   /* box-shadow: 0 0 0 1px var(--hoverBorderBrush) !important; */
+border-color:var(--hover_border_color) !important;
+  color: var(--hover_font-color);
+   /* box-shadow: 0 0 0 1px var(--hover_border_color) !important; */
 }
  
 .reportgenerator-search-input::placeholder {
-  color: var(--watermarkForeground);
+  color: var(--watermark-font-color);
   /* 这里设置为占位符的颜色 */
   /* opacity: 1;  */
   /* 如果想让占位符完全不透明，可以设置为1 */
@@ -145,7 +143,7 @@ border-color:var(--hoverBorderBrush) !important;
 
 /* 菜单按钮图标（三条杠） */
 .reportgenerator-line {
-  background-color: var(--fontColor);
+  background-color: var(--font-color);
   width: 100%;
   height: 2px;
   border-radius: 2px;
@@ -365,7 +363,7 @@ border-color:var(--hoverBorderBrush) !important;
   display: flex;
   border-bottom: 1px solid #ddd;
   margin-bottom: 20px;
-  font-family: var(--fontFamily);
+  font-family: var(--font-family);
   background-color: transparent;
 
 }
@@ -377,16 +375,16 @@ border-color:var(--hoverBorderBrush) !important;
   cursor: pointer;
   font-size: 16px;
   /* color: #555; */
-  color: var(--fontColor);
+  color: var(--font-color);
   border-bottom: 3px solid transparent;
   transition: all 0.3s;
-  font-family: var(--fontFamily);
+  font-family: var(--font-family);
 }
 
 .reportgenerator-tab-button:hover {
   /* color: #2c3e50; */
-  color: var(--hoverFontColor);
-  /* background-color: var(--hoverBackground); */
+  color: var(--hover_font-color);
+  /* background-color: var(--hover_background-color); */
   border-radius: 5px;
   /* border-bottom: 3px solid #3498db; */
   font-weight: bold;
@@ -438,8 +436,8 @@ border-color:var(--hoverBorderBrush) !important;
   flex-shrink: 0;
   /* 防止标签被压缩 */
   background-color: transparent;
-  font-family: var(--fontFamily);
-  color: var(--fontColor);
+  font-family: var(--font-family);
+  color: var(--font-color);
 }
 
 /* 垂直表单容器（用于一行两列布局） */
@@ -476,8 +474,8 @@ border-color:var(--hoverBorderBrush) !important;
   text-align: right;
   flex-shrink: 0;
   background-color: transparent;
-  font-family: var(--fontFamily);
-  color: var(--fontColor);
+  font-family: var(--font-family);
+  color: var(--font-color);
 }
 
 /* 输入控件通用样式 */
@@ -496,24 +494,24 @@ border-color:var(--hoverBorderBrush) !important;
   /* 稍微减小最小宽度 */
   max-width: 100%;
   /* 防止超出容器 */
-  font-family: var(--fontFamily);
-  background-color: var(--my-bg-color);
-  color: var(--fontColor);
-  border-color: var(--borderBrush);
+  font-family: var(--font-family);
+  background-color: var(--background-color);
+  color: var(--font-color);
+  border-color: var(--border_color);
 }
 
 .reportgenerator-form-input-inline-textarea {
   resize: vertical;
   font-weight: bold;
-  background-color: var(--my-bg-color);
-  color: var(--fontColor);
+  background-color: var(--background-color);
+  color: var(--font-color);
 }
 
 .reportgenerator-form-input-inline:hover,
 .reportgenerator-form-select-inline:hover {
   box-shadow: 0 0 0 2px rgba(76, 76, 77, 0.2);
-  border-color: var(--hoverBorderBrush);
-  background-color: var(--hoverBackground) !important;
+  border-color: var(--hover_border_color);
+  background-color: var(--hover_background-color) !important;
 }
 
 .reportgenerator-form-input-inline:focus,
@@ -526,23 +524,23 @@ border-color:var(--hoverBorderBrush) !important;
 
 
 .reportgenerator-form-select-inline:invalid {
-  color: var(--watermarkForeground) !important;
+  color: var(--watermark-font-color) !important;
   /* color: #888888 !important; */
-  background-color: var(--my-bg-color) !important;
+  background-color: var(--background-color) !important;
 
 }
 /* 无效状态的悬浮效果 */
 .reportgenerator-form-select-inline:invalid:hover {
-   background-color: var(--hoverBackground) !important;
+   background-color: var(--hover_background-color) !important;
 }
 
 .reportgenerator-form-select-inline {
-  color: var(--fontColor) !important;
-  background-color: var(--my-bg-color) !important;
+  color: var(--font-color) !important;
+  background-color: var(--background-color) !important;
 }
 
 .reportgenerator-form-input-inline::placeholder {
-  color: var(--watermarkForeground);
+  color: var(--watermark-font-color);
   /* 这里设置为占位符的颜色 */
 
   /* opacity: 1;  */
@@ -565,20 +563,20 @@ border-color:var(--hoverBorderBrush) !important;
   }}
 > */
 .reportgenerator-form-input-inline .ant-picker-input>input::placeholder {
-  color: var(--watermarkForeground) !important;
+  color: var(--watermark-font-color) !important;
 }
 
 /* 设置DatePicker悬浮背景色 */
 .reportgenerator-form-input-inline .ant-picker-input>input:hover,
 .reportgenerator-form-input-inline .ant-picker-focused {
-  border-color: var(--hoverBorderBrush);
+  border-color: var(--hover_border_color);
   
 }
 
 
 .reportgenerator-form-input-inline.ant-picker:hover {
-    background-color:var(--hoverBackground) !important;
-    border-color: var(--hoverBorderBrush) !important;
+    background-color:var(--hover_background-color) !important;
+    border-color: var(--hover_border_color) !important;
     cursor: pointer;
 }
 
@@ -590,18 +588,18 @@ border-color:var(--hoverBorderBrush) !important;
 
 /* 输入框文本颜色 */
 .reportgenerator-form-input-inline.ant-picker:hover .ant-picker-input input {
-    color: var(--fontColor) !important;
+    color: var(--font-color) !important;
 }
 
 /* 下拉图标颜色 */
 .reportgenerator-form-input-inline.ant-picker:hover .ant-picker-suffix {
-    color: var(--fontColor) !important;
+    color: var(--font-color) !important;
 }
 
 /* 占位符文本颜色 */
 .reportgenerator-form-input-inline.ant-picker:hover .ant-picker-input input::placeholder {
     /* color: rgba(255, 255, 255, 0.8) !important; */
-      color: var(--watermarkForeground) !important;
+      color: var(--watermark-font-color) !important;
 }
 
 /* 清除按钮样式 */
@@ -678,7 +676,7 @@ border-color:var(--hoverBorderBrush) !important;
   border-radius: 15px;
   /* 减小圆角 */
   /* background-color: #f0f0f0; */
-  background-color: var(--my-bg-color);
+  background-color: var(--background-color);
   padding: 1px;
   /* 减小内边距 */
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);

@@ -1,6 +1,5 @@
-
 import axios from 'axios';
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import './AccountingAdd.css';
 import { useAccounting } from './AccountingDataContext/AccountingContext';
 import { useAuth } from '../../../context/AuthContext';
@@ -20,6 +19,7 @@ const AccountingAdd = () => {
         payment_method: '微信支付',
         description: ''
     });
+    const [categories, setCategories] = useState([]); // 从API获取的分类数据
     const [showLoader, setShowLoader] = useState(false);;//添加WordReportGeneratorLoader的引用
     const { user } = useAuth();
     const username = user?.username; // 从 user 对象中获取 username
@@ -28,15 +28,49 @@ const AccountingAdd = () => {
     // 创建通知组件的引用
     const notificationRef = useRef();
 
-    const categories = ["购物", "娱乐", "交通", "餐饮", "医疗", "宠物", "送礼"];
     const paymentMethods = ["现金", "微信支付", "支付宝", "银行卡", "信用卡"];
+
+    // 获取分类图标数据
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get('http://121.4.22.55:5201/getCategoryIcons');
+                if (response.data) {
+                    setCategories(response.data);
+                }
+            } catch (error) {
+                console.error('获取分类图标失败:', error);
+                notificationRef.current.addNotification(
+                    `获取分类图标失败: ${error.response?.data?.message || error.message}`,
+                    'error'
+                );
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+    // 根据交易类型过滤分类
+    const getFilteredCategories = () => {
+        return categories.filter(category => category.icon_type === formData.transaction_type);
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        
+        // 如果交易类型发生变化，重置类别
+        if (name === 'transaction_type') {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value,
+                category: '' // 重置类别选择
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -70,11 +104,7 @@ const AccountingAdd = () => {
                     description: ''
                 });
 
-                // 可以移除 AccountingAdd.js 中的 socket.emit('newRecord')，因为后端已经处理了广播
-                // 通知服务器广播新记录（可选）
-                // if (socket) {
-                //  socket.emit('newRecord', response.data.record);
-                // }
+                 
             } else {
                 //alert(response.data.message || '添加失败');
                 // 使用自定义通知替代 alert
@@ -159,8 +189,10 @@ const AccountingAdd = () => {
                         className="accountingadd-form-select"
                     >
                         <option value="">请选择类别</option>
-                        {categories.map(category => (
-                            <option key={category} value={category}>{category}</option>
+                        {getFilteredCategories().map(category => (
+                            <option key={category.icon_name} value={category.icon_name}>
+                                {category.icon_name}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -204,14 +236,3 @@ const AccountingAdd = () => {
 };
 
 export default AccountingAdd;
-{/* 创建人 */ }
-//  <div className="accountingadd-form-group">
-//  <label className="accountingadd-form-label">创建人</label>
-//  <input
-//      type="text"
-//      name="created_by"
-//      value={username}
-//      readOnly
-//      className="accountingadd-form-input"
-//  />
-// </div>

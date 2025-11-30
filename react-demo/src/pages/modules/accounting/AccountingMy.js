@@ -4,17 +4,17 @@ import { useAuth } from '../../../context/AuthContext';
 import * as XLSX from 'xlsx';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const AccountingMy = () => {
-     
-    const { user } = useAuth(); 
-    const username = user?.username; // 从 user 对象中获取 username
+    const { user, logout } = useAuth();
+    const username = user?.username;
     const [isLoading, setIsLoading] = useState(false);
     const [showDateModal, setShowDateModal] = useState(false);
     const [startDate, setStartDate] = useState(new Date(new Date().setMonth(new Date().getMonth() - 1)));
     const [endDate, setEndDate] = useState(new Date());
     const [imageError, setImageError] = useState(false);
+    const navigate = useNavigate();
 
     const handleDownload = async () => {
         setShowDateModal(true);
@@ -84,6 +84,24 @@ const AccountingMy = () => {
         }
     };
 
+    // 退出登录功能 - 与 Header.js 中的完全一致
+    const handleLogout = async () => {
+        try {
+            // 先执行退出登录
+            await logout();
+
+            // 等待状态更新完成后再跳转
+            setTimeout(() => {
+                navigate('/login', { replace: true });
+            }, 100);
+
+        } catch (error) {
+            console.error('退出登录失败:', error);
+            // 即使失败也强制跳转
+            navigate('/login', { replace: true });
+        }
+    };
+
     return (
         <div className="accountingmy-tab-content"
         >
@@ -123,7 +141,17 @@ const AccountingMy = () => {
                     <li className="accountingmy-settings-item">
                         <Link to="/chat" className="accountingmy-link">联系我们</Link>
                     </li>
-                    
+                    <li
+                        className="accountingmy-settings-item"
+                        onClick={handleLogout}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        切换账号
+                    </li>
+                    <li className="accountingmy-settings-item">
+                        <Link to="/apps" className="accountingmy-link">首&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;页</Link>
+                    </li>
+
                     <li className="accountingmy-settings-item">关&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;于</li>
                 </ul>
             </div>
@@ -167,4 +195,4 @@ const AccountingMy = () => {
     );
 };
 
-export default AccountingMy;    
+export default AccountingMy;

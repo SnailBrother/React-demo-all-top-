@@ -1,4 +1,6 @@
 // src/pages/modules/Select/index.js import { moduleConfig } from '../../../config/moduleConfig';
+
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { moduleConfig } from '../../../config/moduleConfig';
@@ -50,11 +52,6 @@ const ModuleSelect = () => {
 
   return (
     <div className={styles.wrapper}>
-      {/* <div className={styles.header}>
-        <h1 className={styles.title}>功能模块</h1>
-        <p className={styles.subtitle}>选择您要使用的功能</p>
-      </div> */}
-
       <div className={styles.container}>
         {modules.map((module, index) => (
           <div
@@ -77,38 +74,38 @@ const ModuleSelect = () => {
                   </div>
                   <div className={styles.moduleText}>
                     <h3 className={styles.cardTitle}>{module.title}</h3>
-                    <p className={styles.moduleDesc}>{getModuleDescription(module.key)}</p>
+
+                    <div className={styles.tagsContainer}>
+                      {module.routes.slice(0, 5).map((route, routeIndex) => (
+                        <span
+                          key={route.key}
+                          className={styles.tag}
+                          style={{
+                            backgroundColor: `${module.color}20`,
+                            color: module.color,
+                            borderColor: `${module.color}40`
+                          }}
+                        >
+                          {route.label}
+                        </span>
+                      ))}
+                      {module.routes.length > 5 && (
+                        <span className={styles.moreTag}>
+                          +{module.routes.length - 5}更多
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className={styles.enterButton}>
 
+                <div className={styles.enterButton}>
                   <svg className={styles.arrowIcon} aria-hidden="true">
                     <use xlinkHref="#icon-jiantou_xiangyouliangci"></use>
                   </svg>
                 </div>
               </div>
 
-              {/* 功能标签区域 */}
-              <div className={styles.tagsContainer}>
-                {module.routes.slice(0, 5).map((route, routeIndex) => (
-                  <span
-                    key={route.key}
-                    className={styles.tag}
-                    style={{
-                      backgroundColor: `${module.color}20`,
-                      color: module.color,
-                      borderColor: `${module.color}40`
-                    }}
-                  >
-                    {route.label}
-                  </span>
-                ))}
-                {module.routes.length > 5 && (
-                  <span className={styles.moreTag}>
-                    +{module.routes.length - 5}更多
-                  </span>
-                )}
-              </div>
+
             </div>
           </div>
         ))}
@@ -116,17 +113,5 @@ const ModuleSelect = () => {
     </div>
   );
 };
-
-function getModuleDescription(key) {
-  const descMap = {
-    accounting: '智能记账与财务分析',
-    music: '高品质音乐体验',
-    outfit: '时尚穿搭与衣橱管理',
-    office: '高效办公协作',
-    chat: '实时沟通交流',
-    system: '个性化设置管理'
-  };
-  return descMap[key] || '功能模块';
-}
 
 export default ModuleSelect;

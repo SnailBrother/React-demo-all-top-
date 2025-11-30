@@ -1,26 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AccountingDetails.css';
 import useSocketEvents from './useSocketEvents';
 import AccountingDetailsChange from './AccountingDetailsChange';
-import LoadingSpinner from './LoadingSpinner';
+import { Loading } from '../../../components/UI';
 import ErrorMessage from './ErrorMessage';
 import Modal from 'react-modal';
-import { useAccounting } from './AccountingDataContext/AccountingContext';
+import axios from 'axios';
+import io from 'socket.io-client';
 
 const AccountingDetails = () => {
-    const {
-        records,
-        categoryIcons,
-        loading,
-        error,
-        startDate,
-        endDate,
-        setStartDate,
-        setEndDate,
-        fetchData,
-        updateRecord,
-        deleteRecord
-    } = useAccounting();
+    const [records, setRecords] = useState([]);
+    const [categoryIcons, setCategoryIcons] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [socket, setSocket] = useState(null);
+    //  中添加一个状态来存储原始分类数据
+    const [allCategories, setAllCategories] = useState([]); // 存储所有分类数据
+    // 默认日期范围（当月）
+    const getStartOfMonth = () => {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), 1);
+    };
+
+    const getEndOfMonth = () => {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    };
+
+    const [startDate, setStartDate] = useState(getStartOfMonth());
+    const [endDate, setEndDate] = useState(getEndOfMonth());
 
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [showModal, setShowModal] = useState(false);
@@ -28,6 +36,81 @@ const AccountingDetails = () => {
     // 新增状态变量来存储人员选择
     const [selectedPerson, setSelectedPerson] = useState('全部');
     const [searchKeyword, setSearchKeyword] = useState('');//添加关键字状态
+
+    // 初始化 WebSocket 连接
+    useEffect(() => {
+        const newSocket = io('http://121.4.22.55:5201');
+        setSocket(newSocket);
+
+        // 监听服务器事件
+        newSocket.on('newRecordAdded', (newRecord) => {
+            addRecord(newRecord);
+        });
+
+        newSocket.on('updateRecord', (updatedRecord) => {
+            updateRecord(updatedRecord);
+        });
+
+        newSocket.on('deleteRecord', (deletedId) => {
+            deleteRecord(deletedId);
+        });
+
+        return () => newSocket.disconnect();
+    }, []);
+
+    // 获取初始数据
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const [recordsResponse, iconsResponse] = await Promise.all([
+                axios.get('http://121.4.22.55:5201/api/lifebookkeepinggetRecords'),
+                axios.get('http://121.4.22.55:5201/getCategoryIcons')
+            ]);
+
+            setRecords(recordsResponse.data);
+            setAllCategories(iconsResponse.data); // 保存所有分类数据
+
+            const iconMap = {};
+            iconsResponse.data.forEach((icon) => {
+                iconMap[icon.icon_name] = icon.unicode;
+            });
+            setCategoryIcons(iconMap);
+        } catch (err) {
+            console.error('获取数据失败:', err);
+            setError('获取数据失败，请稍后重试');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 初始化加载数据
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    // 添加记录
+    const addRecord = (newRecord) => {
+        setRecords(prev => [...prev, newRecord]);
+    };
+
+    // 更新记录
+    const updateRecord = (updatedRecord) => {
+        setRecords(prev =>
+            prev.map(item =>
+                item.transaction_id === updatedRecord.transaction_id ? updatedRecord : item
+            )
+        );
+    };
+
+    // 删除记录
+    const deleteRecord = (recordId) => {
+        setRecords(prev => prev.filter(item =>
+            item.transaction_id !== parseInt(recordId)
+        ));
+    };
+
     // 设置WebSocket事件处理
     useSocketEvents({
         onNewRecord: (newRecord) => {
@@ -79,12 +162,22 @@ const AccountingDetails = () => {
             if (!grouped[date]) {
                 grouped[date] = {
                     items: [],
-                    total: 0
+                    income: 0,      // 添加收入统计
+                    expense: 0,     // 添加支出统计
+                    netIncome: 0    // 添加净收入
                 };
             }
-            const amount = item.transaction_type === '收入' ? item.amount : -item.amount;
             grouped[date].items.push(item);
-            grouped[date].total += amount;
+
+            // 分别统计收入和支出
+            if (item.transaction_type === '收入') {
+                grouped[date].income += item.amount;
+            } else {
+                grouped[date].expense += item.amount;
+            }
+
+            // 计算净收入
+            grouped[date].netIncome = grouped[date].income - grouped[date].expense;
         });
 
         // 对每个日期的 items 按 transaction_id 降序排序
@@ -189,7 +282,7 @@ const AccountingDetails = () => {
     const { income, expense } = calculateIncomeAndExpense(filteredDataByKeyword);
 
     if (loading) {
-        return <LoadingSpinner />;
+        return <Loading message="数据加载中..." />;
     }
 
     if (error) {
@@ -198,13 +291,8 @@ const AccountingDetails = () => {
 
     return (
         <div className="accountingdetails-container"
-  style={{
-                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${process.env.PUBLIC_URL}/images/lifebookkeeping-background-image.jpg)`,
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center',
-                    backgroundSize: 'contain'  // 改为 contain 保持原始尺寸
-                }}
-            >
+ 
+        >
 
             <div className="accountingdetails-header">
                 <div className="accountingdetails-date-selector" onClick={openDateModal}>
@@ -291,8 +379,8 @@ const AccountingDetails = () => {
                     <div key={date} className="accountingdetails-date-group">
                         <div className="accountingdetails-date-summary">
                             <span className="accountingdetails-date">{date}</span>
-                            <span className="accountingdetails-summary-amount">
-                                ¥{Math.abs(group.total).toFixed(2)}
+                            <span className={`accountingdetails-summary-amount ${group.netIncome >= 0 ? 'income' : 'expense'}`}>
+                                ¥{Math.abs(group.netIncome).toFixed(2)}
                             </span>
                         </div>
 
@@ -328,6 +416,7 @@ const AccountingDetails = () => {
                         onClose={handleCloseModal}
                         onUpdateSuccess={handleUpdateSuccess}
                         onDeleteSuccess={handleDeleteSuccess}
+                        allCategories={allCategories} // 传递分类数据
                     />
                 )}
             </div>
@@ -335,4 +424,4 @@ const AccountingDetails = () => {
     );
 };
 
-export default AccountingDetails; 
+export default AccountingDetails;

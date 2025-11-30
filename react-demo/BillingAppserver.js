@@ -5465,7 +5465,7 @@ app.get('/getCategoryIcons', async (req, res) => {
     try {
         const pool = await sql.connect(config);
         const result = await pool.request()
-            .query('SELECT icon_name, unicode FROM ChatApp.dbo.ChatAppIconFot');
+            .query('SELECT icon_name, unicode, icon_type FROM ChatApp.dbo.ChatAppIconFot');
 
         res.json(result.recordset);
     } catch (err) {

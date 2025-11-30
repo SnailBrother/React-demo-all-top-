@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "12439662",
+      "name": "其他收入",
+      "font_class": "qitashouru",
+      "unicode": "eab2",
+      "unicode_decimal": 60082
+    },
+    {
+      "icon_id": "26202954",
+      "name": "红包",
+      "font_class": "hongbao",
+      "unicode": "eab1",
+      "unicode_decimal": 60081
+    },
+    {
+      "icon_id": "2328207",
+      "name": "我的工资",
+      "font_class": "wodegongzi",
+      "unicode": "eab0",
+      "unicode_decimal": 60080
+    },
+    {
       "icon_id": "4228909",
       "name": "pro03-02阴影",
       "font_class": "pro-yinying",

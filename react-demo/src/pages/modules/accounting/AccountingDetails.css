@@ -67,11 +67,11 @@
 }
 
 .accountingdetails-summary-amount.income {
-    color: #07C160;
+    color: #FA5151; /* 红色表示盈利 */
 }
 
 .accountingdetails-summary-amount.expense {
-    color: #FA5151;
+    color: #07C160; /* 绿色表示亏损 */
 }
 
 /* 日期分组样式 */
@@ -100,7 +100,8 @@
     align-items: center;
     justify-content: space-around;
     padding: 12px 0;
-    border-bottom: 1px solid #f5f5f5;
+    /* 不要边框 */
+    border-bottom: 1px solid #f5f5f52f;
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -146,11 +147,14 @@
 }
 
 .accountingdetails-details-amount.income {
-    color: #07C160;
+     color: #FA5151;
+      /* 红色表示收入 */
 }
 
 .accountingdetails-details-amount.expense {
-    color: #FA5151;
+   
+    color: #07C160; 
+    /* 绿色表示支出 */
 }
 
 /* 模态框样式 */

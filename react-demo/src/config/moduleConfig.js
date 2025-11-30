@@ -2,17 +2,19 @@
 import React, { lazy } from 'react';
 
 // 核心页面 - 直接导入（常用页面）
-import AccountingHomePage from '../pages/modules/accounting/AccountingHomePage';
+
 import AccountingDetails from '../pages/modules/accounting/AccountingDetails';
 import MusicHome from '../pages/modules/music/Home';
 import MusicRecommend from '../pages/modules/music/Recommend';
 import ChatChat from '../pages/modules/chat/Chat';
 import Musicplayer from '../pages/modules/music/Player';
+import SystemThemeSettings from '../pages/modules/system/SystemThemeSettings';
 
 // 非核心页面 - 懒加载（不常用页面）
 const AccountingAdd = lazy(() => import('../pages/modules/accounting/AccountingAdd'));
 const AccountingCharts = lazy(() => import('../pages/modules/accounting/AccountingCharts'));
 const AccountingMy = lazy(() => import('../pages/modules/accounting/AccountingMy'));
+const AccountingHomePage = lazy(() => import('../pages/modules/accounting/AccountingHomePage'));
 
 //------------------------------听歌------------------------------
 const MusicRecent = lazy(() => import('../pages/modules/music/Recent'));
@@ -43,7 +45,7 @@ const OfficeWordReportGenerator = lazy(() => import('../pages/modules/office/Wor
 //------------------------------聊天------------------------------
 const ChatDressingGuidelines = lazy(() => import('../pages/modules/chat/DressingGuidelines'));
 const ChatUpdateWear = lazy(() => import('../pages/modules/chat/UpdateWear'));
-const SystemThemeSettings = lazy(() => import('../pages/modules/system/SystemThemeSettings'));
+
 const SystemProfile = lazy(() => import('../pages/modules/system/Profile'));
 const SystemBackendSettings = lazy(() => import('../pages/modules/system/BackendSettings'));
 //------------------------------旅行------------------------------
@@ -70,7 +72,7 @@ const MusicSongReview = lazy(() => import('../pages/modules/music/SongReview'));
 export const moduleConfig = {
   accounting: {
     label: '记账',
-    defaultRoute: 'AccountingHomePage',
+    defaultRoute: 'AccountingAdd',
     routes: [
       { key: 'AccountingHomePage', label: '首页', icon: '#icon-shouye3', component: AccountingHomePage, showInTabs: false, showInNavigation: true },
       { key: 'AccountingDetails', label: '明细', icon: '#icon-shouruzhengmingshenqingdan', component: AccountingDetails, showInTabs: false, showInNavigation: true },
