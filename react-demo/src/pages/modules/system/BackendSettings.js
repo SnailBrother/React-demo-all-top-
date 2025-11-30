@@ -3,6 +3,7 @@ import styles from './BackendSettings.module.css';
 
 // 导入各个功能组件
 import MusicUpload from './music/UploadMusic';
+import DeleteMusic from './music/DeleteMusic';
 import WebsiteManager from './usedwebsites/AddNewSiteLinks';
 import MessagePublisher from './publicnews/AddNewPublicNews';
 import SpecialNotice from './specialtips/AddNewSpecialtips';
@@ -12,7 +13,8 @@ const BackendSettings = () => {
 
   // 菜单项配置
   const menuItems = [
-    { id: 'music', label: '音乐上传', icon: '🎵' },
+    { id: 'uploadmusic', label: '音乐上传', icon: '🎵' },
+    { id: 'deletemusic', label: '音乐删除', icon: '🎵' },
     { id: 'website', label: '添加网站', icon: '🌐' },
     { id: 'message', label: '发布消息', icon: '📢' },
     { id: 'notice', label: '特别提示', icon: '⚠️' }
@@ -50,10 +52,12 @@ const BackendSettings = () => {
  
 
         {/* 所有组件都渲染，但只显示活动的那个 */}
-        <div className={activeTab === 'music' ? styles.tabActive : styles.tabHidden}>
+        <div className={activeTab === 'uploadmusic' ? styles.tabActive : styles.tabHidden}>
           <MusicUpload />
         </div>
-        
+         <div className={activeTab === 'deletemusic' ? styles.tabActive : styles.tabHidden}>
+          <DeleteMusic />
+        </div>
         <div className={activeTab === 'website' ? styles.tabActive : styles.tabHidden}>
           <WebsiteManager />
         </div>

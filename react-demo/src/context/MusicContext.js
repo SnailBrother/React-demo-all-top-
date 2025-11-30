@@ -13,7 +13,8 @@ const initialState = {
   currentIndex: -1,//当前歌曲在队列里的 “位置编号” 没歌时编号是 -1（无效值
   progress: 0, // 添加播放进度 刚开始没进度，所以是 0
   duration: 0, // 当前歌曲的总时长 刚开始不知道时长，所以是 0
-  playMode: 'repeat', // 播放模式：'repeat'（列表循环）、'repeat-one'（单曲循环）、'shuffle'（随机）   初始是列表循环 repeat
+  //playMode: 'repeat', // 播放模式：'repeat'（列表循环）、'repeat-one'（单曲循环）、'shuffle'（随机）   初始是列表循环 repeat
+  playMode: 'listLoop', // 播放模式：'random'（随机播放）、'order'（顺序播放）、'singleLoop'（单曲循环）、'listLoop'（列表循环）
   // 添加房间相关状态
   currentRoom: null,// 当前所在的 “一起听歌房间” 信息 刚开始没进房间，所以 null
   isInRoom: false,//现在是不是在 “一起听歌房间” 里 刚开始没进，所以 false
@@ -40,26 +41,73 @@ function musicReducer(state, action) {
         ...state,
         isPlaying: !state.isPlaying,//如果当前有歌曲（state.currentSong 不是 null），就把 isPlaying 反过来（true 变 false，false 变 true）
       };
-    case 'NEXT_SONG'://下一首
-      if (state.queue.length === 0) return state;//用户点了 “下一首” 按钮 先判断队列里有没有歌（没歌就不干活）
-      const nextIndex = (state.currentIndex + 1) % state.queue.length;
+    // case 'NEXT_SONG'://下一首
+    //   if (state.queue.length === 0) return state;//用户点了 “下一首” 按钮 先判断队列里有没有歌（没歌就不干活）
+    //   const nextIndex = (state.currentIndex + 1) % state.queue.length;
+    //   return {
+    //     ...state,
+    //     currentIndex: nextIndex,//计算下一首歌的位置：比如当前在第 2 首（索引 1），队列共 3 首，下一首就是 (1+1)%3 = 2（第 3 首）
+    //     currentSong: state.queue[nextIndex],//更新当前歌曲为下一首，保持播放状态（isPlaying: true），进度重置为 0
+    //     isPlaying: true,
+    //     progress: 0, // 重置进度
+    //   };
+    case 'NEXT_SONG': // 下一首
+      if (state.queue.length === 0) return state;
+
+      let newIndex;
+      if (state.playMode === 'random') {
+        // 随机播放模式：随机选择下一首
+        newIndex = Math.floor(Math.random() * state.queue.length);
+      } else {
+        // 顺序播放和列表循环：按顺序播放下一首
+        newIndex = (state.currentIndex + 1) % state.queue.length;
+      }
+
       return {
         ...state,
-        currentIndex: nextIndex,//计算下一首歌的位置：比如当前在第 2 首（索引 1），队列共 3 首，下一首就是 (1+1)%3 = 2（第 3 首）
-        currentSong: state.queue[nextIndex],//更新当前歌曲为下一首，保持播放状态（isPlaying: true），进度重置为 0
+        currentIndex: newIndex,
+        currentSong: state.queue[newIndex],
         isPlaying: true,
-        progress: 0, // 重置进度
+        progress: 0,
       };
-    case 'PREV_SONG'://上一首
-      if (state.queue.length === 0) return state;//和下一首类似，但计算位置时用 “加队列长度再取余”（避免出现负数）。比如当前在第 1 首（索引 0），上一首就是 (0-1+3)%3 = 2（最后一首）
-      const prevIndex = (state.currentIndex - 1 + state.queue.length) % state.queue.length;
-      return {
-        ...state,
-        currentIndex: prevIndex,
-        currentSong: state.queue[prevIndex],
-        isPlaying: true,
-        progress: 0, // 重置进度
-      };
+
+    // case 'PREV_SONG'://上一首
+    //   if (state.queue.length === 0) return state;//和下一首类似，但计算位置时用 “加队列长度再取余”（避免出现负数）。比如当前在第 1 首（索引 0），上一首就是 (0-1+3)%3 = 2（最后一首）
+    //   const prevIndex = (state.currentIndex - 1 + state.queue.length) % state.queue.length;
+    //   return {
+    //     ...state,
+    //     currentIndex: prevIndex,
+    //     currentSong: state.queue[prevIndex],
+    //     isPlaying: true,
+    //     progress: 0, // 重置进度
+    //   };
+    case 'PREV_SONG': // 上一首
+  if (state.queue.length === 0) return state;
+  
+  let prevIndex;
+  if (state.playMode === 'random') {
+    // 随机播放模式：随机选择上一首
+    prevIndex = Math.floor(Math.random() * state.queue.length);
+  } else {
+    // 顺序播放和列表循环：按顺序播放上一首
+    prevIndex = (state.currentIndex - 1 + state.queue.length) % state.queue.length;
+  }
+  
+  return {
+    ...state,
+    currentIndex: prevIndex,
+    currentSong: state.queue[prevIndex],
+    isPlaying: true,
+    progress: 0,
+  };
+  case 'TOGGLE_PLAY_MODE': // 切换播放模式（循环切换）
+  const modes = ['random', 'order', 'singleLoop', 'listLoop'];
+  const currentModeIndex = modes.indexOf(state.playMode);
+  const nextModeIndex = (currentModeIndex + 1) % modes.length;
+  return {
+    ...state,
+    playMode: modes[nextModeIndex],
+  };
     case 'SET_PROGRESS': // 更新播放进度 用户拖动进度条，或歌曲自动播放时（每秒更新一次进度）
       return {
         ...state,
@@ -105,6 +153,23 @@ function musicReducer(state, action) {
       return {
         ...state,
         roomUsers: action.payload.users || [],
+      };
+
+    case 'SET_PLAY_MODE': // 设置播放模式
+      return {
+        ...state,
+        playMode: action.payload,
+      };
+
+    case 'RANDOM_SONG': // 随机播放下一首
+      if (state.queue.length === 0) return state;
+      const randomIndex = Math.floor(Math.random() * state.queue.length);
+      return {
+        ...state,
+        currentIndex: randomIndex,
+        currentSong: state.queue[randomIndex],
+        isPlaying: true,
+        progress: 0,
       };
 
     default:

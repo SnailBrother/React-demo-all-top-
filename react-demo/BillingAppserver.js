@@ -8813,7 +8813,70 @@ app.get('/api/getallmusics', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+//删除音乐
+// 删除音乐API
+app.delete('/backend/api/deletemusic/:id', async (req, res) => {
+    try {
+        const musicId = req.params.id;
 
+        // 1. 首先从数据库获取音乐信息
+        await sql.connect(config);
+        const request = new sql.Request();
+        
+        // 查询音乐文件信息 - 需要知道是否有歌词文件
+        const queryResult = await request.query(`
+            SELECT src, coverimage 
+            FROM ChatApp.dbo.Music 
+            WHERE id = ${musicId}
+        `);
+
+        if (queryResult.recordset.length === 0) {
+            return res.status(404).json({ error: '音乐不存在' });
+        }
+
+        const musicInfo = queryResult.recordset[0];
+        
+        // 2. 从数据库删除记录
+        const deleteResult = await request.query(`
+            DELETE FROM ChatApp.dbo.Music 
+            WHERE id = ${musicId}
+        `);
+
+        // 3. 删除对应的文件
+        const musicDir = path.join(__dirname, 'musics');
+        
+        // 删除音频文件
+        const audioFilePath = path.join(musicDir, musicInfo.src);
+        if (fs.existsSync(audioFilePath)) {
+            fs.unlinkSync(audioFilePath);
+        }
+        
+        // 删除封面文件
+        const coverFilePath = path.join(musicDir, musicInfo.coverimage);
+        if (fs.existsSync(coverFilePath)) {
+            fs.unlinkSync(coverFilePath);
+        }
+        
+        // 删除歌词文件 - 根据音频文件名生成歌词文件名
+        const audioFileName = path.parse(musicInfo.src).name; // 去掉扩展名
+        const lyricsFilePath = path.join(musicDir, `${audioFileName}.lrc`);
+        if (fs.existsSync(lyricsFilePath)) {
+            fs.unlinkSync(lyricsFilePath);
+        }
+        
+        // 4. 通知所有客户端音乐列表已更新
+        io.emit('music-list-updated');
+
+        res.json({ 
+            message: '音乐删除成功',
+            deletedFiles: [musicInfo.src, musicInfo.coverimage, `${audioFileName}.lrc`]
+        });
+
+    } catch (error) {
+        console.error('删除音乐出错:', error);
+        res.status(500).json({ error: '删除音乐失败' });
+    }
+});
 
 //获取喜欢歌单
 app.get('/backend/api/reactdemofavorites', async (req, res) => {

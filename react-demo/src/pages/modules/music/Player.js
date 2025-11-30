@@ -25,11 +25,35 @@ const generateFileName = (title, artist, extension) => {
   return `${cleanTitle}-${cleanArtist}.${extension}`;
 };
 
+// 播放模式配置
+const PLAY_MODES = {
+  'random': {
+    name: '随机播放',
+    icon: '#icon-zujian-bofangmoshi-suijibofang',
+    description: '随机播放队列中的歌曲'
+  },
+  'order': {
+    name: '顺序播放',
+    icon: '#icon-liebiaobofang',
+    description: '按顺序播放队列中的歌曲'
+  },
+  'singleLoop': {
+    name: '单曲循环',
+    icon: '#icon-zujian-bofangmoshi-danquxunhuan',
+    description: '循环播放当前歌曲'
+  },
+  'listLoop': {
+    name: '列表循环',
+    icon: '#icon-liebiaoxunhuan6',
+    description: '循环播放整个队列'
+  }
+};
+
 const Player = ({ className = '' }) => {
   const navigate = useNavigate(); // 添加导航hook
   const { state, dispatch } = useMusic();
   const { user, isAuthenticated } = useAuth(); // 获取用户信息
-  const { currentSong, isPlaying, queue, volume = 1, playMode = 'repeat', currentRoom, isInRoom, roomUsers, isHost } = state;
+  const { currentSong, isPlaying, queue, volume = 1, playMode = 'listLoop', currentRoom, isInRoom, roomUsers, isHost } = state;
   const audioRef = useRef(null);
 
   const [progress, setProgress] = useState(0);
@@ -37,11 +61,29 @@ const Player = ({ className = '' }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // --- 播放模式控制 ---
+  const [showPlayModeControl, setShowPlayModeControl] = useState(false);
+  const playModeControlRef = useRef(null);
+
   // --- 第四列：附加控件 ---
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const volumeSliderRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const volumeTrackRef = useRef(null); // 用于获取轨道 DOM
+
+  // 点击外部关闭播放模式控制
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (playModeControlRef.current && !playModeControlRef.current.contains(event.target)) {
+        setShowPlayModeControl(false);
+      }
+    };
+
+    if (showPlayModeControl) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showPlayModeControl]);
 
   // 点击外部关闭音量控制
   useEffect(() => {
@@ -55,8 +97,21 @@ const Player = ({ className = '' }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const togglePlayModeControl = () => {
+    setShowPlayModeControl(!showPlayModeControl);
+    setShowVolumeSlider(false); // 关闭音量控制
+  };
+
   const toggleVolumeSlider = () => {
     setShowVolumeSlider(!showVolumeSlider);
+    setShowPlayModeControl(false); // 关闭播放模式控制
+  };
+
+  // 处理播放模式切换
+  const handlePlayModeChange = (mode) => {
+    dispatch({ type: 'SET_PLAY_MODE', payload: mode });
+    setShowPlayModeControl(false);
+    console.log('切换播放模式:', mode, PLAY_MODES[mode].name);
   };
 
   // 根据鼠标位置计算并设置音量
@@ -236,14 +291,31 @@ const Player = ({ className = '' }) => {
     if (currentSong && progress > duration * 0.5) { // 播放超过50%才计数
       increasePlayCount(currentSong);
     }
-    dispatch({ type: 'NEXT_SONG' });
+    
+    // 根据播放模式处理下一首歌曲
+    if (playMode === 'singleLoop') {
+      // 单曲循环：重新播放当前歌曲
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(console.error);
+      }
+    } else if (playMode === 'random') {
+      // 随机播放：从队列中随机选择一首
+      dispatch({ type: 'RANDOM_SONG' });
+    } else {
+      // 顺序播放和列表循环：播放下一首
+      dispatch({ type: 'NEXT_SONG' });
+    }
   };
 
   // --- 控制函数 ---
   const togglePlay = () => dispatch({ type: 'TOGGLE_PLAY' });
   const playNext = () => dispatch({ type: 'NEXT_SONG' });
   const playPrev = () => dispatch({ type: 'PREV_SONG' });
-  const togglePlayMode = () => dispatch({ type: 'TOGGLE_PLAY_MODE' });
+  const togglePlayMode = () => {
+    // 旧的切换逻辑，现在改为打开控制面板
+    togglePlayModeControl();
+  };
 
   const handleProgressChange = (e) => {
     if (audioRef.current) audioRef.current.currentTime = e.target.value;
@@ -319,9 +391,7 @@ const Player = ({ className = '' }) => {
   if (!currentSong) return null; // 如果没有当前歌曲，不渲染播放器
 
   const getPlayModeIcon = () => {
-    if (playMode === 'repeat-one') return '🔂';
-    if (playMode === 'shuffle') return '🔀';
-    return '🔁';
+    return PLAY_MODES[playMode]?.icon || '#icon-xunhuan5';
   };
 
   return (
@@ -331,7 +401,7 @@ const Player = ({ className = '' }) => {
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleSongEnd}
-        loop={playMode === 'repeat-one'}
+        loop={playMode === 'singleLoop'} // 单曲循环时启用audio元素的loop
       />
 
       <div className={`${styles.player} ${className}`}>
@@ -377,27 +447,53 @@ const Player = ({ className = '' }) => {
         {/* --- 第三列：主要控件和进度条 --- */}
         <div className={styles.column3}>
           <div className={styles.topControls}>
-            <button className={styles.controlButton} onClick={togglePlayMode} title={`播放模式: ${playMode}`}>{getPlayModeIcon()}</button>
+            {/* 播放模式控制 */}
+            <div className={styles.playModeControlWrapper} ref={playModeControlRef}>
+              <button 
+                className={`${styles.controlButton} ${styles.playModeButton} ${showPlayModeControl ? styles.active : ''}`} 
+                onClick={togglePlayModeControl} 
+                title={`播放模式: ${PLAY_MODES[playMode]?.name || playMode}`}
+              >
+                <svg className={styles.playModeIcon} aria-hidden="true">
+                  <use xlinkHref={getPlayModeIcon()}></use>
+                </svg>
+              </button>
+
+              {showPlayModeControl && (
+                <div className={styles.playModeDropdown}>
+                  {Object.entries(PLAY_MODES).map(([mode, config]) => (
+                    <button
+                      key={mode}
+                      className={`${styles.playModeOption} ${playMode === mode ? styles.active : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlayModeChange(mode);
+                      }}
+                      title={config.description}
+                    >
+                      <svg className={styles.playModeOptionIcon} aria-hidden="true">
+                        <use xlinkHref={config.icon}></use>
+                      </svg>
+                      <span className={styles.playModeOptionText}>{config.name}</span>
+                      {playMode === mode && (
+                        <svg className={styles.playModeCheckIcon} aria-hidden="true">
+                          <use xlinkHref="#icon-check"></use>
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button className={styles.controlButton} onClick={playPrev} title="上一首" disabled={queue.length === 0}>⏮</button>
+
             <button className={`${styles.controlButton} ${styles.playButton}`} onClick={togglePlay} title={isPlaying ? '暂停' : '播放'}>
               {isPlaying ? '⏸' : '▶'}
             </button>
-            <button className={styles.controlButton} onClick={playNext} title="下一首" disabled={queue.length === 0}>⏭</button>
-          </div>
-          <div className={styles.bottomControls}>
-            <span className={styles.timeDisplay}>{formatTime(progress)}</span>
-            <input
-              type="range" min="0" max={duration || 1} value={progress}
-              onChange={handleProgressChange} className={styles.progressBar}
-            />
-            <span className={styles.timeDisplay}>{formatTime(duration)}</span>
-          </div>
-        </div>
 
-        {/* --- 第四列：附加控件 --- */}
-        <div className={styles.column4}>
-           <button className={styles.controlButton} onClick={showLyrics} title="歌词">詞</button>
-          <div className={styles.volumeControlWrapper} ref={volumeSliderRef}>
+            <button className={styles.controlButton} onClick={playNext} title="下一首" disabled={queue.length === 0}>⏭</button>
+<div className={styles.volumeControlWrapper} ref={volumeSliderRef}>
             <button
               className={styles.controlButton}
               onClick={toggleVolumeSlider}
@@ -426,6 +522,21 @@ const Player = ({ className = '' }) => {
               </div>
             )}
           </div>
+          </div>
+          <div className={styles.bottomControls}>
+            <span className={styles.timeDisplay}>{formatTime(progress)}</span>
+            <input
+              type="range" min="0" max={duration || 1} value={progress}
+              onChange={handleProgressChange} className={styles.progressBar}
+            />
+            <span className={styles.timeDisplay}>{formatTime(duration)}</span>
+          </div>
+        </div>
+
+        {/* --- 第四列：附加控件 --- */}
+        <div className={styles.column4}>
+           <button className={styles.controlButton} onClick={showLyrics} title="歌词">詞</button>
+          
           <button className={styles.controlButton} onClick={showPlaylist} title="播放列表">☰</button>
         </div>
       </div>

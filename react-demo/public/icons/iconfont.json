@@ -6,6 +6,55 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "9167247",
+      "name": "列表循环",
+      "font_class": "liebiaoxunhuan6",
+      "unicode": "eab3",
+      "unicode_decimal": 60083
+    },
+    {
+      "icon_id": "41699784",
+      "name": "列表播放",
+      "font_class": "liebiaobofang",
+      "unicode": "eab4",
+      "unicode_decimal": 60084
+    },
+    {
+      "icon_id": "43593078",
+      "name": "组件-播放模式-单曲循环",
+      "font_class": "zujian-bofangmoshi-danquxunhuan",
+      "unicode": "eab5",
+      "unicode_decimal": 60085
+    },
+    {
+      "icon_id": "43593079",
+      "name": "组件-播放模式-随机播放",
+      "font_class": "zujian-bofangmoshi-suijibofang",
+      "unicode": "eab6",
+      "unicode_decimal": 60086
+    },
+    {
+      "icon_id": "43593080",
+      "name": "组件-播放模式-循环播放",
+      "font_class": "zujian-bofangmoshi-xunhuanbofang",
+      "unicode": "eab7",
+      "unicode_decimal": 60087
+    },
+    {
+      "icon_id": "45758050",
+      "name": "播放模式=循环播放",
+      "font_class": "a-bofangmoshixunhuanbofang",
+      "unicode": "eab8",
+      "unicode_decimal": 60088
+    },
+    {
+      "icon_id": "45758053",
+      "name": "播放模式=随机播放",
+      "font_class": "a-bofangmoshisuijibofang",
+      "unicode": "eab9",
+      "unicode_decimal": 60089
+    },
+    {
       "icon_id": "12439662",
       "name": "其他收入",
       "font_class": "qitashouru",
