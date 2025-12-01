@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 import { Loading } from '../../../components/UI';
 
 // 创建Socket连接
-const socket = io('http://121.4.22.55:5201');
+const socket = io('http://121.4.22.55:5202');
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -30,7 +30,7 @@ const PublicNews = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await axios.get('http://121.4.22.55:5201/api/getMessageDetailData');
+        const response = await axios.get('http://121.4.22.55:5202/api/getMessageDetailData');
         setMessages(response.data.MessageDetail);
         setLoading(false);
       } catch (error) {

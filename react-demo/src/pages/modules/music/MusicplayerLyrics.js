@@ -70,7 +70,7 @@ const handleBack = () => {
 
             try {
                 const response = await axios.get(
-                    `http://121.4.22.55:5201/backend/api/lyrics/${encodeURIComponent(lrcFilename)}`,
+                    `http://121.4.22.55:5202/backend/api/lyrics/${encodeURIComponent(lrcFilename)}`,
                     { responseType: 'text' }
                 );
 

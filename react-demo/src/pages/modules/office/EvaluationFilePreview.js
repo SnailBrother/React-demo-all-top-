@@ -13,7 +13,7 @@ const EvaluationFilePreview = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('http://121.4.22.55:5201/api/getEvaluationFilePreview');
+                const response = await axios.get('http://121.4.22.55:5202/api/getEvaluationFilePreview');
 
                 const formattedData = response.data.map(category => ({
                     id: Math.random().toString(36).substr(2, 9),

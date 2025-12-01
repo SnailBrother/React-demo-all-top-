@@ -5,7 +5,7 @@ import "./Buildings.css";
  
 import { useAuth } from '../../../../context/AuthContext';
 // 初始化Socket.io连接
-const socket = io('http://121.4.22.55:5201');
+const socket = io('http://121.4.22.55:5202');
 
 function Buildings() {
   
@@ -53,7 +53,7 @@ function Buildings() {
   const fetchRandomBuildings = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://121.4.22.55:5201/api/getRandomStructures');
+      const response = await axios.get('http://121.4.22.55:5202/api/getRandomStructures');
       setAllBuildings(response.data.Structures);
       setFilteredBuildings(response.data.Structures);
       // 添加这行设置总条数
@@ -70,7 +70,7 @@ function Buildings() {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `http://121.4.22.55:5201/api/getStructures?page=${page}&pageSize=${size}`
+        `http://121.4.22.55:5202/api/getStructures?page=${page}&pageSize=${size}`
       );
       setFilteredBuildings(response.data.results);
       setTotalCount(response.data.totalCount);
@@ -94,7 +94,7 @@ function Buildings() {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `http://121.4.22.55:5201/api/searchStructures?term=${encodeURIComponent(searchTerm)}&page=${currentPage}&pageSize=${itemsPerPage}`
+        `http://121.4.22.55:5202/api/searchStructures?term=${encodeURIComponent(searchTerm)}&page=${currentPage}&pageSize=${itemsPerPage}`
       );
       setFilteredBuildings(response.data.results);
       setTotalCount(response.data.totalCount);
@@ -115,13 +115,13 @@ function Buildings() {
         if (isSearching) {
           // 如果是搜索状态，保持搜索
           const response = await axios.get(
-            `http://121.4.22.55:5201/api/searchStructures?term=${encodeURIComponent(searchTerm)}&page=${page}&pageSize=${itemsPerPage}`
+            `http://121.4.22.55:5202/api/searchStructures?term=${encodeURIComponent(searchTerm)}&page=${page}&pageSize=${itemsPerPage}`
           );
           setFilteredBuildings(response.data.results);
         } else {
           // 如果不是搜索状态，获取新的分页数据
           const response = await axios.get(
-            `http://121.4.22.55:5201/api/getStructures?page=${page}&pageSize=${itemsPerPage}`
+            `http://121.4.22.55:5202/api/getStructures?page=${page}&pageSize=${itemsPerPage}`
           );
           setFilteredBuildings(response.data.results);
         }
@@ -144,7 +144,7 @@ function Buildings() {
       if (isSearching) {
         // 如果是搜索状态，保持搜索
         const response = await axios.get(
-          `http://121.4.22.55:5201/api/searchStructures?term=${encodeURIComponent(searchTerm)}&page=1&pageSize=${newSize}`
+          `http://121.4.22.55:5202/api/searchStructures?term=${encodeURIComponent(searchTerm)}&page=1&pageSize=${newSize}`
         );
         setFilteredBuildings(response.data.results);
         setTotalCount(response.data.totalCount);
@@ -152,7 +152,7 @@ function Buildings() {
       } else {
         // 如果不是搜索状态，获取新的分页数据
         const response = await axios.get(
-          `http://121.4.22.55:5201/api/getStructures?page=1&pageSize=${newSize}`
+          `http://121.4.22.55:5202/api/getStructures?page=1&pageSize=${newSize}`
         );
         setFilteredBuildings(response.data.results);
         setTotalCount(response.data.totalCount);
@@ -176,13 +176,13 @@ function Buildings() {
         if (isSearching) {
           // 如果是搜索状态，保持搜索
           const response = await axios.get(
-            `http://121.4.22.55:5201/api/searchStructures?term=${encodeURIComponent(searchTerm)}&page=${page}&pageSize=${itemsPerPage}`
+            `http://121.4.22.55:5202/api/searchStructures?term=${encodeURIComponent(searchTerm)}&page=${page}&pageSize=${itemsPerPage}`
           );
           setFilteredBuildings(response.data.results);
         } else {
           // 如果不是搜索状态，获取新的分页数据
           const response = await axios.get(
-            `http://121.4.22.55:5201/api/getStructures?page=${page}&pageSize=${itemsPerPage}`
+            `http://121.4.22.55:5202/api/getStructures?page=${page}&pageSize=${itemsPerPage}`
           );
           setFilteredBuildings(response.data.results);
         }
@@ -206,7 +206,7 @@ function Buildings() {
     if (!editBuilding) return;
 
     try {
-      await axios.delete(`http://121.4.22.55:5201/api/deleteStructure/${editBuilding.id}`);
+      await axios.delete(`http://121.4.22.55:5202/api/deleteStructure/${editBuilding.id}`);
       setIsModalOpen(false);
       setEditBuilding(null);
     } catch (error) {
@@ -229,9 +229,9 @@ function Buildings() {
 
     try {
       if (editBuilding) {
-        await axios.put(`http://121.4.22.55:5201/api/updateStructure/${editBuilding.id}`, updatedBuilding);
+        await axios.put(`http://121.4.22.55:5202/api/updateStructure/${editBuilding.id}`, updatedBuilding);
       } else {
-        await axios.post('http://121.4.22.55:5201/api/addStructure', updatedBuilding);
+        await axios.post('http://121.4.22.55:5202/api/addStructure', updatedBuilding);
       }
     } catch (error) {
       console.error('提交失败:', error);

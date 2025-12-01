@@ -34,7 +34,7 @@ const LookHousePricePicture = () => {
 
       try {
         const response = await fetch(
-          `/cyywork/api/GetHousePricePictures?reportsID=${encodeURIComponent(reportsID)}`
+          `/api/GetHousePricePictures?reportsID=${encodeURIComponent(reportsID)}`
         );
 
         if (!response.ok) {

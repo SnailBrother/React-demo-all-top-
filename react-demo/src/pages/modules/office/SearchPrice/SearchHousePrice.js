@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './SearchHousePrice.css';
+import styles from './SearchHousePrice.module.css';  // 修改导入方式
 import WordReportGeneratorLoader from '../../accounting/Notification/WordReportGeneratorLoader';
- 
 
 const SearchHousePrice = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -172,24 +171,22 @@ const SearchHousePrice = () => {
 
     return (
 
-        <div className="shprice-out-container"
-            
-        >
-            <div className="shprice-container">
+        <div className={styles.outContainer}>
+            <div className={styles.container}>
                 {/* 搜索框 */}
-                <div className="shprice-search-section">
-                    <form onSubmit={handleSearch} className="shprice-search-form">
-                        <div className="shprice-search-input-group">
+                <div className={styles.searchSection}>
+                    <form onSubmit={handleSearch} className={styles.searchForm}>
+                        <div className={styles.searchInputGroup}>
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="请输入房产坐落、小区名称等进行搜索..."
-                                className="shprice-search-input"
+                                className={styles.searchInput}
                             />
                             <button
                                 type="submit"
-                                className="shprice-search-button"
+                                className={styles.searchButton}
                                 disabled={loading}
                             >
                                 {loading ? '搜索中...' : '搜索'}
@@ -200,43 +197,38 @@ const SearchHousePrice = () => {
 
                 {/* 错误提示 */}
                 {error && (
-                    <div className="shprice-error">
+                    <div className={styles.error}>
                         {error}
                     </div>
                 )}
 
                 {/* 加载状态 */}
                 {loading && (
-                    <div className="shprice-loading">
+                    <div className={styles.loading}>
                         <WordReportGeneratorLoader />
                     </div>
                 )}
 
                 {/* 搜索结果统计 */}
                 {records.length > 0 && (
-                    <div className="shprice-stats">
+                    <div className={styles.stats}>
                         共 {totalRecords} 条记录:
-                        {/* ，当前显示第 {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalRecords)} 条 */}
                     </div>
                 )}
 
                 {/* 搜索结果表格 */}
                 {records.length > 0 ? (
-                    <div className="shprice-results">
-                        <div className="shprice-table-container">
-                            <table className="shprice-table">
+                    <div className={styles.results}>
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
                                 <thead>
                                     <tr>
                                         <th>序号</th>
-                                        {/* <th>委托书编号</th>
-                                    <th>委托方</th> */}
                                         <th>小区名称</th>
                                         <th>房产坐落</th>
-
                                         <th>建筑面积</th>
                                         <th>评估单价</th>
                                         <th>月租金</th>
-                                        {/* <th>估价师</th> */}
                                         <th>日期</th>
                                         <th>操作</th>
                                     </tr>
@@ -245,23 +237,16 @@ const SearchHousePrice = () => {
                                     {records.map((record, index) => (
                                         <tr key={record.reportsID}>
                                             <td>{(currentPage - 1) * pageSize + index + 1}</td> {/* 计算序号 */}
-                                            {/* <td>{record.documentNo || '-'}</td>
-                                        <td>{record.entrustingParty || '-'}</td> */}
                                             <td>{record.communityName || '-'}</td>
                                             <td>{record.location || '-'}</td>
-
                                             <td>{formatArea(record.buildingArea)}</td>
                                             <td>{formatPrice(record.valuationPrice)}</td>
                                             <td>{formatPrice(record.rent)}</td>
-                                            {/* <td>
-                                            {record.appraiserNameA || '-'}
-                                            {record.appraiserNameB && `, ${record.appraiserNameB}`}
-                                        </td> */}
                                             <td>{formatDate(record.reportDate)}</td>
                                             <td>
                                                 {record.hasPhotos ? (
                                                     <button
-                                                        className="shprice-detail-button"
+                                                        className={styles.detailButton}
                                                         onClick={() => {
                                                             const reportId = record.reportsID;
                                                             const location = record.location;
@@ -278,13 +263,12 @@ const SearchHousePrice = () => {
                                                             window.open(qrCodePageUrl, '_blank');
                                                         }}
                                                     >
-                                                        <svg className="shprice-icon" aria-hidden="true">
+                                                        <svg className={styles.icon} aria-hidden="true">
                                                             <use xlinkHref="#icon-chakantupian9" />
                                                         </svg>
                                                     </button>
                                                 ) : (
-                                                    // <span className="shprice-no-photos">没有照片</span>
-                                                    <svg className="shprice-icon" aria-hidden="true">
+                                                    <svg className={styles.icon} aria-hidden="true">
                                                         <use xlinkHref="#icon-zanwutupian1" />
                                                     </svg>
                                                 )}
@@ -297,14 +281,14 @@ const SearchHousePrice = () => {
 
                         {/* 完整分页控件 */}
                         {totalPages > 0 && (
-                            <div className="shprice-pagination-complete">
-                                <div className="shprice-pagination-left">
+                            <div className={styles.paginationComplete}>
+                                <div className={styles.paginationLeft}>
                                     <span>共 {totalPages} 页</span>
                                 </div>
 
-                                <div className="shprice-pagination-center">
+                                <div className={styles.paginationCenter}>
                                     <button
-                                        className="shprice-page-button"
+                                        className={styles.paginationButton}
                                         onClick={() => handlePageChange(1)}
                                         disabled={currentPage === 1}
                                         title="首页"
@@ -312,7 +296,7 @@ const SearchHousePrice = () => {
                                         «
                                     </button>
                                     <button
-                                        className="shprice-page-button"
+                                        className={styles.paginationButton}
                                         onClick={() => handlePageChange(currentPage - 1)}
                                         disabled={currentPage === 1}
                                         title="上一页"
@@ -324,7 +308,7 @@ const SearchHousePrice = () => {
                                     {generatePageNumbers().map((pageNum) => (
                                         <button
                                             key={pageNum}
-                                            className={`shprice-page-button ${currentPage === pageNum ? 'shprice-page-active' : ''}`}
+                                            className={`${styles.paginationButton} ${currentPage === pageNum ? styles.paginationActive : ''}`}
                                             onClick={() => handlePageChange(pageNum)}
                                         >
                                             {pageNum}
@@ -332,7 +316,7 @@ const SearchHousePrice = () => {
                                     ))}
 
                                     <button
-                                        className="shprice-page-button"
+                                        className={styles.paginationButton}
                                         onClick={() => handlePageChange(currentPage + 1)}
                                         disabled={currentPage === totalPages}
                                         title="下一页"
@@ -340,7 +324,7 @@ const SearchHousePrice = () => {
                                         ›
                                     </button>
                                     <button
-                                        className="shprice-page-button"
+                                        className={styles.paginationButton}
                                         onClick={() => handlePageChange(totalPages)}
                                         disabled={currentPage === totalPages}
                                         title="末页"
@@ -349,12 +333,12 @@ const SearchHousePrice = () => {
                                     </button>
                                 </div>
 
-                                <div className="shprice-pagination-right">
-                                    <div className="shprice-page-size-selector">
+                                <div className={styles.paginationRight}>
+                                    <div className={styles.pageSizeSelector}>
                                         <select
                                             value={pageSize}
                                             onChange={handlePageSizeChange}
-                                            className="shprice-page-size-select"
+                                            className={styles.pageSizeSelect}
                                         >
                                             <option value={10}>10条/页</option>
                                             <option value={20}>20条/页</option>
@@ -363,7 +347,7 @@ const SearchHousePrice = () => {
                                         </select>
                                     </div>
 
-                                    <div className="shprice-page-jump">
+                                    <div className={styles.pageJump}>
                                         <span>跳至</span>
                                         <input
                                             type="number"
@@ -371,13 +355,13 @@ const SearchHousePrice = () => {
                                             max={totalPages}
                                             value={jumpPage}
                                             onChange={(e) => setJumpPage(e.target.value)}
-                                            className="shprice-jump-input"
+                                            className={styles.jumpInput}
                                             placeholder="页数"
                                         />
                                         <span>页</span>
                                         <button
                                             onClick={handleJumpPage}
-                                            className="shprice-jump-button"
+                                            className={styles.jumpButton}
                                         >
                                             跳转
                                         </button>
@@ -389,24 +373,20 @@ const SearchHousePrice = () => {
                 ) : (
                     // 修改为：只有点击搜索后且没有数据时才显示
                     !loading && searchTerm && records.length === 0 && (
-                        <div className="shprice-no-data">
-                            <svg className="shprice-suggest-icon" aria-hidden="true">
+                        <div className={styles.noData}>
+                            <svg className={styles.suggestIcon} aria-hidden="true">
                                 <use xlinkHref="#icon-weisousuodaojieguo" />
                             </svg>
-                            {/* <br />未找到相关记录，
-                            <br />请尝试其他搜索关键词 */}
                         </div>
                     )
                 )}
 
                 {/* 搜索提示 */}
-                {/* 搜索提示 - 只在没有搜索词、没有数据、没有加载时显示 */}
                 {!loading && !searchTerm && records.length === 0 && (
-                    <div className="shprice-tips">
-                        <svg className="shprice-suggest-icon" aria-hidden="true">
+                    <div className={styles.tips}>
+                        <svg className={styles.suggestIcon} aria-hidden="true">
                             <use xlinkHref="#icon-weisousuodaojieguo" />
                         </svg>
-                        {/* <br />请尝试其他搜索关键词 */}
                     </div>
                 )}
             </div>

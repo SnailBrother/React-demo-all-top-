@@ -205,7 +205,7 @@ const Recommend = () => {
     const handleLike = async (e, musicId) => {
         e.stopPropagation();
         try {
-            await axios.post('http://121.4.22.55:5201/backend/api/favorites', {
+            await axios.post('http://121.4.22.55:5202/backend/api/favorites', {
                 username: user.username,
                 musicId: musicId
             });

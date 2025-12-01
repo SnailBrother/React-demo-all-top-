@@ -1,62 +1,55 @@
 /* SearchHousePrice.css */
-.shprice-out-container {
+/* SearchHousePrice.module.css */
+.outContainer {
     margin: 0 auto;
-    /* background: #f5f7fa; */
     width: 100%;
     height: 100%;
-    
 }
 
-
-.shprice-container {
+.container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    font-family: "Microsoft YaHei", "SimHei", "PingFang SC", sans-serif;
-    /* background: #f5f7fa; */
+    font-family: var(--font-family);
     min-height: 100vh;
 }
 
- 
-.shprice-search-section {
-    /* background: white; */
+.searchSection {
     padding: 25px;
     border-radius: 10px;
-    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
     margin-bottom: 20px;
 }
 
-.shprice-search-form {
+.searchForm {
     width: 100%;
 }
 
-.shprice-search-input-group {
+.searchInputGroup {
     display: flex;
     gap: 10px;
     align-items: center;
 }
 
-.shprice-search-input {
+.searchInput {
     flex: 1;
     padding: 12px 15px;
-    border: 2px solid var(--borderBrush);
+    border: 2px solid var(--border_color);
     border-radius: 6px;
     font-size: 16px;
     transition: border-color 0.3s;
-    color: var(--fontColor);
+    color: var(--font-color);
     background-color: transparent;
 }
-
-.shprice-search-input:focus {
+ 
+.searchInput:focus {
     outline: none;
-    border-color: var(--hoverBorderBrush);
+    border-color: var(--hover_border_color);
 }
 
-.shprice-search-button {
+.searchButton {
     padding: 12px 25px;
-    /* background: #1a5fb4; */
-    color: var(--fontColor);
-     background: #2d7bc6;
+    color: var(--font-color);
+    background: #2d7bc6;
     border: none;
     border-radius: 6px;
     font-size: 16px;
@@ -65,16 +58,16 @@
     white-space: nowrap;
 }
 
-.shprice-search-button:hover:not(:disabled) {
+.searchButton:hover:not(:disabled) {
     background: #2d7bc6;
 }
 
-.shprice-search-button:disabled {
+.searchButton:disabled {
     background: #ccc;
     cursor: not-allowed;
 }
 
-.shprice-error {
+.error {
     background: #fee;
     color: #c53030;
     padding: 15px;
@@ -83,67 +76,63 @@
     border-left: 4px solid #c53030;
 }
 
-.shprice-loading {
+.loading {
     text-align: center;
     padding: 30px;
     color: #666;
     font-size: 16px;
 }
 
-.shprice-stats {
-    /* background: #e8f4fd; */
-    color: var(--fontColor);
+.stats {
+    color: var(--font-color);
     padding: 12px 15px;
     border-radius: 6px;
     margin-bottom: 15px;
     font-weight: 500;
 }
 
-.shprice-results {
-    /* background: white; */
+.results {
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
-.shprice-table-container {
+.tableContainer {
     overflow-x: auto;
 }
 
-.shprice-table {
+.table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
-       color: var(--fontColor);
-     text-align: center;
+    color: var(--font-color);
+    text-align: center;
 }
 
-.shprice-table th {
-    background:transparent;
-    color: var(--fontColor);
+.table th {
+    background: transparent;
+    color: var(--font-color);
     padding: 15px 12px;
     text-align: center;
     font-weight: 600;
-    color: var(--fontColor);
-    border-bottom: 2px solid var(--borderBrush);
+    border-bottom: 2px solid var(--border_color);
     white-space: nowrap;
 }
 
-.shprice-table td {
+.table td {
     padding: 12px;
-     color: var(--fontColor);
-    border-bottom: 1px solid solid var(--borderBrush);
+    color: var(--font-color);
+    border-bottom: 1px solid var(--border_color);
     vertical-align: top;
-     text-align: center;
+    text-align: center;
 }
 
-.shprice-table tr:hover {
-    background: var(--hoverBackground);
+.table tr:hover {
+    background: var(--hover_background-color);
 }
 
-.shprice-detail-button {
+.detailButton {
     padding: 6px 12px;
-    /* background: #48bb78; */
     background: transparent;
     color: white;
     border: none;
@@ -153,11 +142,11 @@
     transition: background 0.3s;
 }
 
-.shprice-detail-button:hover {
+.detailButton:hover {
     background: #38a169;
 }
 
-.shprice-pagination {
+.pagination {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -166,7 +155,7 @@
     border-top: 1px solid #e2e8f0;
 }
 
-.shprice-page-button {
+.pageButton {
     padding: 8px 12px;
     border: 1px solid #d1d5db;
     background: white;
@@ -177,40 +166,40 @@
     font-size: 14px;
 }
 
-.shprice-page-button:hover:not(:disabled) {
+.pageButton:hover:not(:disabled) {
     background: #f3f4f6;
     border-color: #9ca3af;
 }
 
-.shprice-page-button:disabled {
+.pageButton:disabled {
     color: #9ca3af;
     cursor: not-allowed;
     background: #f9fafb;
 }
 
-.shprice-page-active {
+.pageActive {
     background: #1a5fb4;
     color: white;
     border-color: #1a5fb4;
 }
 
-.shprice-page-info {
+.pageInfo {
     margin-left: 15px;
     color: #6b7280;
     font-size: 14px;
 }
 
-.shprice-no-data {
+.noData {
     text-align: center;
     padding: 50px 20px;
-    color: var(--fontColor);
+    color: var(--font-color);
     font-size: 16px;
     background: transparent;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.shprice-tips {
+.tips {
     background: transparent;
     padding: 25px;
     border-radius: 10px;
@@ -219,10 +208,10 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
-    color: var(--fontColor);
+    color: var(--font-color);
 }
 
-.shprice-suggest-icon {
+.suggestIcon {
     color: #1a5fb4;
     width: 30em;
     height: 30em;
@@ -230,142 +219,84 @@
     fill: currentColor;
     overflow: hidden;
 }
- 
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .shprice-container {
-        padding: 10px;
-    }
-    
-  
-    
-    
-    
-    .shprice-search-input-group {
-        flex-direction: column;
-    }
-    
-    .shprice-search-input {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    
-    .shprice-search-button {
-        width: 100%;
-    }
-    
-    .shprice-table {
-        font-size: 12px;
-    }
-    
-    .shprice-table th,
-    .shprice-table td {
-        padding: 8px 6px;
-    }
-    
-    .shprice-pagination {
-        flex-wrap: wrap;
-        gap: 3px;
-    }
-    
-    .shprice-page-button {
-        padding: 6px 8px;
-        font-size: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    
-    
-    .shprice-table-container {
-        font-size: 11px;
-    }
-    
-    .shprice-pagination {
-        flex-direction: column;
-        gap: 10px;
-    }
-}
-/* 添加到 SearchHousePrice.css 中 */
 
 /* 完整分页样式 */
-.shprice-pagination-complete {
+.paginationComplete {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-top: 1px solid var(--borderBrush);
+    border-top: 1px solid var(--border_color);
     background: transparent;
     flex-wrap: wrap;
     gap: 15px;
 }
 
-.shprice-pagination-left {
+.paginationLeft {
     font-size: 14px;
-    color: var(--fontColor);
+    color: var(--font-color);
     font-weight: 500;
 }
 
-.shprice-pagination-center {
+.paginationCenter {
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-.shprice-pagination-right {
+.paginationRight {
     display: flex;
     align-items: center;
     gap: 15px;
 }
 
-.shprice-page-size-selector {
+.pageSizeSelector {
     display: flex;
     align-items: center;
 }
 
-.shprice-page-size-select {
+.pageSizeSelect {
     padding: 6px 10px;
-    border: 1px solid var(--borderBrush);
+    border: 1px solid var(--border_color);
     border-radius: 4px;
     background: transparent;
-    color: var(--fontColor);
+    color: var(--font-color);
     font-size: 14px;
     cursor: pointer;
 }
 
-.shprice-page-size-select:focus {
+.pageSizeSelect:focus {
     outline: none;
-    border-color: var(--hoverBorderBrush);
+    border-color: var(--hover_border_color);
 }
 
-.shprice-page-jump {
+.pageJump {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: var(--fontColor);
+    color: var(--font-color);
 }
 
-.shprice-jump-input {
+.jumpInput {
     width: 60px;
     padding: 6px 8px;
-    border: 1px solid var(--borderBrush);
+    border: 1px solid var(--border_color);
     border-radius: 4px;
     text-align: center;
     font-size: 14px;
     background-color: transparent;
 }
 
-.shprice-jump-input:focus {
+.jumpInput:focus {
     outline: none;
-    border-color: var(--hoverBorderBrush);
+    border-color: var(--hover_border_color);
 }
 
-.shprice-jump-button {
+.jumpButton {
     padding: 6px 12px;
     background: #1a5fb4;
-    color: var(--fontColor);
+    color: var(--font-color);
     border: none;
     border-radius: 4px;
     font-size: 12px;
@@ -373,16 +304,16 @@
     transition: background 0.3s;
 }
 
-.shprice-jump-button:hover {
-    background: var(--hoverBackground);
+.jumpButton:hover {
+    background: var(--hover_background-color);
 }
 
 /* 分页按钮样式 */
-.shprice-page-button {
+.paginationButton {
     padding: 8px 12px;
-    border: 1px solid var(--borderBrush);
+    border: 1px solid var(--border_color);
     background: transparent;
-    color: var(--fontColor);
+    color: var(--font-color);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s;
@@ -391,95 +322,128 @@
     text-align: center;
 }
 
-.shprice-page-button:hover:not(:disabled) {
+.paginationButton:hover:not(:disabled) {
     background: transparent;
     border-color: #9ca3af;
 }
 
-.shprice-page-button:disabled {
-    color: var(--fontColor);
+.paginationButton:disabled {
+    color: var(--font-color);
     cursor: not-allowed;
     background: transparent;
 }
 
-.shprice-page-active {
+.paginationActive {
     background: transparent;
-    color: var(--fontColor);
-    border-color: var(--borderBrush);
+    color: var(--font-color);
+    border-color: var(--border_color);
+}
+
+/* 序号列样式 */
+.table th:first-child,
+.table td:first-child {
+    width: 60px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.icon {
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: -0.15em;
+    fill: currentColor;
+    overflow: hidden;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .shprice-pagination-complete {
+    .container {
+        padding: 10px;
+    }
+    
+    .searchInput {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .searchButton {
+        width: 70px;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+    
+    .table th,
+    .table td {
+        padding: 8px 6px;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        gap: 3px;
+    }
+    
+    .pageButton {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    
+    /* 完整分页响应式 */
+    .paginationComplete {
         flex-direction: column;
         gap: 15px;
         text-align: center;
     }
     
-    .shprice-pagination-center {
+    .paginationCenter {
         order: 1;
     }
     
-    .shprice-pagination-left {
+    .paginationLeft {
         order: 2;
     }
     
-    .shprice-pagination-right {
+    .paginationRight {
         order: 3;
         flex-direction: column;
         gap: 10px;
     }
     
-    .shprice-page-jump {
+    .pageJump {
         justify-content: center;
+    }
+    
+    /* 序号列响应式 */
+    .table th:first-child,
+    .table td:first-child {
+        width: 50px;
+        font-size: 0.9em;
     }
 }
 
 @media (max-width: 480px) {
-    .shprice-pagination-center {
+    .tableContainer {
+        font-size: 11px;
+    }
+    
+    .pagination {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .paginationCenter {
         flex-wrap: wrap;
         justify-content: center;
     }
     
-    .shprice-page-button {
+    .paginationButton {
         padding: 6px 10px;
         min-width: 35px;
         font-size: 12px;
     }
     
-    .shprice-jump-input {
+    .jumpInput {
         width: 50px;
     }
-}
-
-/* 序号列样式 */
-.shprice-table th:first-child,
-.shprice-table td:first-child {
-    width: 60px; /* 序号列宽度 */
-    text-align: center; /* 居中显示 */
-    font-weight: bold; /* 加粗显示 */
-    
-    /* background-color: #f8f9fa;  */
-    /* 背景色 */
-}
-
- 
- 
-
- 
-
-/* 响应式设计：小屏幕时调整序号列宽度 */
-@media (max-width: 768px) {
-    .shprice-table th:first-child,
-    .shprice-table td:first-child {
-        width: 50px;
-        font-size: 0.9em;
-    }
-}
-.shprice-icon {
-    width: 1.2em;
-  height: 1.2em;
-  vertical-align: -0.15em;
-  fill: currentColor;
-  overflow: hidden;
 }

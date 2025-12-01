@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext'; // 使用 useAuth hook
 import { useTheme } from '../../context/ThemeContext';
 import io from 'socket.io-client';
 
-const socket = io('http://121.4.22.55:5201', {
+const socket = io('http://121.4.22.55:5202', {
   transports: ['websocket', 'polling']
 });
 

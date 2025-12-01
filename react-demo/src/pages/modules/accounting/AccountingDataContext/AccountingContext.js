@@ -27,7 +27,7 @@ export const AccountingProvider = ({ children }) => {
 
     // 初始化 WebSocket 连接
     useEffect(() => {
-        const newSocket = io('http://121.4.22.55:5201');
+        const newSocket = io('http://121.4.22.55:5202');
         setSocket(newSocket);
 
         // 监听服务器事件
@@ -53,8 +53,8 @@ export const AccountingProvider = ({ children }) => {
             setError(null);
             
             const [recordsResponse, iconsResponse] = await Promise.all([
-                axios.get('http://121.4.22.55:5201/api/lifebookkeepinggetRecords'),
-                axios.get('http://121.4.22.55:5201/getCategoryIcons')
+                axios.get('http://121.4.22.55:5202/api/lifebookkeepinggetRecords'),
+                axios.get('http://121.4.22.55:5202/getCategoryIcons')
             ]);
 
             setRecords(recordsResponse.data);

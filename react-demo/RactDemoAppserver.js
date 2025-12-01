@@ -3,7 +3,7 @@ const cors = require('cors');
 const sql = require('mssql');
 const xlsx = require('xlsx');
 const app = express();
-const port = 5201;
+const port = 5202;
 
 
 // SQL Server 配置
@@ -8158,7 +8158,7 @@ const uploadUploadHousePricePicture = multer({
 });
 
 // 获取已存在图片的API
-app.get('/cyywork/api/GetHousePricePictures', async (req, res) => {
+app.get('/api/GetHousePricePictures', async (req, res) => {
     try {
         const { reportsID } = req.query;
 

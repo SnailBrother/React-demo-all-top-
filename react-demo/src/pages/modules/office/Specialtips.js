@@ -3,7 +3,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import './Specialtips.css';
 import { Loading } from '../../../components/UI';
-const socket = io('http://121.4.22.55:5201'); // 请根据实际情况修改服务器地址
+const socket = io('http://121.4.22.55:5202'); // 请根据实际情况修改服务器地址
 
 export default function Specialtips() {
     const [tips, setTips] = useState([]);
@@ -13,7 +13,7 @@ export default function Specialtips() {
     useEffect(() => {
         const fetchTipsData = async () => {
             try {
-                const response = await axios.get('http://121.4.22.55:5201/api/getSpecial_TipsData');
+                const response = await axios.get('http://121.4.22.55:5202/api/getSpecial_TipsData');
                 setTips(response.data.Special_Tips);
                 setLoading(false);
             } catch (error) {

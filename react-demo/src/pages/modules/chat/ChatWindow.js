@@ -6,7 +6,7 @@ import './ChatWindow.css';
 import { Loading } from '../../../components/UI';
 
 import Circularrotatingtext from './.././../../components/Animation/Circularrotatingtext'; // 加载动画里面的环形旋转文字
-const socket = io('http://121.4.22.55:5201');
+const socket = io('http://121.4.22.55:5202');
 
 const ChatWindow = ({ selectedFriend, username, themeSettings, userHeadImage }) => {
     const [messages, setMessages] = useState([]);
@@ -78,7 +78,7 @@ const ChatWindow = ({ selectedFriend, username, themeSettings, userHeadImage }) 
                 file_size: file.size
             });
 
-            const response = await axios.post('http://121.4.22.55:5201/api/messages/uploadImage', formData, {
+            const response = await axios.post('http://121.4.22.55:5202/api/messages/uploadImage', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 },
@@ -158,7 +158,7 @@ const ChatWindow = ({ selectedFriend, username, themeSettings, userHeadImage }) 
     // 获取未读消息总数（排除当前选中好友）
     const fetchUnreadCounts = async () => {
         try {
-            const response = await axios.get('http://121.4.22.55:5201/api/messages');
+            const response = await axios.get('http://121.4.22.55:5202/api/messages');
             const allMessages = response.data;
 
             const unreadCounts = {};
@@ -220,7 +220,7 @@ const formatTime = (timestamp) => {
 
         setIsLoading(true);
         try {
-            const response = await axios.get('http://121.4.22.55:5201/api/messages/chat', {
+            const response = await axios.get('http://121.4.22.55:5202/api/messages/chat', {
                 params: {
                     senderName: username,
                     receiverName: selectedFriend.name,
@@ -412,7 +412,7 @@ const formatTime = (timestamp) => {
         if (!selectedFriend || !username) return; // 如果没有选中好友或用户未登录，直接返回
 
         try {
-            await axios.put('http://121.4.22.55:5201/api/messages/markAllAsRead', {
+            await axios.put('http://121.4.22.55:5202/api/messages/markAllAsRead', {
                 sender_name: selectedFriend.name, // 好友的用户名
                 receiver_name: username // 当前用户的用户名
             });
@@ -449,7 +449,7 @@ const formatTime = (timestamp) => {
 
         try {
             // 发送消息
-            await axios.post('http://121.4.22.55:5201/api/messages', {
+            await axios.post('http://121.4.22.55:5202/api/messages', {
                 message_text: messageText,
                 sender_name: senderName,
                 receiver_name: receiverName
@@ -514,7 +514,7 @@ const formatTime = (timestamp) => {
         if (!confirmDelete) return;
 
         try {
-            await axios.delete('http://121.4.22.55:5201/api/messages', {
+            await axios.delete('http://121.4.22.55:5202/api/messages', {
                 data: { messageIds: selectedMessages }
             });
 
@@ -591,7 +591,7 @@ const formatTime = (timestamp) => {
         if (messageIds.length === 0) return;
 
         try {
-            await axios.put('http://121.4.22.55:5201/api/messages/read', { messageIds });
+            await axios.put('http://121.4.22.55:5202/api/messages/read', { messageIds });
             setMessages((prevMessages) =>
                 prevMessages.map((msg) =>
                     messageIds.includes(msg.message_id) ? { ...msg, is_read: 1 } : msg

@@ -31,7 +31,7 @@ import Reporttimer from '../../../components/Animation/Reporttimer';
 dayjs.locale('zh-cn');
 
 // 创建Socket.IO连接
-const socket = io('http://121.4.22.55:5201');
+const socket = io('http://121.4.22.55:5202');
 
 
 // 在组件内部添加这个自定义Hook 用来显示菜单功能键
@@ -282,7 +282,7 @@ const WordReportGenerator = () => {
         // 获取估价师选项
         const fetchAppraiserOptions = async () => {
             try {
-                const response = await axios.get('http://121.4.22.55:5201/api/getWordReportOptions');
+                const response = await axios.get('http://121.4.22.55:5202/api/getWordReportOptions');
                 setReportgeneratorAppraiserOptions(response.data);
             } catch (error) {
                 console.error('获取估价师选项失败:', error);
@@ -294,7 +294,7 @@ const WordReportGenerator = () => {
         // 获取报告列表 api/searchWordReports
         const fetchReportList = async () => {
             try {
-                const response = await axios.get('http://121.4.22.55:5201/api/searchWordReports');
+                const response = await axios.get('http://121.4.22.55:5202/api/searchWordReports');
                 let data = response.data;
 
                 // 确保返回的是数组
@@ -568,7 +568,7 @@ const WordReportGenerator = () => {
         setIsLoading(true);
         try {
             const response = await axios.get(
-                `http://121.4.22.55:5201/api/searchWordReports?documentNo=${reportgeneratorSearchTerm}&page=${currentPage}&pageSize=${pageSize}`
+                `http://121.4.22.55:5202/api/searchWordReports?documentNo=${reportgeneratorSearchTerm}&page=${currentPage}&pageSize=${pageSize}`
             );
             setReportgeneratorReportList(response.data.reports); // 假设返回数据格式为 { reports: [], total: 100 }
             setTotalReports(response.data.total);
@@ -687,7 +687,7 @@ const WordReportGenerator = () => {
 
             // 检查是否存在相同报告编号的报告 
             const checkResponse = await axios.get(
-                `http://121.4.22.55:5201/api/checkReportByReportID?reportID=${encodeURIComponent(reportData.reportID)}`
+                `http://121.4.22.55:5202/api/checkReportByReportID?reportID=${encodeURIComponent(reportData.reportID)}`
             );
             const existingReport = checkResponse.data;
 
@@ -703,14 +703,14 @@ const WordReportGenerator = () => {
 
                 if (isConfirmed) {
                     await axios.put(
-                        `http://121.4.22.55:5201/api/updateWordReport/${existingReport.reportsID}`,
+                        `http://121.4.22.55:5202/api/updateWordReport/${existingReport.reportsID}`,
                         reportData
                     );
                     notify('报告更新成功！', 'success');
                 }
             } else {
                 // 不存在相同报告编号的报告，创建新报告
-                await axios.post('http://121.4.22.55:5201/api/createWordReport', reportData);
+                await axios.post('http://121.4.22.55:5202/api/createWordReport', reportData);
                 notify('报告创建成功！', 'success');
             }
         } catch (error) {
@@ -754,7 +754,7 @@ const WordReportGenerator = () => {
         if (isConfirmed) {
             setIsLoading(true);
             try {
-                await axios.delete(`http://121.4.22.55:5201/api/deleteWordReport/${currentReportId}`);
+                await axios.delete(`http://121.4.22.55:5202/api/deleteWordReport/${currentReportId}`);
                 notify('报告删除成功！', 'success');
 
                 // 安全更新本地状态
