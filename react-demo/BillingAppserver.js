@@ -7992,7 +7992,132 @@ app.get('/cyywork/api/searchHousePrice', async (req, res) => {
         });
     }
 });
+app.get('/api/searchHousePrice', async (req, res) => {
+    const {
+        searchTerm = '',
+        page = 1,
+        pageSize = 10,
+        sortField = 'reportDate',
+        sortOrder = 'DESC'
+    } = req.query;
 
+    const pageNum = parseInt(page);
+    const size = parseInt(pageSize);
+    const offset = (pageNum - 1) * size;
+
+    try {
+        // 构建搜索条件
+        let whereClause = '';
+        if (searchTerm) {
+            whereClause = `
+                WHERE documentNo LIKE '%${searchTerm}%'
+                OR entrustingParty LIKE '%${searchTerm}%'
+                OR location LIKE '%${searchTerm}%'
+                OR appraiserNameA LIKE '%${searchTerm}%'
+                OR appraiserNameB LIKE '%${searchTerm}%'
+                OR communityName LIKE '%${searchTerm}%'
+                OR housePurpose LIKE '%${searchTerm}%'
+                OR rightsHolder LIKE '%${searchTerm}%'
+                OR projectID LIKE '%${searchTerm}%'
+                OR reportID LIKE '%${searchTerm}%'
+                OR propertyCertificateNo LIKE '%${searchTerm}%'
+            `;
+        }
+
+        // 查询总数
+        const countResult = await pool.request()
+            .query(`
+                SELECT COUNT(*) as total 
+                FROM WebWordReports.dbo.WordReportsInformation 
+                ${whereClause}
+            `);
+
+        const total = countResult.recordset[0].total;
+
+        // 查询分页数据
+        const result = await pool.request()
+            .query(`
+                SELECT 
+                    reportsID,
+                    documentNo,
+                    entrustDate,
+                    entrustingParty,
+                    location,
+                    buildingArea,
+                    interiorArea,
+                    valueDate,
+                    reportDate,
+                    appraiserNameA,
+                    appraiserRegNoA,
+                    appraiserNameB,
+                    appraiserRegNoB,
+                    communityName,
+                    totalFloors,
+                    floorNumber,
+                    housePurpose,
+                    propertyUnitNo,
+                    rightsHolder,
+                    landPurpose,
+                    sharedLandArea,
+                    landUseRightEndDate,
+                    houseStructure,
+                    coOwnershipStatus,
+                    rightsNature,
+                    elevator,
+                    decorationStatus,
+                    ventilationStatus,
+                    spaceLayout,
+                    exteriorWallMaterial,
+                    yearBuilt,
+                    boundaries,
+                    valuationMethod,
+                    propertyCertificateNo,
+                    projectID,
+                    reportID,
+                    valuationPrice,
+                    assessmentCommissionDocument,
+                    hasFurnitureElectronics,
+                    furnitureElectronicsEstimatedPrice,
+                    valueDateRequirements,
+                    landShape,
+                    streetStatus,
+                    direction,
+                    orientation,
+                    distance,
+                    parkingStatus,
+                    mortgageStatus,
+                    mortgageBasis,
+                    seizureStatus,
+                    seizureBasis,
+                    utilizationStatus,
+                    isLeaseConsidered,
+                    rent
+                FROM WebWordReports.dbo.WordReportsInformation 
+                ${whereClause}
+                ORDER BY ${sortField} ${sortOrder}
+                OFFSET ${offset} ROWS
+                FETCH NEXT ${size} ROWS ONLY
+            `);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                records: result.recordset,
+                total: total,
+                page: pageNum,
+                pageSize: size,
+                totalPages: Math.ceil(total / size)
+            }
+        });
+    } catch (error) {
+        console.error('搜索房屋价格失败:', error);
+        res.status(500).json({
+            success: false,
+            message: '搜索房屋价格失败',
+            error: error.message
+        });
+    }
+});
 
 //上传房屋查询图片 👇
 const storageUploadHousePricePicture = multer.diskStorage({
@@ -8066,7 +8191,39 @@ app.get('/cyywork/api/GetHousePricePictures', async (req, res) => {
         });
     }
 });
+app.get('/api/GetHousePricePictures', async (req, res) => {
+    try {
+        const { reportsID } = req.query;
 
+        if (!reportsID) {
+            return res.status(400).json({ error: '报告ID必须提供' });
+        }
+
+        const pool = await sql.connect(config);
+        const request = new sql.Request(pool);
+
+        const query = `
+            SELECT pictureFileName 
+            FROM WebWordReports.dbo.HousePricePicture 
+            WHERE reportsID = @reportsID
+        `;
+
+        request.input('reportsID', sql.Int, parseInt(reportsID));
+        const result = await request.query(query);
+
+        res.json({
+            success: true,
+            images: result.recordset
+        });
+
+    } catch (error) {
+        console.error('获取房价图片错误:', error);
+        res.status(500).json({
+            error: '获取图片失败',
+            message: error.message
+        });
+    }
+});
 // 修改上传API，添加重复检查
 app.post('/cyywork/api/UploadHousePricePicture',
     uploadUploadHousePricePicture.array('images'),

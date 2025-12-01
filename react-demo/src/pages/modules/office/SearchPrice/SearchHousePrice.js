@@ -28,7 +28,7 @@ const SearchHousePrice = () => {
             setLoading(true);
             setError('');
 
-            const response = await axios.get('/cyywork/api/searchHousePrice', {
+            const response = await axios.get('/api/searchHousePrice', {
                 params: {
                     searchTerm: searchTerm,
                     page: page,
@@ -40,7 +40,7 @@ const SearchHousePrice = () => {
                 const recordsWithPhotos = await Promise.all(
                     response.data.data.records.map(async (record) => {
                         try {
-                            const photoResponse = await axios.get('/cyywork/api/GetHousePricePictures', {
+                            const photoResponse = await axios.get('/api/GetHousePricePictures', {
                                 params: { reportsID: record.reportsID }
                             });
                             return {
