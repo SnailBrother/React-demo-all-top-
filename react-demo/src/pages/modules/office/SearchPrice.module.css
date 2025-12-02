@@ -2,8 +2,8 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
- 
+  padding: 0px;
+
   height: calc(100dvh - 110px);
   box-sizing: border-box;
 }
@@ -12,7 +12,7 @@
 .tabContainer {
   width: 100%;
   overflow-x: auto;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   border-bottom: 1px solid #e0e0e0;
   box-sizing: border-box;
 }
@@ -55,13 +55,13 @@
   padding: 20px;
    
   border-radius: 0 0 8px 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
 /* 电脑屏幕样式 (1024px及以上) */
 @media (min-width: 1024px) {
   .container {
-    padding: 30px;
+    padding: 2px;
   }
   
   .tabButton {
@@ -70,7 +70,7 @@
   }
   
   .content {
-    padding: 30px;
+    padding: 2px;
     min-height: 400px;
   }
 }
@@ -78,12 +78,12 @@
 /* 手机屏幕样式 (1024px及以下) */
 @media (max-width: 1024px) {
   .container {
-    padding: 15px;
+    padding: 5px;
     height: calc(100dvh - 60px);
   }
   
   .tabContainer {
-    margin-bottom: 15px;
+    margin-bottom: 5px;
   }
   
   .tabButton {
@@ -93,7 +93,7 @@
   }
   
   .content {
-    padding: 15px;
+    padding: 5px;
     min-height: 300px;
   }
 }

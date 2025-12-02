@@ -8156,74 +8156,77 @@ const uploadUploadHousePricePicture = multer({
         fileSize: 300 * 1024 // 限制300KB，与前端一致
     }
 });
-
+{
+//写重了的代码
 // 获取已存在图片的API
-app.get('/api/GetHousePricePictures', async (req, res) => {
-    try {
-        const { reportsID } = req.query;
+// app.get('/api/GetHousePricePictures-old', async (req, res) => {
+//     try {
+//         const { reportsID } = req.query;
 
-        if (!reportsID) {
-            return res.status(400).json({ error: '报告ID必须提供' });
-        }
+//         if (!reportsID) {
+//             return res.status(400).json({ error: '报告ID必须提供' });
+//         }
 
-        const pool = await sql.connect(config);
-        const request = new sql.Request(pool);
+//         const pool = await sql.connect(config);
+//         const request = new sql.Request(pool);
 
-        const query = `
-            SELECT pictureFileName 
-            FROM WebWordReports.dbo.HousePricePicture 
-            WHERE reportsID = @reportsID
-        `;
+//         const query = `
+//             SELECT pictureFileName 
+//             FROM WebWordReports.dbo.HousePricePicture 
+//             WHERE reportsID = @reportsID
+//         `;
 
-        request.input('reportsID', sql.Int, parseInt(reportsID));
-        const result = await request.query(query);
+//         request.input('reportsID', sql.Int, parseInt(reportsID));
+//         const result = await request.query(query);
 
-        res.json({
-            success: true,
-            images: result.recordset
-        });
+//         res.json({
+//             success: true,
+//             images: result.recordset
+//         });
 
-    } catch (error) {
-        console.error('获取房价图片错误:', error);
-        res.status(500).json({
-            error: '获取图片失败',
-            message: error.message
-        });
-    }
-});
-app.get('/api/GetHousePricePictures', async (req, res) => {
-    try {
-        const { reportsID } = req.query;
+//     } catch (error) {
+//         console.error('获取房价图片错误:', error);
+//         res.status(500).json({
+//             error: '获取图片失败',
+//             message: error.message
+//         });
+//     }
+// });
+// app.get('/api/GetHousePricePictures-old', async (req, res) => {
+//     try {
+//         const { reportsID } = req.query;
 
-        if (!reportsID) {
-            return res.status(400).json({ error: '报告ID必须提供' });
-        }
+//         if (!reportsID) {
+//             return res.status(400).json({ error: 'ID必须提供' });
+//         }
 
-        const pool = await sql.connect(config);
-        const request = new sql.Request(pool);
+//         const pool = await sql.connect(config);
+//         const request = new sql.Request(pool);
 
-        const query = `
-            SELECT pictureFileName 
-            FROM WebWordReports.dbo.HousePricePicture 
-            WHERE reportsID = @reportsID
-        `;
+//         const query = `
+//             SELECT pictureFileName 
+//             FROM WebWordReports.dbo.HousePricePicture 
+//             WHERE reportsID = @reportsID
+//         `;
 
-        request.input('reportsID', sql.Int, parseInt(reportsID));
-        const result = await request.query(query);
+//         request.input('reportsID', sql.Int, parseInt(reportsID));
+//         const result = await request.query(query);
 
-        res.json({
-            success: true,
-            images: result.recordset
-        });
+//         res.json({
+//             success: true,
+//             images: result.recordset
+//         });
 
-    } catch (error) {
-        console.error('获取房价图片错误:', error);
-        res.status(500).json({
-            error: '获取图片失败',
-            message: error.message
-        });
-    }
-});
+//     } catch (error) {
+//         console.error('获取房价图片错误:', error);
+//         res.status(500).json({
+//             error: '获取图片失败',
+//             message: error.message
+//         });
+//     }
+// });
+
+}
 // 修改上传API，添加重复检查
 app.post('/cyywork/api/UploadHousePricePicture',
     uploadUploadHousePricePicture.array('images'),

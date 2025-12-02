@@ -2,12 +2,13 @@
   width: 100%;
   max-width: 1200px;  
   margin: 0 auto;
-  background-color: #1d1d1dc0;
+  background-color: var(--background-color);
   backdrop-filter: blur(5px); /* 磨砂效果 */
   -webkit-backdrop-filter: blur(10px); /* Safari 支持 */
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0px 0px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 .LookHousePricePicture-header {
@@ -52,6 +53,7 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  border-radius: 8px;
 }
 
 /* 图片计数器 */
