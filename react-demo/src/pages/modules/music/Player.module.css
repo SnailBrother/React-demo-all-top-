@@ -145,7 +145,9 @@
   left: 50%;
   transform: translateX(-50%);
   /* background: var(--background-color); */
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.233);
+  backdrop-filter: blur(10px); /* 磨砂效果 */
+  -webkit-backdrop-filter: blur(10px); /* Safari 支持 */
   border: 1px solid var(--border_color);
   border-radius: 8px;
   padding: 8px 0;
