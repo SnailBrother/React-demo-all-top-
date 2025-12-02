@@ -39,8 +39,8 @@ const OfficeTemplateManagement = lazy(() => import('../pages/modules/office/Temp
 const OfficeSpecialtips = lazy(() => import('../pages/modules/office/Specialtips'));
 const OfficeSiteLinks = lazy(() => import('../pages/modules/office/SiteLinks'));
 const OfficeWordReportGenerator = lazy(() => import('../pages/modules/office/WordReportGenerator'));
-
-
+const OfficePriceConsultationDialog = lazy(() => import('../pages/modules/office/PriceConsultationDialog'));
+const OfficeNeighborhoodFinder = lazy(() => import('../pages/modules/office/NeighborhoodFinder'));
 
 //------------------------------聊天------------------------------
 const ChatDressingGuidelines = lazy(() => import('../pages/modules/chat/DressingGuidelines'));
@@ -114,11 +114,14 @@ export const moduleConfig = {
     routes: [
         { key: 'SearchPrice', label: '价格查询', icon: '#icon-chakantupian4', component: OfficeSearchPrice, showInNavigation: true, showInTabs: false },
       { key: 'PublicNews', label: '消息通知', icon: '#icon-tongzhi4', component: OfficePublicNews, showInNavigation: true, showInTabs: false },
+      { key: 'PriceConsultationDialog', label: '价格咨询', icon: '#icon-dingwei-xiaoquzuola', component: OfficePriceConsultationDialog, showInNavigation: true, showInTabs: false  },
+      { key: 'NeighborhoodFinder', label: '小区查询', icon: '#icon-stock', component: OfficeNeighborhoodFinder, showInNavigation: true, showInTabs: false  },
       // { key: 'MessageDetail/:messageId', label: '消息详情', icon: '#icon-yinliang2',  component: OfficeMessageDetail, showInNavigation: false, showInTabs: false },
       // { key: 'MessageDetail', label: '消息通知', icon: '#icon-yinliang2', component: OfficeMessageDetail,  showInNavigation: false, showInTabs: false },
     
       { key: 'LookHousePricePicture', label: '查看图片', icon: '#icon-chakantupian4', component: OfficeLookHousePricePicture, showInNavigation: false, showInTabs: false  },
       { key: 'UploadHousePricePicture', label: '上传图片', icon: '#icon-chakantupian4', component: OfficeUploadHousePricePicture, showInNavigation: false, showInTabs: false  },
+      
 
       { key: 'TemplateManagement', label: '模板下载', icon: '#icon-a-bianzu10', component: OfficeTemplateManagement, showInNavigation: true, showInTabs: false },
       { key: 'Specialtips', label: '特别提示', icon: '#icon-tishi', component: OfficeSpecialtips, showInNavigation: true, showInTabs: false },

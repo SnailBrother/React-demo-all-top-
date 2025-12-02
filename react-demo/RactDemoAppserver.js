@@ -11059,6 +11059,358 @@ app.get('/api/react-demo/background-image/:email/:themeId', (req, res) => {
 //reactdemo 主题管理 👆
 
 
+{
+//价格查询-网页询价 👇 NeighborhoodFinder
+ 
+// API: 根据小区名查询评估报告
+app.get('/api/SearchNeighborhoodsByArea', async (req, res) => {
+    try {
+        const { searchText, location, page = 1, pageSize = 20 } = req.query;
+        
+        if (!searchText && !location) {
+            return res.status(400).json({ 
+                success: false, 
+                message: '请提供搜索关键词或位置' 
+            });
+        }
+
+        const pool = await sql.connect(config);
+        
+        let query = `
+            SELECT TOP ${pageSize}
+                reportsID,
+                documentNo,
+                location,
+                communityName,
+                yearBuilt,
+                valuationPrice,
+                buildingArea,
+                interiorArea,
+                totalFloors,
+                floorNumber,
+                housePurpose,
+                valuationMethod,
+                elevator,
+                reportDate,
+                valueDate,
+                entrustingParty,
+                rightsHolder
+            FROM WebWordReports.dbo.WordReportsInformation
+            WHERE 1=1
+        `;
+
+        const params = [];
+        
+        if (searchText) {
+            // 搜索小区名或位置
+            query += ` AND (
+                communityName LIKE @searchText OR 
+                location LIKE @searchText OR
+                entrustingParty LIKE @searchText OR
+                rightsHolder LIKE @searchText
+            )`;
+            params.push({ name: 'searchText', value: `%${searchText}%` });
+        }
+        
+        if (location) {
+            query += ` AND location LIKE @location`;
+            params.push({ name: 'location', value: `%${location}%` });
+        }
+        
+        query += ` ORDER BY reportDate DESC`;
+        
+        const request = pool.request();
+        params.forEach(param => {
+            request.input(param.name, sql.NVarChar, param.value);
+        });
+        
+        const result = await request.query(query);
+        
+        res.json({
+            success: true,
+            data: result.recordset,
+            total: result.recordset.length,
+            message: `找到 ${result.recordset.length} 条记录`
+        });
+        
+    } catch (error) {
+        console.error('查询小区数据失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '查询失败',
+            error: error.message 
+        });
+    }
+});
+
+// API: 批量查询多个小区
+app.post('/api/BatchSearchNeighborhoods', async (req, res) => {
+    try {
+        const { neighborhoods, location } = req.body;
+        
+        if (!neighborhoods || !Array.isArray(neighborhoods) || neighborhoods.length === 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: '请提供小区列表' 
+            });
+        }
+
+        const pool = await sql.connect(config);
+        
+        // 创建临时表来存储要查询的小区名
+        let query = `
+            DECLARE @Neighborhoods TABLE (name NVARCHAR(100));
+            INSERT INTO @Neighborhoods (name) VALUES `;
+        
+        neighborhoods.forEach((name, index) => {
+            query += `(@name${index})`;
+            if (index < neighborhoods.length - 1) query += ', ';
+        });
+        
+        query += `;
+        
+            SELECT 
+                reportsID,
+                documentNo,
+                location,
+                communityName,
+                yearBuilt,
+                valuationPrice,
+                buildingArea,
+                interiorArea,
+                totalFloors,
+                floorNumber,
+                housePurpose,
+                valuationMethod,
+                elevator,
+                reportDate,
+                valueDate,
+                entrustingParty,
+                rightsHolder,
+                propertyCertificateNo,
+                projectID,
+                reportID,
+                decorationStatus,
+                houseStructure,
+                landPurpose,
+                landUseRightEndDate,
+                boundaries,
+                streetStatus,
+                direction,
+                orientation,
+                distance
+            FROM WebWordReports.dbo.WordReportsInformation r
+            WHERE EXISTS (
+                SELECT 1 FROM @Neighborhoods n 
+                WHERE (
+                    r.communityName LIKE '%' + n.name + '%' OR
+                    n.name LIKE '%' + r.communityName + '%' OR
+                    r.location LIKE '%' + n.name + '%'
+                )
+            )`;
+        
+        if (location) {
+            query += ` AND location LIKE @location`;
+        }
+        
+        query += ` ORDER BY reportDate DESC`;
+        
+        const request = pool.request();
+        
+        // 添加小区名参数
+        neighborhoods.forEach((name, index) => {
+            request.input(`name${index}`, sql.NVarChar, name);
+        });
+        
+        if (location) {
+            request.input('location', sql.NVarChar, `%${location}%`);
+        }
+        
+        const result = await request.query(query);
+        
+        res.json({
+            success: true,
+            data: result.recordset,
+            total: result.recordset.length,
+            message: `批量查询找到 ${result.recordset.length} 条记录`
+        });
+        
+    } catch (error) {
+        console.error('批量查询小区数据失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '批量查询失败',
+            error: error.message 
+        });
+    }
+});
+
+// API: 获取小区统计信息
+app.get('/api/NeighborhoodStatistics/:communityName', async (req, res) => {
+    try {
+        const { communityName } = req.params;
+        
+        if (!communityName) {
+            return res.status(400).json({ 
+                success: false, 
+                message: '请提供小区名称' 
+            });
+        }
+
+        const pool = await sql.connect(config);
+        
+        const query = `
+            SELECT 
+                communityName,
+                COUNT(*) as reportCount,
+                AVG(valuationPrice) as avgPrice,
+                MIN(valuationPrice) as minPrice,
+                MAX(valuationPrice) as maxPrice,
+                MIN(yearBuilt) as oldestYear,
+                MAX(yearBuilt) as newestYear,
+                AVG(buildingArea) as avgArea,
+                AVG(interiorArea) as avgInteriorArea
+            FROM WebWordReports.dbo.WordReportsInformation
+            WHERE communityName LIKE @communityName
+            GROUP BY communityName
+            ORDER BY reportCount DESC
+        `;
+        
+        const result = await pool.request()
+            .input('communityName', sql.NVarChar, `%${communityName}%`)
+            .query(query);
+        
+        res.json({
+            success: true,
+            data: result.recordset,
+            message: `获取到 ${result.recordset.length} 个小区的统计信息`
+        });
+        
+    } catch (error) {
+        console.error('获取小区统计信息失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '获取统计信息失败',
+            error: error.message 
+        });
+    }
+});
+
+// API: 查询某个地点的周边小区价格（增强版）
+app.get('/api/QueryNearbyPricesEnhanced', async (req, res) => {
+    try {
+        const { location, searchText, radius = 2000, limit = 20 } = req.query;
+        
+        if (!location && !searchText) {
+            return res.status(400).json({ 
+                success: false, 
+                message: '请提供位置或搜索关键词' 
+            });
+        }
+
+        const pool = await sql.connect(config);
+        
+        let query = `
+            SELECT TOP ${limit}
+                reportsID,
+                documentNo,
+                location,
+                communityName,
+                yearBuilt,
+                valuationPrice,
+                buildingArea,
+                interiorArea,
+                totalFloors,
+                floorNumber,
+                housePurpose,
+                valuationMethod,
+                elevator,
+                reportDate,
+                valueDate,
+                entrustingParty,
+                rightsHolder,
+                decorationStatus,
+                houseStructure,
+                landPurpose,
+                boundaries,
+                streetStatus,
+                direction,
+                orientation,
+                distance,
+                -- 计算每平方米价格
+                CAST(valuationPrice AS FLOAT) / NULLIF(buildingArea, 0) as pricePerSqm
+            FROM WebWordReports.dbo.WordReportsInformation
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (location) {
+            query += ` AND location LIKE @location`;
+            params.push({ name: 'location', value: `%${location}%` });
+        }
+        
+        if (searchText) {
+            query += ` AND (
+                communityName LIKE @searchText OR 
+                location LIKE @searchText OR
+                documentNo LIKE @searchText
+            )`;
+            params.push({ name: 'searchText', value: `%${searchText}%` });
+        }
+        
+        query += ` ORDER BY reportDate DESC`;
+        
+        const request = pool.request();
+        params.forEach(param => {
+            request.input(param.name, sql.NVarChar, param.value);
+        });
+        
+        const result = await request.query(query);
+        
+        // 处理结果，添加格式化字段
+        const processedData = result.recordset.map(item => ({
+            ...item,
+            formattedPrice: item.valuationPrice ? 
+                `¥${(item.valuationPrice / 10000).toLocaleString('zh-CN')}万` : '未知',
+            formattedPricePerSqm: item.pricePerSqm ? 
+                `¥${Math.round(item.pricePerSqm).toLocaleString('zh-CN')}/㎡` : '未知',
+            formattedArea: item.buildingArea ? 
+                `${item.buildingArea}㎡` : '未知',
+            formattedDate: item.reportDate ? 
+                new Date(item.reportDate).toLocaleDateString('zh-CN') : '未知',
+            hasElevator: item.elevator ? '有' : '无'
+        }));
+        
+        res.json({
+            success: true,
+            data: processedData,
+            total: processedData.length,
+            statistics: {
+                avgPrice: processedData.length > 0 ? 
+                    processedData.reduce((sum, item) => sum + (item.valuationPrice || 0), 0) / processedData.length : 0,
+                minYear: processedData.length > 0 ? 
+                    Math.min(...processedData.filter(item => item.yearBuilt).map(item => item.yearBuilt)) : null,
+                maxYear: processedData.length > 0 ? 
+                    Math.max(...processedData.filter(item => item.yearBuilt).map(item => item.yearBuilt)) : null,
+                totalReports: processedData.length
+            },
+            message: `找到 ${processedData.length} 条记录`
+        });
+        
+    } catch (error) {
+        console.error('查询周边价格失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '查询失败',
+            error: error.message 
+        });
+    }
+});
+//价格查询-网页询价  👆
+}
+
+
 // 启动服务器
 // app.listen(port, () => {
 //     console.log(`Server is running on http://localhost:${port}`);
