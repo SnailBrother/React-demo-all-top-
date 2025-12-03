@@ -4,9 +4,9 @@ import axios from 'axios';
 import styles from './NeighborhoodFinder.module.css';
 import { useAuth } from '../../../context/AuthContext';
 
-const API_CONFIG_URL = '/api/getApiDatabas';
+//const API_CONFIG_URL = '/api/getApiDatabas';
 const SEARCH_NEIGHBORHOODS_API = '/api/SearchNeighborhoodsByArea';
-const BATCH_SEARCH_API = '/api/BatchSearchNeighborhoods';
+//const BATCH_SEARCH_API = '/api/BatchSearchNeighborhoods';
 const NEIGHBORHOOD_STATS_API = '/api/NeighborhoodStatistics';
 const QUERY_DELAY = 500;
 const SEARCH_RADIUS = 2000;
@@ -33,7 +33,7 @@ const NeighborhoodFinder = () => {
   useEffect(() => {
     const fetchBaiduMapAK = async () => {
       try {
-        const response = await axios.get(API_CONFIG_URL);
+        const response = await axios.get('http://121.4.22.55:5202/api/getApiDatabas');
         const activeApi = response.data.find(item =>
           item.apiUsername === username && item.remark === '正在使用'
         );
@@ -111,7 +111,7 @@ const NeighborhoodFinder = () => {
     try {
       setCurrentProgress('正在查询指定地点数据...');
 
-      const response = await axios.post(BATCH_SEARCH_API, {
+      const response = await axios.post('http://121.4.22.55:5202/api/BatchSearchNeighborhoods', {
         neighborhoods: [], // 传空数组表示只按location查询
         location: locationName
       });
@@ -131,7 +131,7 @@ const NeighborhoodFinder = () => {
     try {
       setCurrentProgress('正在查询数据...');
 
-      const response = await axios.post(BATCH_SEARCH_API, {
+      const response = await axios.post('http://121.4.22.55:5202/api/BatchSearchNeighborhoods', {
         neighborhoods: neighborhoodNames,
         location: locationName
       });
