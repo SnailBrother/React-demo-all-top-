@@ -4,10 +4,10 @@ import axios from 'axios';
 import styles from './NeighborhoodFinder.module.css';
 import { useAuth } from '../../../context/AuthContext';
 
-const API_CONFIG_URL = 'http://121.4.22.55:5202/api/getApiDatabas';
-const SEARCH_NEIGHBORHOODS_API = 'http://121.4.22.55:5202/api/SearchNeighborhoodsByArea';
-const BATCH_SEARCH_API = 'http://121.4.22.55:5202/api/BatchSearchNeighborhoods';
-const NEIGHBORHOOD_STATS_API = 'http://121.4.22.55:5202/api/NeighborhoodStatistics';
+const API_CONFIG_URL = '/api/getApiDatabas';
+const SEARCH_NEIGHBORHOODS_API = '/api/SearchNeighborhoodsByArea';
+const BATCH_SEARCH_API = '/api/BatchSearchNeighborhoods';
+const NEIGHBORHOOD_STATS_API = '/api/NeighborhoodStatistics';
 const QUERY_DELAY = 500;
 const SEARCH_RADIUS = 2000;
 
@@ -22,7 +22,7 @@ const NeighborhoodFinder = () => {
   const [currentProgress, setCurrentProgress] = useState('');
   const [searchStats, setSearchStats] = useState(null); // 搜索结果统计
   const [expandedReports, setExpandedReports] = useState({}); // 展开的报告ID
-  
+
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
@@ -110,7 +110,7 @@ const NeighborhoodFinder = () => {
   const batchSearchNeighborhoods = async (neighborhoodNames) => {
     try {
       setCurrentProgress('正在查询评估数据...');
-      
+
       const response = await axios.post(BATCH_SEARCH_API, {
         neighborhoods: neighborhoodNames
       });
@@ -146,10 +146,10 @@ const NeighborhoodFinder = () => {
 
     try {
       const geocoder = new window.BMap.Geocoder();
-      
+
       // 添加重庆市限定
       const searchLocation = searchInput.includes('重庆') ? searchInput : `${searchInput}, 重庆`;
-      
+
       const point = await new Promise((resolve, reject) => {
         geocoder.getPoint(searchLocation, (point) => {
           if (!point) {
@@ -162,7 +162,7 @@ const NeighborhoodFinder = () => {
 
       // 更新位置
       setLocation(searchInput);
-      
+
       // 定位到搜索地点
       mapInstanceRef.current.centerAndZoom(point, 16);
       mapInstanceRef.current.panTo(point);
@@ -175,7 +175,7 @@ const NeighborhoodFinder = () => {
       // 第一步：搜索周边小区
       setCurrentProgress('正在搜索周边小区...');
       const foundNeighborhoods = await searchNearbyNeighborhoods(point);
-      
+
       if (foundNeighborhoods.length === 0) {
         setLoading(false);
         setCurrentProgress('未找到周边小区');
@@ -185,15 +185,15 @@ const NeighborhoodFinder = () => {
       // 第二步：从数据库中查询这些小区的评估数据
       const neighborhoodNames = foundNeighborhoods.map(n => n.name);
       const apiReports = await batchSearchNeighborhoods(neighborhoodNames);
-      
+
       // 统计信息
       const neighborhoodsWithData = [];
       const neighborhoodsWithoutData = [];
-      
+
       // 第三步：匹配数据并分类
       foundNeighborhoods.forEach((neighborhood) => {
         // 在API结果中查找匹配的报告
-        const matchedReports = apiReports.filter(report => 
+        const matchedReports = apiReports.filter(report =>
           report.communityName && neighborhood.name && (
             report.communityName.includes(neighborhood.name) ||
             neighborhood.name.includes(report.communityName) ||
@@ -207,7 +207,7 @@ const NeighborhoodFinder = () => {
             ...neighborhood,
             id: neighborhoodsWithData.length + 1,
             hasReportData: true,
-            reports: matchedReports.sort((a, b) => 
+            reports: matchedReports.sort((a, b) =>
               new Date(b.reportDate || b.valueDate) - new Date(a.reportDate || a.valueDate)
             ),
             // 使用最新报告的数据
@@ -215,7 +215,7 @@ const NeighborhoodFinder = () => {
             // 统计信息
             reportCount: matchedReports.length,
             // 价格信息（如果有）
-            actualPrice: matchedReports[0].valuationPrice ? 
+            actualPrice: matchedReports[0].valuationPrice ?
               (matchedReports[0].valuationPrice / 10000).toFixed(1) : '无',
             actualYearBuilt: matchedReports[0].yearBuilt || '无'
           });
@@ -236,21 +236,21 @@ const NeighborhoodFinder = () => {
       // 组合结果：有数据的在前，无数据的在后
       const allNeighborhoods = [...neighborhoodsWithData, ...neighborhoodsWithoutData];
       setNeighborhoods(allNeighborhoods);
-      
+
       // 计算统计信息
       const stats = {
         total: allNeighborhoods.length,
         withData: neighborhoodsWithData.length,
         withoutData: neighborhoodsWithoutData.length,
         // 如果有数据，计算平均价格
-        avgPrice: neighborhoodsWithData.length > 0 ? 
+        avgPrice: neighborhoodsWithData.length > 0 ?
           (neighborhoodsWithData.reduce((sum, item) => {
             const price = item.latestReport?.valuationPrice;
             return sum + (price ? parseFloat(price) : 0);
           }, 0) / neighborhoodsWithData.length).toFixed(0) : 0,
         // 最近报告日期
-        latestReportDate: neighborhoodsWithData.length > 0 ? 
-          neighborhoodsWithData[0].latestReport?.reportDate || 
+        latestReportDate: neighborhoodsWithData.length > 0 ?
+          neighborhoodsWithData[0].latestReport?.reportDate ||
           neighborhoodsWithData[0].latestReport?.valueDate : null
       };
       setSearchStats(stats);
@@ -281,11 +281,11 @@ const NeighborhoodFinder = () => {
 
             for (let i = 0; i < results.getCurrentNumPois(); i++) {
               const poi = results.getPoi(i);
-              
+
               // 只处理小区类型的POI
-              if (!poi.title.includes('小区') && !poi.title.includes('花园') && 
-                  !poi.title.includes('苑') && !poi.title.includes('城') &&
-                  !poi.title.includes('大厦') && !poi.title.includes('广场')) {
+              if (!poi.title.includes('小区') && !poi.title.includes('花园') &&
+                !poi.title.includes('苑') && !poi.title.includes('城') &&
+                !poi.title.includes('大厦') && !poi.title.includes('广场')) {
                 continue;
               }
 
@@ -313,7 +313,7 @@ const NeighborhoodFinder = () => {
 
             // 按距离排序
             neighborhoods.sort((a, b) => a.exactDistance - b.exactDistance);
-            
+
             // 限制数量
             resolve(neighborhoods.slice(0, 20));
           } else {
@@ -340,7 +340,7 @@ const NeighborhoodFinder = () => {
     // 根据是否有报告数据选择不同的图标颜色
     const iconColor = neighborhood.hasReportData ? 'red' : 'blue';
     const iconUrl = `https://map.baidu.com/images/marker_${iconColor}.png`;
-    
+
     const icon = new window.BMap.Icon(
       iconUrl,
       new window.BMap.Size(32, 32),
@@ -365,9 +365,9 @@ const NeighborhoodFinder = () => {
     const content = `
       <div class="${styles.mapInfoWindow}">
         <h4 style="margin: 0 0 8px 0; color: #1890ff;">${neighborhood.name}</h4>
-        ${neighborhood.hasReportData ? 
-          `<span style="background: #52c41a; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px;">有数据</span>` : 
-          `<span style="background: #f5f5f5; color: #666; padding: 2px 6px; border-radius: 3px; font-size: 11px;">无数据</span>`}
+        ${neighborhood.hasReportData ?
+        `<span style="background: #52c41a; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px;">有数据</span>` :
+        `<span style="background: #f5f5f5; color: #666; padding: 2px 6px; border-radius: 3px; font-size: 11px;">无数据</span>`}
         <p style="margin: 4px 0; font-size: 12px;"><strong>距离：</strong>${neighborhood.distance}</p>
         <p style="margin: 4px 0; font-size: 12px;"><strong>地址：</strong>${neighborhood.address}</p>
         ${reportInfo}
@@ -383,9 +383,9 @@ const NeighborhoodFinder = () => {
     marker.addEventListener('click', () => {
       marker.openInfoWindow(infoWindow);
       mapInstanceRef.current.panTo(point);
-      
+
       // 在列表中高亮显示
-      setNeighborhoods(prev => 
+      setNeighborhoods(prev =>
         prev.map(item => ({
           ...item,
           active: item.id === neighborhood.id
@@ -436,7 +436,7 @@ const NeighborhoodFinder = () => {
     setErrorMsg('');
     setExpandedReports({});
     clearMarkers();
-    
+
     if (mapInstanceRef.current) {
       const point = new window.BMap.Point(106.551556, 29.563009);
       mapInstanceRef.current.centerAndZoom(point, 12);
@@ -511,9 +511,9 @@ const NeighborhoodFinder = () => {
           <div className={styles.searchCard}>
             <div className={styles.searchHeader}>
               <h3>价格查询</h3>
-               
+
             </div>
-            
+
             <div className={styles.searchInputGroup}>
               <input
                 type="text"
@@ -523,7 +523,7 @@ const NeighborhoodFinder = () => {
                 placeholder="请输入重庆市地点名称"
                 className={styles.searchInput}
               />
-              <button 
+              <button
                 onClick={searchNeighborhoods}
                 className={styles.searchButton}
                 disabled={loading || !mapReady}
@@ -610,7 +610,7 @@ const NeighborhoodFinder = () => {
                   {searchStats ? `${searchStats.total} 个小区` : '搜索结果'}
                 </span>
                 {neighborhoods.length > 0 && (
-                  <button 
+                  <button
                     onClick={exportData}
                     className={styles.exportButton}
                   >
@@ -623,8 +623,8 @@ const NeighborhoodFinder = () => {
             {neighborhoods.length > 0 ? (
               <div className={styles.neighborhoodsList}>
                 {neighborhoods.map(neighborhood => (
-                  <div 
-                    key={neighborhood.id} 
+                  <div
+                    key={neighborhood.id}
                     className={`${styles.neighborhoodCard} ${neighborhood.active ? styles.active : ''} ${neighborhood.hasReportData ? styles.hasReport : styles.noReport}`}
                     onClick={() => {
                       if (mapInstanceRef.current) {
@@ -650,19 +650,20 @@ const NeighborhoodFinder = () => {
                         {neighborhood.distance}
                       </span>
                     </div>
-                    
+
                     <div className={styles.cardContent}>
                       <div className={styles.infoRow}>
                         <span className={styles.infoLabel}>地址：</span>
                         <span className={styles.infoValue}>{neighborhood.address}</span>
                       </div>
-                      
+
                       <div className={styles.infoGrid}>
                         <div className={styles.infoItem}>
                           <span className={styles.infoLabel}>参考均价：</span>
                           <span className={`${styles.infoValue} ${styles.price}`}>
-                            {neighborhood.actualPrice}
+                            {neighborhood.actualPrice ? neighborhood.actualPrice + '万元/平方米' : ''}
                           </span>
+
                         </div>
                         <div className={styles.infoItem}>
                           <span className={styles.infoLabel}>建成时间：</span>
@@ -675,28 +676,28 @@ const NeighborhoodFinder = () => {
                         <div className={styles.reportsSection}>
                           <div className={styles.reportsHeader}>
                             <span className={styles.reportsTitle}>数据 ({neighborhood.reportCount}条)</span>
-                            <button 
+                            <button
                               className={styles.toggleAllButton}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const areAllExpanded = neighborhood.reports.every((_, index) => 
+                                const areAllExpanded = neighborhood.reports.every((_, index) =>
                                   expandedReports[`${neighborhood.id}-${index}`]
                                 );
                                 toggleAllReports(neighborhood.id, !areAllExpanded);
                               }}
                             >
-                              {neighborhood.reports.every((_, index) => 
+                              {neighborhood.reports.every((_, index) =>
                                 expandedReports[`${neighborhood.id}-${index}`]
                               ) ? '折叠所有' : '展开所有'}
                             </button>
                           </div>
-                          
+
                           <div className={styles.reportsList}>
                             {neighborhood.reports.map((report, index) => {
                               const isExpanded = expandedReports[`${neighborhood.id}-${index}`];
                               return (
                                 <div key={index} className={styles.reportItem}>
-                                  <div 
+                                  <div
                                     className={styles.reportSummary}
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -708,9 +709,7 @@ const NeighborhoodFinder = () => {
                                         {/* {report.documentNo || `报告${index + 1}`} */}
                                         {report.location || '无'}
                                       </span>
-                                      <span className={styles.reportDate}>
-                                        {formatDate(report.reportDate || report.valueDate)}
-                                      </span>
+
                                       <span className={styles.expandIcon}>
                                         {isExpanded ? '▼' : '▶'}
                                       </span>
@@ -724,7 +723,7 @@ const NeighborhoodFinder = () => {
                                       </span>
                                     </div>
                                   </div>
-                                  
+
                                   {isExpanded && (
                                     <div className={styles.reportDetails}>
                                       <div className={styles.detailGrid}>
@@ -736,49 +735,87 @@ const NeighborhoodFinder = () => {
                                           <span className={styles.detailLabel}>委托方:</span>
                                           <span className={styles.detailValue}>{report.entrustingParty || '无'}</span>
                                         </div> */}
-                                        <div className={styles.detailItem}>
+                                        {/* <div className={styles.detailItem}>
                                           <span className={styles.detailLabel}>房产坐落:</span>
                                           <span className={styles.detailValue}>{report.location || '无'}</span>
-                                        </div>
+                                        </div> */}
+
+
                                         <div className={styles.detailItem}>
-                                          <span className={styles.detailLabel}>评估单价:</span>
-                                          <span className={styles.detailValue}>
-                                            {report.valuationPrice ? `${(report.valuationPrice / 10000).toFixed(1)}万/㎡` : '无'}
-                                          </span>
+                                          <div className={styles.detailItemrow}>
+                                            <span className={styles.detailLabel}>评估单价:</span>
+                                            <span className={styles.detailValue}>
+                                              {report.valuationPrice ? `${(report.valuationPrice / 10000).toFixed(1)}万/㎡` : '无'}
+                                            </span>
+
+                                          </div>
+                                          <div className={styles.detailItemrow}>
+
+                                            <span className={styles.detailLabel}>时间:</span>
+                                            <span className={styles.detailValue}>
+                                              {formatDate(report.reportDate || report.valueDate)}
+                                            </span>
+
+                                          </div>
                                         </div>
+
+
                                         <div className={styles.detailItem}>
-                                          <span className={styles.detailLabel}>建筑面积:</span>
-                                          <span className={styles.detailValue}>{report.buildingArea ? `${report.buildingArea}㎡` : '无'}</span>
+                                          <div className={styles.detailItemrow}>
+                                            <span className={styles.detailLabel}>建筑面积:</span>
+                                            <span className={styles.detailValue}>{report.buildingArea ? `${report.buildingArea}㎡` : '无'}</span>
+
+
+                                          </div>
+                                          <div className={styles.detailItemrow}>
+
+                                            <span className={styles.detailLabel}>套内面积:</span>
+                                            <span className={styles.detailValue}>{report.interiorArea ? `${report.interiorArea}㎡` : '无'}</span>
+
+                                          </div>
                                         </div>
+
+
                                         <div className={styles.detailItem}>
-                                          <span className={styles.detailLabel}>套内面积:</span>
-                                          <span className={styles.detailValue}>{report.interiorArea ? `${report.interiorArea}㎡` : '无'}</span>
+                                          <div className={styles.detailItemrow}>
+                                            <span className={styles.detailLabel}>总层数:</span>
+                                            <span className={styles.detailValue}>{report.totalFloors || '无'}</span>
+
+                                          </div>
+                                          <div className={styles.detailItemrow}>
+
+                                            <span className={styles.detailLabel}>所在楼层:</span>
+                                            <span className={styles.detailValue}>{report.floorNumber || '无'}</span>
+
+                                          </div>
                                         </div>
+
                                         <div className={styles.detailItem}>
-                                          <span className={styles.detailLabel}>总层数:</span>
-                                          <span className={styles.detailValue}>{report.totalFloors || '无'}</span>
+                                          <div className={styles.detailItemrow}>
+                                            <span className={styles.detailLabel}>房屋用途:</span>
+                                            <span className={styles.detailValue}>{report.housePurpose || '无'}</span>
+
+                                          </div>
+                                          <div className={styles.detailItemrow}>
+
+                                            <span className={styles.detailLabel}>建筑结构:</span>
+                                            <span className={styles.detailValue}>{report.houseStructure || '无'}</span>
+
+                                          </div>
                                         </div>
-                                        <div className={styles.detailItem}>
-                                          <span className={styles.detailLabel}>所在楼层:</span>
-                                          <span className={styles.detailValue}>{report.floorNumber || '无'}</span>
-                                        </div>
-                                        <div className={styles.detailItem}>
-                                          <span className={styles.detailLabel}>房屋用途:</span>
-                                          <span className={styles.detailValue}>{report.housePurpose || '无'}</span>
-                                        </div>
+
+
+
                                         {/* <div className={styles.detailItem}>
                                           <span className={styles.detailLabel}>估价方法:</span>
                                           <span className={styles.detailValue}>{report.valuationMethod || '无'}</span>
                                         </div> */}
-                                         <div className={styles.detailItem}>
-                                          <span className={styles.detailLabel}>建筑结构:</span>
-                                          <span className={styles.detailValue}>{report.houseStructure || '无'}</span>
-                                        </div>
+
                                         <div className={styles.detailItem}>
                                           <span className={styles.detailLabel}>装修状况:</span>
                                           <span className={styles.detailValue}>{report.decorationStatus || '无'}</span>
                                         </div>
-                                       
+
                                       </div>
                                     </div>
                                   )}

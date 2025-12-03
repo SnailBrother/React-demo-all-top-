@@ -7823,7 +7823,7 @@ app.put('/api/updateWordReport/:id', async (req, res) => {
 });
 
 //查找二维码信息报告  👇
-app.get('/cyywork/api/searchWordReportsReportQrCode/:reportsID', async (req, res) => {
+app.get('/api/searchWordReportsReportQrCode/:reportsID', async (req, res) => {
     const { reportsID } = req.params;
 
     if (!reportsID) {
@@ -8228,7 +8228,7 @@ const uploadUploadHousePricePicture = multer({
 
 }
 // 修改上传API，添加重复检查
-app.post('/cyywork/api/UploadHousePricePicture',
+app.post('/api/UploadHousePricePicture',
     uploadUploadHousePricePicture.array('images'),
     async (req, res) => {
         try {

@@ -267,23 +267,27 @@ const SearchHousePrice = () => {
                         </div>
                     </div>
 
-                    {/* 中间：主要信息 */}
+                    {/* 中间：主要信息 建筑面积*/}
                     <div className={styles.middleColumn}>
                         {/* 坐落 */}
                         <div className={styles.locationSection}>
                             <span className={styles.locationValue}>{record.location || '-'}</span>
                         </div>
 
+
                         <div className={styles.row}>
                             <div className={styles.infoItem}>
                                 <span className={styles.communityValue}>{record.communityName || '-'}</span>
+                            </div>
+                            <div className={styles.infoItem}>
+                                <span className={styles.communityValue}>{record.housePurpose || '-'}</span>
                             </div>
                             <div className={styles.infoItem}>
                                 <span className={styles.infoValue}>{formatArea(record.buildingArea)}</span>
                             </div>
                         </div>
 
-                        {/* 第二行：建筑面积和日期 */}
+                        {/* 第三行：日期 */}
                         <div className={styles.row}>
                             <div className={styles.infoItem}>
                                 <span className={styles.infoValue}>{formatDate(record.reportDate)}</span>

@@ -53,7 +53,7 @@ const UploadHousePricePicture = () => {
 
   const fetchExistingImages = async () => {
     try {
-      const response = await axios.get(`/cyywork/api/GetHousePricePictures?reportsID=${reportsID}`);
+      const response = await axios.get(`/api/GetHousePricePictures?reportsID=${reportsID}`);
       if (response.data.success) {
         setExistingImages(response.data.images || []);
       }
@@ -250,7 +250,7 @@ const UploadHousePricePicture = () => {
     }
 
     try {
-      const response = await axios.post("/cyywork/api/UploadHousePricePicture", formData, {
+      const response = await axios.post("/api/UploadHousePricePicture", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
