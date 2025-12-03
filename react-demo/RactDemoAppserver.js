@@ -8378,7 +8378,52 @@ app.get('/api/GetHousePricePictures', async (req, res) => {
         });
     }
 });
+// 在Express后端添加这个API
+app.get('/api/GetHousePricePicturesWordReportInfo', async (req, res) => {
+    try {
+        const { reportsID } = req.query;
 
+        if (!reportsID) {
+            return res.status(400).json({
+                success: false,
+                error: '报告ID必须提供'
+            });
+        }
+
+        const pool = await sql.connect(config);
+        const request = new sql.Request(pool);
+
+        // 查询报告详细信息
+        const query = `
+            SELECT *
+            FROM WebWordReports.dbo.WordReportsInformation 
+            WHERE reportsID = @reportsID
+        `;
+
+        request.input('reportsID', sql.Int, parseInt(reportsID));
+        const result = await request.query(query);
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: '未找到对应的报告信息'
+            });
+        }
+
+        res.json({
+            success: true,
+            reportInfo: result.recordset[0]
+        });
+
+    } catch (error) {
+        console.error('获取报告信息错误:', error);
+        res.status(500).json({
+            success: false,
+            error: '获取报告信息失败',
+            message: error.message
+        });
+    }
+});
 //网页报告编辑 👆 结束
 
 
