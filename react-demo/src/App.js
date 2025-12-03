@@ -1,5 +1,5 @@
 //App.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -11,6 +11,26 @@ import styles from './App.module.css';
 import { TravelThemeProvider } from './pages/modules/travel/ThemeContext'; // 根据你的实际路径调整
 import { AccountingProvider } from './pages/modules/accounting/AccountingDataContext/AccountingContext';//记账配置
 function App() {
+  useEffect(() => {
+    // 检查阿里图标是否已加载
+    const checkIconFontLoaded = () => {
+      if (window.iconfont) {
+        console.log('阿里图标已加载');
+      } else {
+        // 如果未加载，重新加载图标JS
+        const script = document.createElement('script');
+        script.src = '/icons/iconfont.js';
+        script.onload = () => {
+          console.log('阿里图标重新加载成功');
+        };
+        document.body.appendChild(script);
+      }
+    };
+
+    // 延迟检查，确保DOM已加载
+    setTimeout(checkIconFontLoaded, 100);
+  }, []);
+
   return (
     <Router>
       <AuthProvider>

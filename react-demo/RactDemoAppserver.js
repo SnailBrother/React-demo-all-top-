@@ -11144,7 +11144,7 @@ app.get('/api/SearchNeighborhoodsByArea', async (req, res) => {
 });
 
 // API: 批量查询多个小区
-app.post('/api/BatchSearchNeighborhoods', async (req, res) => {
+app.post('/api/BatchSearchNeighborhoods-old', async (req, res) => {
     try {
         const { neighborhoods, location } = req.body;
         
@@ -11244,7 +11244,157 @@ app.post('/api/BatchSearchNeighborhoods', async (req, res) => {
         });
     }
 });
+app.post('/api/BatchSearchNeighborhoods', async (req, res) => {
+    try {
+        const { neighborhoods, location } = req.body;
+        
+        // 检查是否至少有一个查询条件
+        if ((!neighborhoods || !Array.isArray(neighborhoods) || neighborhoods.length === 0) && !location) {
+            return res.status(400).json({ 
+                success: false, 
+                message: '请提供小区列表或地点信息' 
+            });
+        }
 
+        const pool = await sql.connect(config);
+        
+        let query = '';
+        const request = pool.request();
+        
+        if (neighborhoods && neighborhoods.length > 0) {
+            // 创建临时表来存储要查询的小区名
+            query = `
+                DECLARE @Neighborhoods TABLE (name NVARCHAR(200));
+                INSERT INTO @Neighborhoods (name) VALUES `;
+            
+            neighborhoods.forEach((name, index) => {
+                query += `(@name${index})`;
+                if (index < neighborhoods.length - 1) query += ', ';
+            });
+            
+            query += `;
+                
+                SELECT 
+                    reportsID,
+                    documentNo,
+                    location,
+                    communityName,
+                    yearBuilt,
+                    valuationPrice,
+                    buildingArea,
+                    interiorArea,
+                    totalFloors,
+                    floorNumber,
+                    housePurpose,
+                    valuationMethod,
+                    elevator,
+                    reportDate,
+                    valueDate,
+                    entrustingParty,
+                    rightsHolder,
+                    propertyCertificateNo,
+                    projectID,
+                    reportID,
+                    decorationStatus,
+                    houseStructure,
+                    landPurpose,
+                    landUseRightEndDate,
+                    boundaries,
+                    streetStatus,
+                    direction,
+                    orientation,
+                    distance
+                FROM WebWordReports.dbo.WordReportsInformation r
+                WHERE EXISTS (
+                    SELECT 1 FROM @Neighborhoods n 
+                    WHERE (
+                        r.communityName LIKE '%' + n.name + '%' OR
+                        n.name LIKE '%' + r.communityName + '%' OR
+                        r.location LIKE '%' + n.name + '%' OR
+                        n.name LIKE '%' + r.location + '%'
+                    )
+                )`;
+            
+            // 添加小区名参数
+            neighborhoods.forEach((name, index) => {
+                request.input(`name${index}`, sql.NVarChar, name);
+            });
+            
+            if (location) {
+                query += ` OR location LIKE @location OR communityName LIKE @location`;
+                request.input('location', sql.NVarChar, `%${location}%`);
+            }
+        } else if (location) {
+            // 只按location查询
+            query = `
+                SELECT 
+                    reportsID,
+                    documentNo,
+                    location,
+                    communityName,
+                    yearBuilt,
+                    valuationPrice,
+                    buildingArea,
+                    interiorArea,
+                    totalFloors,
+                    floorNumber,
+                    housePurpose,
+                    valuationMethod,
+                    elevator,
+                    reportDate,
+                    valueDate,
+                    entrustingParty,
+                    rightsHolder,
+                    propertyCertificateNo,
+                    projectID,
+                    reportID,
+                    decorationStatus,
+                    houseStructure,
+                    landPurpose,
+                    landUseRightEndDate,
+                    boundaries,
+                    streetStatus,
+                    direction,
+                    orientation,
+                    distance
+                FROM WebWordReports.dbo.WordReportsInformation r
+                WHERE location LIKE @location OR communityName LIKE @location
+            `;
+            
+            request.input('location', sql.NVarChar, `%${location}%`);
+        }
+        
+        query += ` ORDER BY reportDate DESC`;
+        
+        const result = await request.query(query);
+        
+        // 数据去重（按reportsID）
+        const uniqueRecords = [];
+        const seenIds = new Set();
+        
+        result.recordset.forEach(record => {
+            if (!seenIds.has(record.reportsID)) {
+                seenIds.add(record.reportsID);
+                uniqueRecords.push(record);
+            }
+        });
+        
+        res.json({
+            success: true,
+            data: uniqueRecords,
+            total: uniqueRecords.length,
+            message: `查询找到 ${uniqueRecords.length} 条记录`
+        });
+        
+    } catch (error) {
+        console.error('批量查询小区数据失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '批量查询失败',
+            error: error.message 
+        });
+    }
+});
 // API: 获取小区统计信息
 app.get('/api/NeighborhoodStatistics/:communityName', async (req, res) => {
     try {

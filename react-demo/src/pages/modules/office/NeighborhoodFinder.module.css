@@ -457,8 +457,8 @@
 .infoGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 5px;
+  margin-bottom: 5px;
 }
 
 .infoItem {
@@ -483,9 +483,9 @@
 
 /* 报告详情部分 */
 .reportsSection {
-  margin-top: 16px;
+  margin-top: 5px;
   border-top: 1px solid #f0f0f0;
-  padding-top: 16px;
+  padding-top: 5px;
 }
 
 .reportsHeader {
@@ -788,7 +788,28 @@
 .reportsList::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+/* 新增样式 */
+.legendDotGreen {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #52c41a;
+  margin-right: 6px;
+}
 
+.exactLocationBadge {
+  background-color: #52c41a;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.neighborhoodCard.exactLocation {
+  border-left: 3px solid #52c41a;
+}
 /* 响应式设计 */
 @media (max-width: 768px) {
   .pageContainer {
@@ -842,7 +863,7 @@
   
   .infoGrid {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 5px;
   }
   
   .detailGrid {
@@ -857,3 +878,17 @@
     max-width: 150px;
   }
 }
+/* #region start 定位图标*/
+.mapLegend img {
+  vertical-align: middle;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+/*  #endregion end */
+
+
