@@ -8975,7 +8975,7 @@ app.get('/api/getallmusics', async (req, res) => {
 });
 //删除音乐
 // 删除音乐API
-app.delete('/backend/api/deletemusic/:id', async (req, res) => {
+app.delete('/api/deletemusic/:id', async (req, res) => {
     try {
         const musicId = req.params.id;
 

@@ -83,7 +83,7 @@ const DeleteMusic = () => {
 
         setDeletingId(musicId);
         try {
-            const response = await fetch(`/backend/api/deletemusic/${musicId}`, {
+            const response = await fetch(`/api/deletemusic/${musicId}`, {
                 method: 'DELETE'
             });
 
@@ -110,7 +110,7 @@ const DeleteMusic = () => {
         if (!window.confirm(`确定要删除选中的 ${ids.length} 首歌曲吗？此操作不可撤销！`)) return;
 
         try {
-            const response = await fetch(`${baseUrl}/backend/api/batchdeletemusic`, {
+            const response = await fetch(`/api/batchdeletemusic`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ids })
