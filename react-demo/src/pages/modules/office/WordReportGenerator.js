@@ -10,7 +10,8 @@ import './WordReportGenerator.css';
 import { validateReportData } from './WordReportGenerator/ValidationUtils'; //独立的验证函数
 import BaiduDataGrabber from './WordReportGenerator/BaiduDataGrabber';//百度地图抓包
 import HandBaiduDataGrabber from './WordReportGenerator/HandBaiduDataGrabber';//百度地图手动抓包
- 
+import WordEditingPreview from './WordEditing';//百度地图手动抓包
+
 //import { useTheme } from '../../context/ThemeContext'; // 导入useTheme钩子
 //日期控件
 import { DatePicker, ConfigProvider } from 'antd';
@@ -55,7 +56,7 @@ const useClickOutside = (ref, callback) => {
 
 const WordReportGenerator = () => {
     const navigate = useNavigate();
-     
+
 
 
     // 在组件状态中添加分页相关状态
@@ -149,6 +150,88 @@ const WordReportGenerator = () => {
 
 
     //   用来显示菜单功能键 👆
+
+    //打开报告预览功能 👇
+    const [showReportPreview, setShowReportPreview] = useState(false);
+    const [previewTemplateType, setPreviewTemplateType] = useState('住宅'); // 默认住宅模板
+
+    // 添加报告预览处理函数
+    const handleViewReportPreview = () => {
+        if (!reportgeneratorReportData.property.location) {
+            notify('请先填写房产坐落', 'warning');
+            return;
+        }
+
+        // 根据估价方法确定模板类型
+        const templateType = reportgeneratorReportData.result.valuationMethod === '收益法' ? '商业' : '住宅';
+
+        setPreviewTemplateType(templateType);
+        setShowReportPreview(true);
+        handleMenuItemClick(); // 关闭菜单
+    };
+
+    //报告预览回传数据
+const handleSavePreviewData = (updatedData) => {
+    console.log('收到更新的数据:', updatedData);
+    
+    // 创建一个函数来更新嵌套字段
+    const updateNestedField = (state, path, value) => {
+        const keys = path.split('.');
+        const newState = { ...state };
+        let current = newState;
+        
+        for (let i = 0; i < keys.length - 1; i++) {
+            current[keys[i]] = { ...current[keys[i]] };
+            current = current[keys[i]];
+        }
+        
+        current[keys[keys.length - 1]] = value;
+        return newState;
+    };
+    
+    // 定义字段映射（WordEditing字段名 -> WordReportGenerator字段路径）
+    const fieldMap = {
+        // 委托信息
+        documentNo: 'entrustment.documentNo',
+        entrustingParty: 'entrustment.entrustingParty',
+        assessmentCommissionDocument: 'entrustment.assessmentCommissionDocument',
+        
+        // 产权信息
+        location: 'property.location',
+        buildingArea: 'property.buildingArea',
+        interiorArea: 'property.interiorArea',
+        propertyCertificateNo: 'property.propertyCertificateNo',
+        rightsHolder: 'property.rightsHolder',
+        
+        // 结果信息
+        reportID: 'result.reportID',
+        projectID: 'result.projectID',
+        valuationPrice: 'result.valuationPrice',
+        rent: 'result.rent',
+        
+        // 估价师信息
+        appraiserA_name: 'result.appraiserA.name',
+        appraiserA_licenseNo: 'result.appraiserA.licenseNo',
+        appraiserB_name: 'result.appraiserB.name',
+        appraiserB_licenseNo: 'result.appraiserB.licenseNo',
+    };
+    
+    // 批量更新所有字段
+    let newState = { ...reportgeneratorReportData };
+    
+    Object.entries(fieldMap).forEach(([templateField, reportPath]) => {
+        if (updatedData[templateField] !== undefined) {
+            newState = updateNestedField(newState, reportPath, updatedData[templateField]);
+        }
+    });
+    
+    setReportgeneratorReportData(newState);
+    notify('预览数据已保存', 'success');
+    setShowReportPreview(false);
+};
+    //打开报告预览功能 👆
+
+
 
 
     // 获取通知API
@@ -1310,34 +1393,34 @@ const WordReportGenerator = () => {
         window.open(qrCodePageUrl, '_blank');
 
     };
-const handleViewQRCode = () => {
-    if (!currentReportId) {
-        notify('请先选择或创建报告', 'warning');
-        return;
-    }
+    const handleViewQRCode = () => {
+        if (!currentReportId) {
+            notify('请先选择或创建报告', 'warning');
+            return;
+        }
 
-    // 准备要传递的报告数据
-    const reportData = {
-        reportsID: currentReportId,
-        // 确保 location 有值
-        location: reportgeneratorReportData?.property?.location || '未知位置'
+        // 准备要传递的报告数据
+        const reportData = {
+            reportsID: currentReportId,
+            // 确保 location 有值
+            location: reportgeneratorReportData?.property?.location || '未知位置'
+        };
+
+        console.log('QR Code Data:', reportData); // 添加调试信息
+
+        // 将数据编码为URL参数
+        const queryParams = new URLSearchParams(reportData).toString();
+
+        console.log('Query Params:', queryParams); // 调试查询参数
+
+        // 拼接完整的二维码页面URL
+        const qrCodePageUrl = `${window.location.origin}/app/office/reportqrcodepage?${queryParams}`;
+
+        console.log('Full URL:', qrCodePageUrl); // 调试完整URL
+
+        // 新开页面跳转
+        window.open(qrCodePageUrl, '_blank');
     };
-
-    console.log('QR Code Data:', reportData); // 添加调试信息
-
-    // 将数据编码为URL参数
-    const queryParams = new URLSearchParams(reportData).toString();
-    
-    console.log('Query Params:', queryParams); // 调试查询参数
-
-    // 拼接完整的二维码页面URL
-    const qrCodePageUrl = `${window.location.origin}/app/office/reportqrcodepage?${queryParams}`;
-    
-    console.log('Full URL:', qrCodePageUrl); // 调试完整URL
-
-    // 新开页面跳转
-    window.open(qrCodePageUrl, '_blank');
-};
 
     const handleViewUploadPicture = () => {
         if (!currentReportId) {
@@ -1371,16 +1454,16 @@ const handleViewQRCode = () => {
             <ConfirmationDialogManager>
                 {(confirm) => (
                     <div className="reportgenerator-container"
-                        // style={{
-                        //     '--borderBrush': borderBrush,
-                        //     '--hoverBorderBrush': hoverBorderBrush,
-                        //     '--fontColor': fontColor,
-                        //     '--hoverFontColor': hoverFontColor,
-                        //     '--my-bg-color': background,
-                        //     '--watermarkForeground': watermarkForeground,
-                        //     '--fontFamily': fontFamily,
-                        //     '--hoverBackground': hoverBackground,
-                        // }}
+                    // style={{
+                    //     '--borderBrush': borderBrush,
+                    //     '--hoverBorderBrush': hoverBorderBrush,
+                    //     '--fontColor': fontColor,
+                    //     '--hoverFontColor': hoverFontColor,
+                    //     '--my-bg-color': background,
+                    //     '--watermarkForeground': watermarkForeground,
+                    //     '--fontFamily': fontFamily,
+                    //     '--hoverBackground': hoverBackground,
+                    // }}
 
                     >
 
@@ -1544,6 +1627,16 @@ const handleViewQRCode = () => {
                                         <span>上传图片</span>
                                     </li>
 
+
+                                    <li
+                                        onClick={handleMenuItemClick(handleViewReportPreview)}
+                                        title="报告预览"
+                                    >
+                                        <svg className="reportgenerator-menu-icon" aria-hidden="true">
+                                            <use xlinkHref="#icon-yulan2" /> {/* 建议使用预览图标 */}
+                                        </svg>
+                                        <span>报告预览</span>
+                                    </li>
 
                                     {/* {currentReportId ? (
                                         <Link
@@ -3197,6 +3290,24 @@ const handleViewQRCode = () => {
                                 onClose={() => setShowHandBaiduDataGrabber(false)}
                             />
                         )}
+
+                        {/* 添加报告预览模态框 */}
+
+                        {showReportPreview && (
+                            <div className="report-preview-overlay">
+                                <div className="report-preview-modal">
+                                    <WordEditingPreview
+                                        initialData={reportgeneratorReportData}
+                                        templateType={previewTemplateType}
+                                        hasFurnitureElectronics={reportgeneratorReportData.result.hasFurnitureElectronics}
+                                        isPreviewMode={true}
+                                        onClose={() => setShowReportPreview(false)}
+                                        onSave={handleSavePreviewData} // 新增：传递保存回调
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                 )}
             </ConfirmationDialogManager>

@@ -1051,7 +1051,29 @@ border-color:var(--hover_border_color) !important;
 
  /* 为整个DatePicker组件添加悬浮效果 */
 
- 
+ /* #region start 报告模拟框*/
 
+ .report-preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
 
+.report-preview-modal {
+  width: 100%;
+  height: 100%;
+  /* max-width: 1400px;
+  max-height: 900px; */
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
  
+}
+/*  #endregion end */
