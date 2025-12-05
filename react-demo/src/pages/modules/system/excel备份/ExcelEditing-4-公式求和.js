@@ -34,7 +34,6 @@ const encodeCellRef = ({ r, c }) => {
   return `${col}${r + 1}`;
 };
 
-
 // 提取公式中引用的所有单元格（简单正则，支持 A1, $A$1, A1:B2 等基础形式）
 const extractReferencesFromFormula = (formula) => {
   if (!formula) return [];
@@ -68,94 +67,27 @@ const extractReferencesFromFormula = (formula) => {
   return Array.from(refs);
 };
 
-
-// 公式求值器（修复版，支持命名区域）
-// 公式求值器（修复版，直接支持命名区域）
-const evaluateFormula = (formula, sheetData, namedRanges = []) => {
-  if (!formula || typeof formula !== 'string') {
-    console.log('公式为空或不是字符串:', formula);
-    return null;
-  }
+ 
+const evaluateFormula = (formula, sheetData) => {
+  if (!formula || typeof formula !== 'string') return null;
 
   try {
     let evalExpr = formula;
-
+    
     // 如果公式以 = 开头，去掉它
     if (evalExpr.startsWith('=')) {
       evalExpr = evalExpr.substring(1);
     }
-
-    console.log('=== 开始计算公式 ===');
-    console.log('原始公式:', formula);
-    console.log('处理公式:', evalExpr);
-
-    if (!namedRanges || namedRanges.length === 0) {
-      console.warn('没有命名区域信息');
-    } else {
-      console.log('传入的命名区域:', namedRanges);
-    }
-
-    // 创建命名区域映射
-    const namedRangeValues = {};
-    namedRanges.forEach(range => {
-      console.log(`处理命名区域 ${range.name}:`, range);
-
-      // 获取命名区域的值
-      let value = range.value;
-      if (value === undefined || value === null || value === '') {
-        // 如果命名区域没有值，尝试从单元格获取
-        const cell = sheetData[range.address];
-        if (cell && cell.v != null) {
-          value = cell.v;
-          console.log(`从单元格 ${range.address} 获取值:`, value);
-        } else {
-          value = 0; // 默认值
-          console.log(`命名区域 ${range.name} 使用默认值:`, value);
-        }
-      } else {
-        console.log(`命名区域 ${range.name} 已有值:`, value);
-      }
-
-      // 转换为数字如果可能
-      const numValue = parseFloat(value);
-      if (!isNaN(numValue)) {
-        namedRangeValues[range.name] = numValue;
-        console.log(`命名区域 ${range.name} 数值:`, numValue);
-      } else {
-        namedRangeValues[range.name] = 0; // 非数字作为0处理
-        console.log(`命名区域 ${range.name} 非数值，转为0`);
-      }
-    });
-
-    console.log('命名区域映射表:', namedRangeValues);
-
-    // 先替换命名区域为它们的值
-    Object.keys(namedRangeValues).forEach(name => {
-      // 使用单词边界确保完整匹配
-      const regex = new RegExp(`\\b${name}\\b`, 'gi');
-      if (regex.test(evalExpr)) {
-        const oldExpr = evalExpr;
-        evalExpr = evalExpr.replace(regex, namedRangeValues[name]);
-        console.log(`替换命名区域: ${name} -> ${namedRangeValues[name]}`);
-        console.log(`替换前: ${oldExpr}`);
-        console.log(`替换后: ${evalExpr}`);
-      }
-    });
-
-    console.log('替换命名区域后表达式:', evalExpr);
-
-    // 提取单元格引用
-    const refs = extractReferencesFromFormula(evalExpr);
-    console.log('单元格引用:', refs);
+    
+    const refs = extractReferencesFromFormula(formula);
 
     const replacements = {};
 
     for (const ref of refs) {
       const cell = sheetData[ref];
-      let val = 0;
+      let val = 0; // 默认值设为 0 而不是空字符串
 
       if (cell && cell.v != null) {
-        console.log(`单元格 ${ref} 值:`, cell.v, '类型:', typeof cell.v);
         if (typeof cell.v === 'number') {
           val = cell.v;
         } else if (typeof cell.v === 'string') {
@@ -163,194 +95,103 @@ const evaluateFormula = (formula, sheetData, namedRanges = []) => {
           if (!isNaN(num) && cell.v.trim() !== '') {
             val = num;
           } else {
-            console.log(`单元格 ${ref} 非数字字符串:`, cell.v);
+            // 对于非数字文本，我们将其作为 0 处理，或者可以根据需要调整
+            val = 0;
           }
         }
-      } else {
-        console.log(`单元格 ${ref} 无值`);
       }
 
       replacements[ref] = val;
     }
 
-    console.log('单元格值映射:', replacements);
-
-    // 替换单元格引用
     const sortedRefs = Object.keys(replacements).sort((a, b) => b.length - a.length);
     for (const ref of sortedRefs) {
       const escapedRef = ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(`\\b${escapedRef}\\b`, 'g');
-      const oldExpr = evalExpr;
       evalExpr = evalExpr.replace(regex, replacements[ref]);
-      if (oldExpr !== evalExpr) {
-        console.log(`替换单元格引用: ${ref} -> ${replacements[ref]}`);
-      }
     }
-
-    console.log('替换所有引用后表达式:', evalExpr);
-
-    // 处理 Excel 函数
+    
+    console.log('原始公式:', formula);
+    console.log('替换后表达式:', evalExpr);
+    
+    // 直接使用 formulajs 函数进行计算
+    // 创建一个计算环境，使用 FORMULAS 中的所有函数
+    const context = { ...FORMULAS };
+    
+    // 将表达式中的函数调用转换为使用 FORMULAS 中的函数
     const functionRegex = /\b([A-Z_][A-Z0-9_]*)\(/g;
     let transformedExpr = evalExpr;
     const functionMatches = [...new Set(evalExpr.match(functionRegex) || [])];
-
-    console.log('函数匹配:', functionMatches);
-
+    
     for (const match of functionMatches) {
       const functionName = match.slice(0, -1);
-      console.log(`检查函数: ${functionName}`, FORMULAS[functionName]);
       if (FORMULAS[functionName]) {
+        // 替换函数调用为 FORMULAS.函数名
         const regex = new RegExp(`\\b${functionName}\\(`, 'g');
         transformedExpr = transformedExpr.replace(regex, `FORMULAS.${functionName}(`);
-        console.log(`替换函数: ${functionName} -> FORMULAS.${functionName}`);
       }
     }
-
-    console.log('转换函数后表达式:', transformedExpr);
-
-    // 执行计算
-    if (!transformedExpr.trim()) {
-      console.log('表达式为空');
-      return '';
-    }
-
-    console.log('准备执行计算:', transformedExpr);
-
-    const result = Function('"use strict"; const FORMULAS = arguments[0]; return (' + transformedExpr + ')').call(null, FORMULAS);
-    console.log('计算结果:', result);
-    console.log('=== 计算结束 ===');
+    
+    // 使用 Function 构造函数创建执行环境
+    const computeFunction = new Function('FORMULAS', 'return (' + transformedExpr + ')');
+    const result = computeFunction(FORMULAS);
+    
     return result;
-
   } catch (error) {
-    console.error('公式计算失败:', formula, error);
-    console.error('错误堆栈:', error.stack);
+    console.warn('公式计算失败:', formula, error);
     return '#ERROR!';
   }
 };
 
-// 提取公式中引用的所有单元格和命名区域
-const extractAllReferencesFromFormula = (formula, namedRanges = []) => {
-  if (!formula) return [];
-
-  const refs = new Set();
-
-  // 1. 先查找命名区域
-  namedRanges.forEach(range => {
-    const regex = new RegExp(`\\b${range.name}\\b`, 'gi');
-    if (regex.test(formula)) {
-      refs.add(range.address); // 添加单元格地址
-      console.log(`公式 ${formula} 引用命名区域 ${range.name} -> ${range.address}`);
-    }
-  });
-
-  // 2. 再查找直接的单元格引用（原有的逻辑）
-  const cleanFormula = formula.replace(/"[^"]*"/g, '');
-  const rangeRegex = /(?:\$?[A-Z]+\$?\d+(?::\$?[A-Z]+\$?\d+)?)/gi;
-  const matches = cleanFormula.match(rangeRegex) || [];
-
-  for (const match of matches) {
-    if (match.includes(':')) {
-      const [start, end] = match.split(':');
-      const startCell = parseCellRef(start.replace(/\$/g, ''));
-      const endCell = parseCellRef(end.replace(/\$/g, ''));
-      if (startCell && endCell) {
-        for (let r = startCell.r; r <= endCell.r; r++) {
-          for (let c = startCell.c; c <= endCell.c; c++) {
-            refs.add(encodeCellRef({ r, c }));
-          }
-        }
-      }
-    } else {
-      const cell = parseCellRef(match.replace(/\$/g, ''));
-      if (cell) {
-        refs.add(encodeCellRef(cell));
-      }
-    }
-  }
-
-  return Array.from(refs);
-};
-
-// 使用新的函数构建依赖图
-const buildDependencyGraph = (ws, namedRanges = []) => {
-  console.log('=== 构建依赖图（新） ===');
-  const allCells = Object.keys(ws).filter(key => !key.startsWith('!'));
+// 构建依赖图：cell -> [dependents]
+const buildDependencyGraph = (ws) => {
   const graph = {};
+  const allCells = Object.keys(ws).filter(key => !key.startsWith('!'));
 
-  // 初始化所有单元格
+  // 初始化
   allCells.forEach(cell => {
     graph[cell] = [];
   });
 
-  // 遍历所有单元格，查找有公式的单元格
+  // 遍历每个有公式的单元格，提取其依赖，并反向建立图
   allCells.forEach(cell => {
-    const cellData = ws[cell];
-    const formula = cellData?.f;
-
+    const formula = ws[cell]?.f;
     if (formula) {
-      console.log(`单元格 ${cell} 有公式: ${formula}`);
-
-      // 使用新的函数提取所有引用（包括命名区域）
-      const refs = extractAllReferencesFromFormula(formula, namedRanges);
-      console.log(`公式 ${formula} 的所有引用:`, refs);
-
+      const refs = extractReferencesFromFormula(formula);
       refs.forEach(ref => {
-        if (graph[ref] && !graph[ref].includes(cell)) {
+        if (graph[ref]) {
           graph[ref].push(cell);
-          console.log(`添加依赖: ${ref} -> ${cell}`);
         }
       });
     }
   });
 
-  console.log('构建的依赖图:', graph);
   return graph;
 };
 
-
 // 递归重算依赖单元格
-const recalculateDependents = (changedCell, ws, dependencyGraph, namedRanges) => {
+const recalculateDependents = (changedCell, ws, dependencyGraph) => {
   const visited = new Set();
   const queue = [changedCell];
-
-  console.log('=== 开始重新计算依赖 ===');
-  console.log('触发单元格:', changedCell);
-  console.log('依赖图:', dependencyGraph);
-  console.log('命名区域:', namedRanges);
 
   while (queue.length > 0) {
     const current = queue.shift();
     if (visited.has(current)) continue;
     visited.add(current);
 
-    console.log(`处理单元格: ${current}`);
-
     const dependents = dependencyGraph[current] || [];
-    console.log(`单元格 ${current} 的依赖项:`, dependents);
-
     for (const dep of dependents) {
       const formula = ws[dep]?.f;
       if (formula) {
-        console.log(`--- 重新计算单元格 ${dep} ---`);
-        console.log(`公式: ${formula}`);
-        console.log('工作表数据:', ws);
-
-        const newValue = evaluateFormula(formula, ws, namedRanges);
-        console.log(`单元格 ${dep} 新值:`, newValue);
-
+        const newValue = evaluateFormula(formula, ws);
         if (ws[dep]) {
           ws[dep].v = newValue;
           ws[dep].t = typeof newValue === 'number' ? 'n' : 's';
-          console.log(`更新单元格 ${dep}: v=${newValue}, t=${typeof newValue === 'number' ? 'n' : 's'}`);
         }
         queue.push(dep);
-      } else {
-        console.log(`单元格 ${dep} 无公式`);
       }
     }
   }
-
-  console.log('=== 依赖计算结束 ===');
 };
 
 const ExcelEditing = () => {
@@ -370,57 +211,6 @@ const ExcelEditing = () => {
   const cellEditorRef = useRef(null);
   const infoBarEditorRef = useRef(null);
   const notificationRef = useRef(null);
-
-  //撤销 恢复  ↓
-  const [undoStack, setUndoStack] = useState([]); // 历史状态栈
-  const [redoStack, setRedoStack] = useState([]); // 重做栈
-  // 深拷贝工作表（仅当前 activeSheet 的 ws 数据）
-  const createSheetSnapshot = useCallback((wb, sheetName) => {
-    const ws = wb.Sheets[sheetName];
-    return JSON.parse(JSON.stringify(ws)); // 简单深拷贝（适用于无函数/日期等复杂类型）
-  }, []);
-  
-  const undo = () => {
-    if (undoStack.length === 0) return;
-
-    const lastState = undoStack[undoStack.length - 1];
-    const newUndoStack = undoStack.slice(0, -1);
-
-    // 当前状态推入 redo 栈
-    const currentSnapshot = createSheetSnapshot(workbook, activeSheet);
-    setRedoStack(prev => [...prev, currentSnapshot]);
-
-    // 恢复上一个状态
-    const newWorkbook = { ...workbook };
-    newWorkbook.Sheets[activeSheet] = JSON.parse(JSON.stringify(lastState));
-
-    setWorkbook(newWorkbook);
-    setUndoStack(newUndoStack);
-
-    // 同步更新 namedRanges 和 formValues（重新提取）
-    extractCurrentSheetNamedRanges(newWorkbook, activeSheet);
-  };
-
-  const redo = () => {
-    if (redoStack.length === 0) return;
-
-    const nextState = redoStack[redoStack.length - 1];
-    const newRedoStack = redoStack.slice(0, -1);
-
-    // 当前状态推入 undo 栈
-    const currentSnapshot = createSheetSnapshot(workbook, activeSheet);
-    setUndoStack(prev => [...prev, currentSnapshot]);
-
-    const newWorkbook = { ...workbook };
-    newWorkbook.Sheets[activeSheet] = JSON.parse(JSON.stringify(nextState));
-
-    setWorkbook(newWorkbook);
-    setRedoStack(newRedoStack);
-
-    extractCurrentSheetNamedRanges(newWorkbook, activeSheet);
-  };
-
-  //撤销 恢复  上
 
   // 缓存依赖图（按工作表）
   const dependencyGraphRef = useRef({});
@@ -508,23 +298,15 @@ const ExcelEditing = () => {
     setNamedRanges(currentSheetRanges);
 
     const newFormValues = {};
-    const ws = wb.Sheets[sheetName];
-
     currentSheetRanges.forEach(range => {
-      // 从工作表中获取实际值
-      const cell = ws?.[range.address];
-      const cellValue = cell?.v?.toString() || '';
-      newFormValues[range.name] = cellValue;
-
-      // 更新命名区域的值
-      range.value = cellValue;
+      newFormValues[range.name] = range.value;
     });
-
     setFormValues(newFormValues);
 
     // ✅ 构建当前工作表的依赖图
+    const ws = wb.Sheets[sheetName];
     if (ws) {
-      dependencyGraphRef.current[sheetName] = buildDependencyGraph(ws, currentSheetRanges);
+      dependencyGraphRef.current[sheetName] = buildDependencyGraph(ws);
     }
 
     return currentSheetRanges;
@@ -559,15 +341,14 @@ const ExcelEditing = () => {
   }, []);
 
   // ✅ 增强版保存：支持公式重算
-  const saveCellEditToSheet = (sheetName, cellAddress, value, currentNamedRanges) => {
+  const saveCellEditToSheet = (sheetName, cellAddress, value) => {
     if (!workbook) return;
     const ws = workbook.Sheets[sheetName];
     if (!ws) return;
 
-    console.log(`保存到工作表 ${sheetName} 单元格 ${cellAddress}: ${value}`);
-
     if (!ws[cellAddress]) ws[cellAddress] = {};
 
+    // 清除公式（用户输入覆盖公式）
     ws[cellAddress].f = undefined;
 
     const numValue = parseFloat(value);
@@ -579,35 +360,23 @@ const ExcelEditing = () => {
       ws[cellAddress].t = 's';
     }
 
-    // ✅ 使用传入的 currentNamedRanges，确保是最新的
+    // ✅ 触发依赖重算
     const graph = dependencyGraphRef.current[sheetName];
     if (graph) {
-      recalculateDependents(cellAddress, ws, graph, currentNamedRanges);
+      recalculateDependents(cellAddress, ws, graph);
     }
   };
 
   const saveCellEdit = (cellAddress, value) => {
     if (!workbook || !activeSheet) return;
+    saveCellEditToSheet(activeSheet, cellAddress, value);
+    setWorkbook({ ...workbook }); // 触发重渲染
 
-    // ✅ 1. 保存当前状态到 undoStack
-    const currentSnapshot = createSheetSnapshot(workbook, activeSheet);
-    setUndoStack(prev => [...prev, currentSnapshot]);
-    setRedoStack([]); // 清空 redo 栈（新操作打断历史）
-
-    // ... 原有逻辑不变 ...
-    let newNamedRanges = [...namedRanges];
-    const namedRange = newNamedRanges.find(r => r.address === cellAddress && r.sheet === activeSheet);
-    if (namedRange) {
-      namedRange.value = value;
-    }
-
-    saveCellEditToSheet(activeSheet, cellAddress, value, newNamedRanges);
-
-    setWorkbook({ ...workbook });
+    const namedRange = namedRanges.find(range => range.address === cellAddress && range.sheet === activeSheet);
     if (namedRange) {
       setFormValues(prev => ({ ...prev, [namedRange.name]: value }));
-      setNamedRanges(newNamedRanges);
     }
+
     if (cellInfo.address === cellAddress) {
       setCellInfo(prev => ({ ...prev, value: value }));
     }
@@ -663,29 +432,12 @@ const ExcelEditing = () => {
   };
 
   const handleFormChange = (name, value) => {
-    console.log(`表单变化: ${name} = ${value}`);
-
-    if (!workbook) return;
-
-    const namedRange = namedRanges.find(range => range.name === name);
-    if (!namedRange) {
-      console.warn(`未找到命名区域: ${name}`);
-      return;
-    }
-
-    // ✅ 1. 保存快照
-    const currentSnapshot = createSheetSnapshot(workbook, activeSheet);
-    setUndoStack(prev => [...prev, currentSnapshot]);
-    setRedoStack([]);
-
-    const newNamedRanges = namedRanges.map(range =>
-      range.name === name ? { ...range, value } : range
-    );
-
-    saveCellEditToSheet(namedRange.sheet, namedRange.address, value, newNamedRanges);
-
     setFormValues(prev => ({ ...prev, [name]: value }));
-    setNamedRanges(newNamedRanges);
+    if (!workbook) return;
+    const namedRange = namedRanges.find(range => range.name === name);
+    if (!namedRange) return;
+
+    saveCellEditToSheet(namedRange.sheet, namedRange.address, value);
     setWorkbook({ ...workbook });
 
     if (selectedCell === namedRange.address && activeSheet === namedRange.sheet) {
@@ -1014,29 +766,6 @@ const ExcelEditing = () => {
             </div>
 
             <div className={styles.toolbarRight}>
-
-              <button
-                className={styles.toolbarBtn}
-                onClick={undo}
-                disabled={undoStack.length === 0}
-                title="撤销 (Ctrl+Z)"
-              >
-                <svg className={styles.buttonicon} aria-hidden="true">
-                  <use xlinkHref="#icon-chexiao1"></use> {/* 替换为你自己的图标 */}
-                </svg>
-              </button>
-              <button
-                className={styles.toolbarBtn}
-                onClick={redo}
-                disabled={redoStack.length === 0}
-                title="重做 (Ctrl+Y)"
-              >
-                <svg className={styles.buttonicon} aria-hidden="true">
-                  <use xlinkHref="#icon-huifu"></use>
-                </svg>
-              </button>
-
-
               <button
                 className={styles.toolbarBtn}
                 onClick={() => fileInputRef.current.click()}

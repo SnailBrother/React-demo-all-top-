@@ -6,6 +6,55 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "6285211",
+      "name": "恢复",
+      "font_class": "recover",
+      "unicode": "ead9",
+      "unicode_decimal": 60121
+    },
+    {
+      "icon_id": "10465215",
+      "name": "撤销",
+      "font_class": "chexiao",
+      "unicode": "eadc",
+      "unicode_decimal": 60124
+    },
+    {
+      "icon_id": "11399565",
+      "name": "撤销",
+      "font_class": "chexiao1",
+      "unicode": "eadd",
+      "unicode_decimal": 60125
+    },
+    {
+      "icon_id": "11399567",
+      "name": "恢复",
+      "font_class": "huifu",
+      "unicode": "eade",
+      "unicode_decimal": 60126
+    },
+    {
+      "icon_id": "17833688",
+      "name": "撤销",
+      "font_class": "chexiao2",
+      "unicode": "eadf",
+      "unicode_decimal": 60127
+    },
+    {
+      "icon_id": "27779926",
+      "name": "ic／恢复",
+      "font_class": "a-ichuifu",
+      "unicode": "eae0",
+      "unicode_decimal": 60128
+    },
+    {
+      "icon_id": "43391587",
+      "name": "撤销-1",
+      "font_class": "chexiao-1",
+      "unicode": "eae1",
+      "unicode_decimal": 60129
+    },
+    {
       "icon_id": "3091986",
       "name": "密码隐藏",
       "font_class": "mimayincang",
