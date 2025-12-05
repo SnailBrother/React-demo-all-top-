@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4797853 */
-  src: url('iconfont.woff2?t=1764504599575') format('woff2'),
-       url('iconfont.woff?t=1764504599575') format('woff'),
-       url('iconfont.ttf?t=1764504599575') format('truetype');
+  src: url('iconfont.woff2?t=1764941302167') format('woff2'),
+       url('iconfont.woff?t=1764941302167') format('woff'),
+       url('iconfont.ttf?t=1764941302167') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,142 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-mimayincang:before {
+  content: "\ead2";
+}
+
+.icon-yincangdaan:before {
+  content: "\ead3";
+}
+
+.icon-yanjing_yincang_o:before {
+  content: "\ebcd";
+}
+
+.icon-excel3:before {
+  content: "\ead4";
+}
+
+.icon-yincang:before {
+  content: "\ead5";
+}
+
+.icon-xianshi:before {
+  content: "\ead6";
+}
+
+.icon-bianji1:before {
+  content: "\ead7";
+}
+
+.icon-excel4:before {
+  content: "\ead8";
+}
+
+.icon-danyuange:before {
+  content: "\eada";
+}
+
+.icon-bianji2:before {
+  content: "\eadb";
+}
+
+.icon-shouye_hong:before {
+  content: "\ead0";
+}
+
+.icon-shouye11:before {
+  content: "\ead1";
+}
+
+.icon-dingwei1:before {
+  content: "\eace";
+}
+
+.icon-dingwei2:before {
+  content: "\eacf";
+}
+
+.icon-shouye4:before {
+  content: "\eacd";
+}
+
+.icon-beijing:before {
+  content: "\eac9";
+}
+
+.icon-ditu_beijingshi:before {
+  content: "\eaca";
+}
+
+.icon-beijing1:before {
+  content: "\eacb";
+}
+
+.icon-beijing2:before {
+  content: "\eacc";
+}
+
+.icon-SouthKorea:before {
+  content: "\ed46";
+}
+
+.icon-KR:before {
+  content: "\eabd";
+}
+
+.icon-bianzu1:before {
+  content: "\eabe";
+}
+
+.icon-qitaguojiadiqu:before {
+  content: "\eabf";
+}
+
+.icon-73:before {
+  content: "\eac0";
+}
+
+.icon-qitaguojia:before {
+  content: "\eac1";
+}
+
+.icon-ouzhou:before {
+  content: "\eac2";
+}
+
+.icon-a-2_oumei2:before {
+  content: "\eac4";
+}
+
+.icon-zhongguoneidi:before {
+  content: "\eac5";
+}
+
+.icon-hanguo:before {
+  content: "\eac6";
+}
+
+.icon-ouzhou1:before {
+  content: "\eac7";
+}
+
+.icon-zhongguo:before {
+  content: "\eac8";
+}
+
+.icon-paihangbang:before {
+  content: "\eaba";
+}
+
+.icon-paixingbang:before {
+  content: "\eabb";
+}
+
+.icon-paihangbang1:before {
+  content: "\eabc";
 }
 
 .icon-liebiaoxunhuan6:before {

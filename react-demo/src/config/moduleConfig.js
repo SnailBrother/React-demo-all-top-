@@ -49,6 +49,7 @@ const ChatUpdateWear = lazy(() => import('../pages/modules/chat/UpdateWear'));
 const SystemProfile = lazy(() => import('../pages/modules/system/Profile'));
 const SystemBackendSettings = lazy(() => import('../pages/modules/system/BackendSettings'));
 const SystemWordEditing = lazy(() => import('../pages/modules/system/WordEditing'));
+const SystemExcelEditing = lazy(() => import('../pages/modules/system/ExcelEditing'));
 
 //------------------------------旅行------------------------------
 const FirstTimeTravel = lazy(() => import('../pages/modules/travel/FirstTime/HomeContainer'));
@@ -157,7 +158,8 @@ export const moduleConfig = {
     routes: [
       { key: 'theme', label: '主题设置', icon: '#icon-zhuti1', component: SystemThemeSettings, showInNavigation: true },
       { key: 'profile', label: '个人资料', icon: '#icon-user-01', component: SystemProfile, showInNavigation: true },
-       { key: 'WordEditing', label: 'word编辑', icon: '#icon-user-01', component: SystemWordEditing, showInNavigation: true },
+       { key: 'WordEditing', label: 'word编辑', icon: '#icon-word', component: SystemWordEditing, showInNavigation: true },
+       { key: 'ExcelEditing', label: 'Excel编辑', icon: '#icon-excel4', component: SystemExcelEditing, showInNavigation: true },
       { key: 'BackendSettings', label: '数据更新', icon: '#icon-gongjuxuanzhong', component: SystemBackendSettings, showInNavigation: true },
     ]
   },

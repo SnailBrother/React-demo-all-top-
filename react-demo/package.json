@@ -4,6 +4,7 @@
   "proxy": "http://121.4.22.55:5202",
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.17.1",
+    "@handsontable/react": "^16.2.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -13,7 +14,10 @@
     "date-fns": "^2.30.0",
     "docx-preview": "^0.3.7",
     "docxtemplater": "^3.67.5",
+    "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
+    "handsontable": "^16.2.0",
+    "jszip": "^3.10.1",
     "mammoth": "^1.11.0",
     "pizzip": "^3.2.0",
     "qrcode": "^1.5.4",
