@@ -1,12 +1,18 @@
 /* 主容器 */
 .excel-editor {
   width: 100%;
-  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ 
   background: #f5f5f5;
-  min-height: 100vh;
+  height: calc(100dvh - 110px);
+
+  /* 👇 新增：使用 flex 垂直布局 */
+  display: flex;
+  flex-direction: column;
+ 
+  box-sizing: border-box;
 }
 
 /* 工具栏样式 */
@@ -19,6 +25,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0; /* 不收缩 */
 }
 
 .toolbar-section {
@@ -91,6 +98,18 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+   flex-shrink: 0; /* 不收缩 */
+}
+/* 编辑输入框 */
+.cell-input-bar {
+  flex-shrink: 0;
+  /* background: white; */
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: row;
 }
 
 .info-item {
@@ -123,6 +142,8 @@
   border-radius: 4px;
   font-size: 14px;
   transition: all 0.2s;
+  width: calc(100dvw - 600px);
+   
 }
 
 .cell-input:focus {
@@ -151,10 +172,11 @@
   background: white;
   border-radius: 8px;
   padding: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 2px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: auto;
-  max-height: 500px;
+  min-height: 300px;
+  height: 100%;
 }
 
 .excel-grid {
@@ -180,8 +202,9 @@
   cursor: default;
   position: relative;
   transition: all 0.2s;
-  color: #333; /* 默认字体颜色 */
- 
+  color: #333;
+  /* 默认字体颜色 */
+
 }
 
 .excel-cell:focus {
@@ -246,36 +269,6 @@
   z-index: 25;
 }
 
-/* 工作表标签 */
-.sheet-tabs {
-  background: white;
-  border-radius: 8px;
-  padding: 10px 15px;
-  display: flex;
-  gap: 5px;
-  overflow-x: auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.sheet-tab {
-  padding: 8px 15px;
-  border: none;
-  background: #f5f5f5;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  color: #666;
-  white-space: nowrap;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sheet-tab:hover {
-  background: #e0e0e0;
-}
 
 .sheet-tab.active {
   background: #2196F3;
@@ -288,9 +281,17 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .no-sheets {
@@ -325,8 +326,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 错误提示 */
@@ -351,6 +357,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -420,7 +427,7 @@
   background: #999;
 }
 
- 
+
 /* 单元格样式增强 */
 .excel-cell[style*="font-weight: bold"] {
   font-weight: 700 !important;
@@ -429,6 +436,7 @@
 .excel-cell[style*="font-style: italic"] {
   font-style: italic !important;
 }
+
 /* 添加以下样式到现有的ExcelEditor.css文件中 */
 
 /* 命名单元格指示器 */
@@ -520,9 +528,12 @@
   border-left: 2px solid #ff9800;
   border-right: 2px solid #ff9800;
 }
+
 .sheet-info {
   color: #333;
-}/* 命名单元格样式 */
+}
+
+/* 命名单元格样式 */
 .excel-cell.named-cell {
   background-color: #f0f9ff !important;
   border: 1px solid #3b82f6 !important;
@@ -537,6 +548,7 @@
   background-color: #bfdbfe !important;
   box-shadow: 0 0 0 2px #3b82f6;
 }
+
 /* 数据验证相关样式 */
 .has-validation {
   position: relative;
@@ -561,7 +573,7 @@
   background: white;
   border: 1px solid #ccc;
   border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   min-width: 150px;
   max-height: 200px;
@@ -617,6 +629,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 /* 添加下拉列表单元格样式 */
 .dv-cell {
   cursor: pointer;
@@ -643,31 +656,74 @@
   font-family: inherit;
   cursor: pointer;
   box-sizing: border-box;
- 
-  
+
+
 }
 
 .dv-select:focus {
   /* border: 1px solid #4d90fe; */
   /* box-shadow: inset 0 0 5px rgba(77, 144, 254, 0.3); */
 }
- 
 
 
-                           
-                           
+
+
+
+/* 工作表信息样式 */
+.sheet-info {
+  background-color: #f9f9f9;
+  padding: 12px 16px;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sheet-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.sheet-stats {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.sheet-stats span {
+  display: flex;
+  align-items: center;
+}
+
+.sheet-stats span:not(:last-child)::after {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 12px;
+  background-color: #ddd;
+  margin-left: 10px;
+}
+
+
+
+
+/* #region start 工作表标签页样式*/
+
+
 /* 工作表标签页样式 */
 .sheet-tabs {
   background-color: #f5f5f5;
   border-bottom: 1px solid #ddd;
-  padding: 0 16px;
+  padding: 0 0px;
+  box-sizing: border-box;
 }
 
 .sheet-tabs-container {
   display: flex;
   overflow-x: auto;
   gap: 2px;
-  padding-top: 4px;
+  padding-top: 1px;
 }
 
 .sheet-tab {
@@ -712,38 +768,37 @@
   cursor: not-allowed;
 }
 
-/* 工作表信息样式 */
-.sheet-info {
-  background-color: #f9f9f9;
-  padding: 12px 16px;
-  border-top: 1px solid #ddd;
+/*  #endregion end */
+
+
+/* 工作表标签 */
+/* .sheet-tabs {
+
+  border-radius: 8px;
+  padding: 1px 10px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+ 
+  box-sizing: border-box;
 }
 
-.sheet-name {
+.sheet-tab {
+ 
+  border: none;
+  background: #f5f5f5;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
   font-weight: 600;
-  color: #333;
-}
-
-.sheet-stats {
-  display: flex;
-  gap: 20px;
-  font-size: 14px;
   color: #666;
-}
-
-.sheet-stats span {
+  white-space: nowrap;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
+  gap: 6px;
 }
 
-.sheet-stats span:not(:last-child)::after {
-  content: "";
-  display: inline-block;
-  width: 1px;
-  height: 12px;
-  background-color: #ddd;
-  margin-left: 10px;
-}
+.sheet-tab:hover {
+  background: #e0e0e0;
+} */

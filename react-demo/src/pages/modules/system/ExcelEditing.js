@@ -76,10 +76,10 @@ const extractReferencesFromFormula = (formula) => {
 // 公式求值器
 const evaluateFormula = (formula, sheetData, namedRanges = []) => {
   if (!formula || typeof formula !== 'string') return null;
-  
+
   try {
     let expr = formula.startsWith('=') ? formula.substring(1) : formula;
-    
+
     // 替换命名区域
     namedRanges.forEach(nr => {
       let value = nr.value || '';
@@ -122,11 +122,11 @@ const evaluateFormula = (formula, sheetData, namedRanges = []) => {
         let trueExpr = trueVal.trim();
         let falseExpr = falseVal.trim();
         if (!trueExpr.startsWith('"') && !trueExpr.startsWith("'") &&
-            !/[+\-*/()]/.test(trueExpr) && !/^\d/.test(trueExpr)) {
+          !/[+\-*/()]/.test(trueExpr) && !/^\d/.test(trueExpr)) {
           trueExpr = `"${trueExpr}"`;
         }
         if (!falseExpr.startsWith('"') && !falseExpr.startsWith("'") &&
-            !/[+\-*/()]/.test(falseExpr) && !/^\d/.test(falseExpr)) {
+          !/[+\-*/()]/.test(falseExpr) && !/^\d/.test(falseExpr)) {
           falseExpr = `"${falseExpr}"`;
         }
         return `(${cond.trim()} ? ${trueExpr} : ${falseExpr})`;
@@ -290,15 +290,30 @@ const ExcelEditor = () => {
         const wsExcelJS = wbExcelJS.getWorksheet(name);
         if (!wsExcelJS) continue;
 
-        let maxRows = 100, maxCols = 26;
+        // let maxRows = 100, maxCols = 26;
+        // if (wsXLSX && wsXLSX['!ref']) {
+        //   const range = XLSX.utils.decode_range(wsXLSX['!ref']);
+        //   maxRows = range.e.r + 1;
+        //   maxCols = range.e.c + 1;
+        // } else if (wsExcelJS.dimensions) {
+        //   maxRows = wsExcelJS.dimensions.bottom;
+        //   maxCols = wsExcelJS.dimensions.right;
+        // }
+        let actualMaxRows = 100; // 最少100行
+        let actualMaxCols = 30; // 最少30列
+
         if (wsXLSX && wsXLSX['!ref']) {
           const range = XLSX.utils.decode_range(wsXLSX['!ref']);
-          maxRows = range.e.r + 1;
-          maxCols = range.e.c + 1;
+          actualMaxRows = Math.max(actualMaxRows, range.e.r + 1);
+          actualMaxCols = Math.max(actualMaxCols, range.e.c + 1);
         } else if (wsExcelJS.dimensions) {
-          maxRows = wsExcelJS.dimensions.bottom;
-          maxCols = wsExcelJS.dimensions.right;
+          actualMaxRows = Math.max(actualMaxRows, wsExcelJS.dimensions.bottom || 0);
+          actualMaxCols = Math.max(actualMaxCols, wsExcelJS.dimensions.right || 0);
         }
+
+        const maxRows = actualMaxRows;
+        const maxCols = actualMaxCols;
+
 
         const dvMap = getDataValidationsFromExcelJS(wsExcelJS);
 
@@ -322,7 +337,7 @@ const ExcelEditor = () => {
                   type = getCellTypeFromExcelJS(excelJSCell);
                 }
               }
-            } catch (e) {}
+            } catch (e) { }
 
             return {
               id: `R${r + 1}C${c + 1}`,
@@ -567,7 +582,8 @@ const ExcelEditor = () => {
                     }}
                     title={cell.formula ? `公式: =${cell.formula}` : ''}
                   >
-                    {displayContent || (cell.isEmpty ? '(空)' : '')}
+                    {/* {displayContent || (cell.isEmpty ? '(空)' : '')} */}
+                     {displayContent || (cell.isEmpty ? '' : '')}
                   </div>
                 );
               })}
@@ -691,7 +707,8 @@ const ExcelEditor = () => {
       </div>
 
       {/* 信息栏 */}
-      <div className="info-bar">
+      {/* 可以暂时不要，但是不要删除 */}
+      {/* <div className="info-bar">
         <div className="info-item">
           <span className="info-label">工作表:</span>
           <span className="info-value">{currentSheetName || '未加载'}</span>
@@ -712,10 +729,16 @@ const ExcelEditor = () => {
           <span className="info-label">显示值:</span>
           <span className="info-value display-value">{cellDisplayValue || '空'}</span>
         </div>
-      </div>
+      </div> */}
 
       {/* 编辑输入框 */}
       <div className="cell-input-bar">
+
+         <div className="info-item">
+          <span className="info-label">单元格:</span>
+          <span className="info-value">{activeCell || '未选中'}</span>
+        </div>
+
         <div className="info-item">
           <span className="info-label">编辑:</span>
           <input
