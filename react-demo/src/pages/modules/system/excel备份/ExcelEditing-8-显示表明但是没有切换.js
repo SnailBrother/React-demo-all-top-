@@ -186,6 +186,9 @@ const ExcelEditor = () => {
   const [namedRanges, setNamedRanges] = useState([]);
   const [editingCell, setEditingCell] = useState(null);
   const [addressToNameMap, setAddressToNameMap] = useState({});
+  const [sheetNames, setSheetNames] = useState([]);
+  const [currentSheetIndex, setCurrentSheetIndex] = useState(0);
+  const [workbookXLSX, setWorkbookXLSX] = useState(null); // 存储XLSX解析的workbook
   const cellRefs = useRef({});
   const fileInputRef = useRef(null);
 
@@ -283,20 +286,14 @@ const ExcelEditor = () => {
   const getDataValidationsFromExcelJS = (wsExcelJS) => {
     const dvMap = {};
     
-    console.log('=== 从ExcelJS获取数据有效性 ===');
-    console.log('ExcelJS工作表:', wsExcelJS.name);
-    console.log('数据有效性对象:', wsExcelJS.dataValidations);
-    
     // ExcelJS的数据有效性模型存储方式
     if (wsExcelJS.dataValidations && wsExcelJS.dataValidations.model) {
       const model = wsExcelJS.dataValidations.model;
-      console.log('数据有效性模型:', model);
       
       // 遍历所有单元格的数据有效性
       Object.keys(model).forEach(cellAddress => {
         const validation = model[cellAddress];
         if (validation && validation.type === 'list' && validation.formulae) {
-          console.log(`单元格 ${cellAddress} 有数据有效性:`, validation);
           
           let options = [];
           // 处理formulae（可能是数组或字符串）
@@ -321,13 +318,11 @@ const ExcelEditor = () => {
               type: 'list', 
               options: options 
             };
-            console.log(`  为 ${cellAddress} 设置下拉选项:`, options);
           }
         }
       });
     }
     
-    console.log('最终数据有效性映射:', dvMap);
     return dvMap;
   };
 
@@ -340,30 +335,21 @@ const ExcelEditor = () => {
       const arrayBuffer = await response.arrayBuffer();
 
       // 1. 先用 XLSX 读取（用于解析命名区域）
-      const workbookXLSX = XLSX.read(arrayBuffer, { type: 'array', cellFormula: true, cellNF: true });
-      const sheetName = workbookXLSX.SheetNames[0];
-      const worksheetXLSX = workbookXLSX.Sheets[sheetName];
-
+      const workbookXLSXData = XLSX.read(arrayBuffer, { type: 'array', cellFormula: true, cellNF: true });
+      const sheetNames = workbookXLSXData.SheetNames;
+      
       // 2. 再用 ExcelJS 读取（用于解析数据有效性）
       const wbExcelJS = new ExcelJS.Workbook();
       await wbExcelJS.xlsx.load(arrayBuffer);
-      const wsExcelJS = wbExcelJS.worksheets[0];
 
-      // 3. 从ExcelJS获取数据有效性
-      const dvMap = getDataValidationsFromExcelJS(wsExcelJS);
-
-      setFileInfo({
-        sheetName,
-        rowCount: worksheetXLSX['!ref'] ? XLSX.utils.decode_range(worksheetXLSX['!ref']).e.r + 1 : 0,
-        columnCount: worksheetXLSX['!ref'] ? XLSX.utils.decode_range(worksheetXLSX['!ref']).e.c + 1 : 0,
-      });
-
-      // 4. 使用ExcelJS的数据来解析工作表（关键修改！）
-      parseWorksheetData(wsExcelJS, sheetName, dvMap);
-      parseNamedRangesWithXLSX(workbookXLSX);
+      // 存储所有工作表名和XLSX解析的数据
+      setSheetNames(sheetNames);
+      setWorkbookXLSX(workbookXLSXData);
+      
+      // 加载第一个工作表
+      await loadWorksheet(0, wbExcelJS, workbookXLSXData);
 
       setWorkbook(wbExcelJS);
-      setWorksheet(wsExcelJS);
       
     } catch (err) {
       console.error('加载失败:', err);
@@ -373,17 +359,62 @@ const ExcelEditor = () => {
     }
   };
 
-  // 修改：使用ExcelJS解析工作表数据
-  const parseWorksheetData = (wsExcelJS, sheetName, dvMap = {}) => {
-    console.log('=== 使用ExcelJS解析工作表数据 ===');
+  // 加载单个工作表 - 修复版本
+  const loadWorksheet = async (index, wbExcelJS, wbXLSX) => {
+    if (!wbExcelJS || !wbXLSX) return;
     
-    // 从ExcelJS获取工作表尺寸
-    const dimensions = wsExcelJS.dimensions;
-    const maxRows = dimensions ? dimensions.bottom : 100;
-    const maxCols = dimensions ? dimensions.right : 26;
+    const sheetName = sheetNames[index];
+    const worksheetXLSX = wbXLSX.Sheets[sheetName];
     
-    console.log(`工作表尺寸: ${maxRows}行 x ${maxCols}列`);
+    // 获取ExcelJS的工作表
+    const wsExcelJS = wbExcelJS.worksheets[index];
+    
+    if (!wsExcelJS) {
+      console.error(`工作表 ${sheetName} 不存在`);
+      return;
+    }
+    
+    // 从ExcelJS获取数据有效性
+    const dvMap = getDataValidationsFromExcelJS(wsExcelJS);
 
+    // 计算行数和列数
+    let rowCount = 100;
+    let columnCount = 26;
+    
+    if (worksheetXLSX && worksheetXLSX['!ref']) {
+      const range = XLSX.utils.decode_range(worksheetXLSX['!ref']);
+      rowCount = range.e.r + 1;
+      columnCount = range.e.c + 1;
+    } else if (wsExcelJS.dimensions) {
+      rowCount = wsExcelJS.dimensions.bottom;
+      columnCount = wsExcelJS.dimensions.right;
+    }
+
+    setFileInfo({
+      sheetName,
+      sheetNames: sheetNames,
+      rowCount: rowCount,
+      columnCount: columnCount,
+    });
+
+    // 使用ExcelJS的数据来解析工作表
+    parseWorksheetData(wsExcelJS, sheetName, dvMap, rowCount, columnCount);
+    parseNamedRangesWithXLSX(wbXLSX);
+
+    setWorksheet(wsExcelJS);
+    setCurrentSheetIndex(index);
+    
+    // 重置编辑状态
+    setActiveCell(null);
+    setEditingCell(null);
+    setCellInput('');
+    setCellDisplayValue('');
+    setHistory([]);
+    setHistoryIndex(-1);
+  };
+
+  // 修改：使用ExcelJS解析工作表数据
+  const parseWorksheetData = (wsExcelJS, sheetName, dvMap = {}, maxRows = 100, maxCols = 26) => {
     // 创建列标题
     const columnHeaders = [];
     for (let c = 0; c < maxCols; c++) {
@@ -400,23 +431,29 @@ const ExcelEditor = () => {
       const rowData = [];
       for (let c = 0; c < maxCols; c++) {
         const address = `${getColumnLetter(c + 1)}${r + 1}`;
-        const excelJSCell = wsExcelJS.getCell(address);
         
         let value = '';
         let formula = null;
         let cellType = 'text';
         
-        // 从ExcelJS获取单元格值和公式
-        if (excelJSCell.value) {
-          if (excelJSCell.value.formula) {
-            // 公式单元格
-            formula = excelJSCell.value.formula;
-            cellType = 'formula';
-          } else {
-            // 普通值
-            value = String(excelJSCell.value);
-            cellType = getCellTypeFromExcelJS(excelJSCell);
+        try {
+          const excelJSCell = wsExcelJS.getCell(address);
+          
+          // 从ExcelJS获取单元格值和公式
+          if (excelJSCell.value) {
+            if (excelJSCell.value.formula) {
+              // 公式单元格
+              formula = excelJSCell.value.formula;
+              cellType = 'formula';
+            } else {
+              // 普通值
+              value = String(excelJSCell.value);
+              cellType = getCellTypeFromExcelJS(excelJSCell);
+            }
           }
+        } catch (err) {
+          // 单元格可能不存在，使用默认值
+          console.log(`单元格 ${address} 不存在，使用默认值`);
         }
         
         // 获取数据有效性
@@ -439,7 +476,6 @@ const ExcelEditor = () => {
       cellData.push(rowData);
     }
 
-    console.log(`解析完成: ${cellData.length}行 x ${columnHeaders.length}列`);
     setHeaders(columnHeaders);
     setCells(cellData);
   };
@@ -756,6 +792,9 @@ const ExcelEditor = () => {
           <button className="toolbar-btn success" onClick={saveAndExportExcel} disabled={!workbook || loading}>
             <Icon type="save" /> 下载Excel
           </button>
+          
+          
+          
           <button className="toolbar-btn warning" onClick={undo} disabled={historyIndex <= 0}>
             <Icon type="load" /> 撤销
           </button>
@@ -767,6 +806,10 @@ const ExcelEditor = () => {
 
       {/* 信息栏 */}
       <div className="info-bar">
+        <div className="info-item">
+          <span className="info-label">工作表:</span>
+          <span className="info-value">{fileInfo ? fileInfo.sheetName : '未加载'}</span>
+        </div>
         <div className="info-item">
           <span className="info-label">单元格:</span>
           <span className="info-value">{activeCell || '未选中'}</span>
@@ -782,16 +825,6 @@ const ExcelEditor = () => {
         <div className="info-item">
           <span className="info-label">显示值:</span>
           <span className="info-value display-value">{cellDisplayValue || '空'}</span>
-        </div>
-        <div className="info-item">
-          <span className="info-label">公式:</span>
-          <span className="info-value formula-display">
-            {activeCell && cells.length > 0 ? (() => {
-              const [col, rowStr] = activeCell.match(/^([A-Z]+)(\d+)$/).slice(1);
-              const cell = cells[parseInt(rowStr) - 1]?.[columnToNumber(col) - 1];
-              return cell?.formula ? `=${cell.formula}` : '无';
-            })() : '无'}
-          </span>
         </div>
       </div>
 
@@ -822,15 +855,39 @@ const ExcelEditor = () => {
 
       {/* 工作表信息 */}
       <div className="sheet-info">
-        <div className="sheet-name">{fileInfo ? `工作表: ${fileInfo.sheetName}` : '未加载文件'}</div>
+        <div className="sheet-name">{fileInfo ? `当前工作表: ${fileInfo.sheetName}` : '未加载文件'}</div>
         {fileInfo && (
           <div className="sheet-stats">
+            <span>工作表: {currentSheetIndex + 1}/{sheetNames.length}</span>
             <span>行数: {cells.length}</span>
             <span>列数: {headers.length}</span>
             <span>公式单元格: {cells.flat().filter(cell => cell.formula).length}</span>
           </div>
         )}
       </div>
+
+ {/* 工作表标签页 */}
+      {sheetNames.length > 0 && (
+        <div className="sheet-tabs">
+          <div className="sheet-tabs-container">
+            {sheetNames.map((name, index) => (
+              <button
+                key={index}
+                className={`sheet-tab ${currentSheetIndex === index ? 'active' : ''}`}
+                onClick={() => {
+                  if (workbook && workbookXLSX) {
+                    loadWorksheet(index, workbook, workbookXLSX);
+                  }
+                }}
+                disabled={loading || !workbook}
+              >
+                {name}
+                {currentSheetIndex === index && <span className="tab-indicator"></span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 状态提示 */}
       {loading && (
