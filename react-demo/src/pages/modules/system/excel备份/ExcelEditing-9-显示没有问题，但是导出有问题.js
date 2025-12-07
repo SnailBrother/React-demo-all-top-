@@ -241,7 +241,7 @@ const getCellTypeFromExcelJS = (cell) => {
 
 // 主组件
 const ExcelEditor = () => {
-  const [workbook, setWorkbook] = useState(null); // ExcelJS.Workbook 实例
+  const [excelData, setExcelData] = useState({}); // { "Sheet1": { cells, headers, dvMap }, ... }
   const [currentSheetName, setCurrentSheetName] = useState('');
   const [sheetNames, setSheetNames] = useState([]);
   const [namedRanges, setNamedRanges] = useState([]);
@@ -272,7 +272,7 @@ const ExcelEditor = () => {
 
       // XLSX 用于命名区域 & 基础数据
       const wbXLSX = XLSX.read(arrayBuffer, { type: 'array', cellFormula: true });
-      // ExcelJS 用于保留完整 workbook（含验证、样式等）
+      // ExcelJS 用于数据有效性
       const wbExcelJS = new ExcelJS.Workbook();
       await wbExcelJS.xlsx.load(arrayBuffer);
 
@@ -283,13 +283,14 @@ const ExcelEditor = () => {
       const globalNamedRanges = parseNamedRangesWithXLSX(wbXLSX);
       setNamedRanges(globalNamedRanges);
 
-      // 构建 cells 结构（仅用于 UI 渲染和计算）
+      // 构建 excelData
       const newExcelData = {};
       for (const name of allSheetNames) {
         const wsXLSX = wbXLSX.Sheets[name];
         const wsExcelJS = wbExcelJS.getWorksheet(name);
         if (!wsExcelJS) continue;
 
+        // 获取范围
         let maxRows = 100, maxCols = 26;
         if (wsXLSX && wsXLSX['!ref']) {
           const range = XLSX.utils.decode_range(wsXLSX['!ref']);
@@ -300,13 +301,16 @@ const ExcelEditor = () => {
           maxCols = wsExcelJS.dimensions.right;
         }
 
+        // 数据有效性
         const dvMap = getDataValidationsFromExcelJS(wsExcelJS);
 
+        // 构建 headers
         const headers = Array.from({ length: maxCols }, (_, i) => ({
           label: getColumnLetter(i + 1),
           colIndex: i + 1,
         }));
 
+        // 构建 cells
         const cells = Array.from({ length: maxRows }, (_, r) =>
           Array.from({ length: maxCols }, (_, c) => {
             const addr = `${getColumnLetter(c + 1)}${r + 1}`;
@@ -341,12 +345,12 @@ const ExcelEditor = () => {
         newExcelData[name] = { cells, headers, dvMap };
       }
 
-      setWorkbook(wbExcelJS); // 保存原始 workbook
       setExcelData(newExcelData);
       if (allSheetNames.length > 0) {
         setCurrentSheetName(allSheetNames[0]);
       }
 
+      // 初始化历史记录
       const initHistory = {};
       const initHistoryIndex = {};
       allSheetNames.forEach(name => {
@@ -363,9 +367,6 @@ const ExcelEditor = () => {
       setLoading(false);
     }
   };
-
-  // 新增状态：存储 UI 用的 cells 数据
-  const [excelData, setExcelData] = useState({});
 
   // 重新计算当前工作表的所有公式
   const recalculateCurrentSheet = () => {
@@ -404,10 +405,10 @@ const ExcelEditor = () => {
     }
   }, [excelData, currentSheetName, namedRanges]);
 
-  // 编辑单元格（同时更新 ExcelJS workbook）
+  // 编辑单元格
   const handleCellEdit = (rowIndex, colIndex, value) => {
     const sheet = excelData[currentSheetName];
-    if (!sheet || !workbook) return;
+    if (!sheet) return;
 
     // 保存历史
     const currentHistory = [...(history[currentSheetName] || []).slice(0, (historyIndex[currentSheetName] || -1) + 1)];
@@ -419,7 +420,7 @@ const ExcelEditor = () => {
     setHistory(prev => ({ ...prev, [currentSheetName]: currentHistory }));
     setHistoryIndex(prev => ({ ...prev, [currentSheetName]: currentHistory.length - 1 }));
 
-    // 更新 UI 数据
+    // 更新单元格
     const newCells = [...sheet.cells];
     const cell = newCells[rowIndex][colIndex];
     if (value.startsWith('=')) {
@@ -435,15 +436,6 @@ const ExcelEditor = () => {
       ...prev,
       [currentSheetName]: { ...prev[currentSheetName], cells: newCells }
     }));
-
-    // 同步更新 ExcelJS workbook
-    const ws = workbook.getWorksheet(currentSheetName);
-    const wsCell = ws.getCell(rowIndex + 1, colIndex + 1);
-    if (value.startsWith('=')) {
-      wsCell.value = { formula: value.substring(1) };
-    } else {
-      wsCell.value = value;
-    }
 
     setEditingCell(null);
   };
@@ -578,12 +570,29 @@ const ExcelEditor = () => {
     );
   };
 
-  // 导出：直接使用原始 workbook
+  // 导出
   const saveAndExportExcel = async () => {
-    if (!workbook) return;
+    if (!Object.keys(excelData).length) return;
     try {
       setLoading(true);
-      const buffer = await workbook.xlsx.writeBuffer();
+      const wb = new ExcelJS.Workbook();
+      for (const [name, sheet] of Object.entries(excelData)) {
+        const ws = wb.addWorksheet(name);
+        const { cells } = sheet;
+        cells.forEach((row, r) => {
+          row.forEach((cell, c) => {
+            const wsCell = ws.getCell(r + 1, c + 1);
+            if (cell.formula) {
+              wsCell.value = { formula: cell.formula };
+            } else {
+              wsCell.value = cell.value;
+            }
+            // 可选：恢复数据有效性（复杂，此处省略）
+          });
+        });
+      }
+
+      const buffer = await wb.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -641,6 +650,7 @@ const ExcelEditor = () => {
     }
   };
 
+  // 当前激活单元格内容
   const getActiveCellContent = () => {
     if (!activeCell || !excelData[currentSheetName]) return '';
     const [col, rowStr] = activeCell.match(/^([A-Z]+)(\d+)$/).slice(1);
@@ -678,7 +688,7 @@ const ExcelEditor = () => {
           <button className="toolbar-btn primary" onClick={loadExcelFromPublic} disabled={loading}>
             <Icon type="load" /> 加载Excel
           </button>
-          <button className="toolbar-btn success" onClick={saveAndExportExcel} disabled={!workbook || loading}>
+          <button className="toolbar-btn success" onClick={saveAndExportExcel} disabled={!Object.keys(excelData).length || loading}>
             <Icon type="save" /> 下载Excel
           </button>
           <button className="toolbar-btn warning" onClick={undo} disabled={(historyIndex[currentSheetName] || -1) <= 0}>
