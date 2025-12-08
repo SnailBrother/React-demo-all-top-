@@ -6,6 +6,41 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "586907",
+      "name": "function",
+      "font_class": "function",
+      "unicode": "eae2",
+      "unicode_decimal": 60130
+    },
+    {
+      "icon_id": "21177461",
+      "name": "函数",
+      "font_class": "hanshu",
+      "unicode": "eae3",
+      "unicode_decimal": 60131
+    },
+    {
+      "icon_id": "36674197",
+      "name": "对错=错",
+      "font_class": "a-duicuocuo",
+      "unicode": "eae4",
+      "unicode_decimal": 60132
+    },
+    {
+      "icon_id": "36674208",
+      "name": "对错=对",
+      "font_class": "a-duicuodui",
+      "unicode": "eae5",
+      "unicode_decimal": 60133
+    },
+    {
+      "icon_id": "36894240",
+      "name": "三点-copy",
+      "font_class": "sandian-vertical",
+      "unicode": "eae6",
+      "unicode_decimal": 60134
+    },
+    {
       "icon_id": "6285211",
       "name": "恢复",
       "font_class": "recover",

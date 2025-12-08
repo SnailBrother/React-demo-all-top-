@@ -559,7 +559,6 @@ const ExcelEditor = () => {
   };
 
   // 渲染表格
-  // 渲染表格
   const renderExcelGrid = () => {
     const sheet = excelData[currentSheetName];
     if (!sheet || !sheet.cells.length || !sheet.headers.length) return null;
@@ -567,17 +566,17 @@ const ExcelEditor = () => {
     const { cells, headers } = sheet;
 
     return (
-      <div className={styles.excelgridcontainer}>
-        <div className={styles.excelgrid}>
-          <div className={`${styles.excelrow} ${styles.headerrow}`}>
-            <div className={`${styles.excelcell} ${styles.cornercell}`}></div>
+      <div className={styles["excel-grid-container"]}>
+        <div className={styles["excel-grid"]}>
+          <div className={`${styles["excel-row"]} ${styles["header-row"]}`}>
+            <div className={`${styles["excel-cell"]} ${styles["corner-cell"]}`}></div>
             {headers.map((_, colIndex) => (
-              <div key={colIndex} className={`${styles.excelcell} ${styles.headercell}`}>{getColumnLetter(colIndex + 1)}</div>
+              <div key={colIndex} className={`${styles["excel-cell"]} ${styles["header-cell"]}`}>{getColumnLetter(colIndex + 1)}</div>
             ))}
           </div>
           {cells.map((row, rowIndex) => (
-            <div key={rowIndex} className={styles.excelrow}>
-              <div className={`${styles.excelcell} ${styles.rowheader}`}>{rowIndex + 1}</div>
+            <div key={rowIndex} className={styles["excel-row"]}>
+              <div className={`${styles["excel-cell"]} ${styles["row-header"]}`}>{rowIndex + 1}</div>
               {row.map((cell, colIndex) => {
                 const address = `${getColumnLetter(colIndex + 1)}${rowIndex + 1}`;
                 const isActive = activeCell === address;
@@ -589,12 +588,12 @@ const ExcelEditor = () => {
                 if (cell.dataValidation?.type === 'list' && cell.dataValidation.options?.length > 0) {
                   if (editingCell === address) {
                     return (
-                      <div key={cell.id} className={`${styles.excelcell} ${isActive ? styles.active : ''} ${highlight ? styles.highlighted : ''}`} onBlur={() => setEditingCell(null)}>
+                      <div key={cell.id} className={`${styles["excel-cell"]} ${isActive ? styles["active"] : ''} ${highlight ? styles["highlighted"] : ''}`} onBlur={() => setEditingCell(null)}>
                         <select
                           autoFocus
                           value={cell.value || ''}
                           onChange={(e) => handleCellEdit(rowIndex, colIndex, e.target.value)}
-                          className={styles.dvselect}
+                          className={styles["dv-select"]}
                         >
                           <option value="">请选择</option>
                           {cell.dataValidation.options.map((opt, idx) => (
@@ -607,7 +606,7 @@ const ExcelEditor = () => {
                     return (
                       <div
                         key={cell.id}
-                        className={`${styles.excelcell} ${isActive ? styles.active : ''} ${highlight ? styles.highlighted : ''} ${styles.dvcell}`}
+                        className={`${styles["excel-cell"]} ${isActive ? styles["active"] : ''} ${highlight ? styles["highlighted"] : ''} ${styles["dv-cell"]}`}
                         onClick={() => {
                           setActiveCell(address);
                           setEditingCell(address);
@@ -626,7 +625,7 @@ const ExcelEditor = () => {
                   <div
                     key={cell.id}
                     ref={el => { if (el) cellRefs.current[cell.id] = el; }}
-                    className={`${styles.excelcell} ${isActive ? styles.active : ''} ${cell.formula ? styles.formulacell : ''} ${highlight ? styles.highlighted : ''}`}
+                    className={`${styles["excel-cell"]} ${isActive ? styles["active"] : ''} ${cell.formula ? styles["formula-cell"] : ''} ${highlight ? styles["highlighted"] : ''}`}
                     contentEditable
                     suppressContentEditableWarning
                     onClick={() => handleCellClick(rowIndex, colIndex)}
@@ -655,6 +654,7 @@ const ExcelEditor = () => {
                     }}
                     title={cell.formula ? `公式: =${cell.formula}` : ''}
                   >
+                    {/* {displayContent || (cell.isEmpty ? '(空)' : '')} */}
                     {displayContent || (cell.isEmpty ? '' : '')}
                   </div>
                 );
@@ -761,70 +761,75 @@ const ExcelEditor = () => {
   return (
     <div className={styles.exceleditor}>
       {/* 工具栏 */}
-      <div className={styles.toolbar}>
-        <div className={styles.toolbarsection}>
-          <button className={`${styles.toolbarbtn} ${styles.primary}`} onClick={loadExcelFromPublic} disabled={loading}>
+      <div className={styles["toolbar"]}>
+        <div className={styles["toolbar-section"]}>
+          <button className={`${styles["toolbar-btn"]} ${styles["primary"]}`} onClick={loadExcelFromPublic} disabled={loading}>
             <Icon type="load" /> 加载Excel
           </button>
-          <button className={`${styles.toolbarbtn} ${styles.success}`} onClick={saveAndExportExcel} disabled={!workbook || loading}>
+          <button className={`${styles["toolbar-btn"]} ${styles["success"]}`} onClick={saveAndExportExcel} disabled={!workbook || loading}>
             <Icon type="save" /> 下载Excel
           </button>
-          <button className={`${styles.toolbarbtn} ${styles.warning}`} onClick={undo} disabled={(historyIndex[currentSheetName] || -1) <= 0}>
+          <button className={`${styles["toolbar-btn"]} ${styles["warning"]}`} onClick={undo} disabled={(historyIndex[currentSheetName] || -1) <= 0}>
             <Icon type="load" /> 撤销
           </button>
-          <button className={`${styles.toolbarbtn} ${styles.info}`} onClick={redo} disabled={(historyIndex[currentSheetName] || -1) >= (history[currentSheetName]?.length - 1 || 0)}>
+          <button className={`${styles["toolbar-btn"]} ${styles["info"]}`} onClick={redo} disabled={(historyIndex[currentSheetName] || -1) >= (history[currentSheetName]?.length - 1 || 0)}>
             <Icon type="save" /> 恢复
           </button>
         </div>
       </div>
+
       {/* 信息栏 */}
-      {/* <div className={styles.infobar}>
-        <div className={styles.infoitem}>
-          <span className={styles.infobarlabel}>工作表:</span>
-          <span className={styles.infobarvalue}>{currentSheetName || '未加载'}</span>
-        </div>
-        <div className={styles.infoitem}>
-          <span className={styles.infobarlabel}>单元格:</span>
-          <span className={styles.infobarvalue}>{activeCell || '未选中'}</span>
-        </div>
-        <div className={styles.infoitem}>
-          <span className={styles.infobarlabel}>自定义名称:</span>
-          <span className={styles.infobarvalue}>{activeCell ? (addressToNameMap[activeCell] || '无') : '未选中'}</span>
-        </div>
-        <div className={styles.infoitem}>
-          <span className={styles.infobarlabel}>内容:</span>
-          <span className={`${styles.infobarvalue} ${styles.contentvalue}`}>{getActiveCellContent()}</span>
-        </div>
-        <div className={styles.infoitem}>
-          <span className={styles.infobarlabel}>显示值:</span>
-          <span className={`${styles.infobarvalue} ${styles.displayvalue}`}>{cellDisplayValue || '空'}</span>
-        </div>
-      </div> */}
+      {/* 可以暂时不要，但是不要删除 */}
+      {/* <div className="info-bar">
+          <div className="info-item">
+            <span className="info-label">工作表:</span>
+            <span className="info-value">{currentSheetName || '未加载'}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">单元格:</span>
+            <span className="info-value">{activeCell || '未选中'}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">自定义名称:</span>
+            <span className="info-value">{activeCell ? (addressToNameMap[activeCell] || '无') : '未选中'}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">内容:</span>
+            <span className="info-value content-value">{getActiveCellContent()}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">显示值:</span>
+            <span className="info-value display-value">{cellDisplayValue || '空'}</span>
+          </div>
+        </div> */}
+
       {/* 编辑输入框 */}
-      <div className={styles.cellinputbar}>
-        <div className={`${styles.infoitem} ${styles.infoitemcell}`}>
-          <span className={styles.infovalue}>{activeCell || ''}</span>
+      <div className={styles["cell-input-bar"]}>
+        <div className={`${styles["info-item"]} ${styles["info-item-cell"]}`}>
+          {/* <span className="info-label">单元格:</span> */}
+          {/* <span className="info-value">{activeCell || '未选中'}</span> */}
+          <span className={styles["info-value"]}>{activeCell || ''}</span>
         </div>
-        <div className={`${styles.infoitem} ${styles.infoitemcell}`}>
-          <svg className={styles.titleicon} aria-hidden="true">
+        <div className={`${styles["info-item"]} ${styles["info-item-cell"]}`}>
+          <svg className={styles["titleicon"]} aria-hidden="true">
             <use xlinkHref="#icon-sandian-vertical"></use>
           </svg>
         </div>
 
-
-        <div className={styles.infoitem}>
-          <svg className={styles.titleicon} aria-hidden="true">
+        <div className={styles["info-item"]}>
+          <svg className={styles["titleicon"]} aria-hidden="true">
             <use xlinkHref="#icon-a-duicuocuo"></use>
           </svg>
-          <svg className={styles.titleicon} aria-hidden="true">
+          <svg className={styles["titleicon"]} aria-hidden="true">
             <use xlinkHref="#icon-a-duicuodui"></use>
           </svg>
-          <svg className={styles.titleicon} aria-hidden="true">
+          <svg className={styles["titleicon"]} aria-hidden="true">
             <use xlinkHref="#icon-hanshu"></use>
           </svg>
+          {/* <span className="info-label">编辑:</span> */}
           <input
             type="text"
-            className={styles.cellinput}
+            className={styles["cell-input"]}
             value={cellInput}
             onChange={(e) => setCellInput(e.target.value)}
             onKeyDown={(e) => {
@@ -845,39 +850,40 @@ const ExcelEditor = () => {
 
       {/* 工作表标签 */}
       {sheetNames.length > 0 && (
-        <div className={styles.sheettabs}>
-          <div className={styles.sheettabscontainer}>
+        <div className={styles["sheet-tabs"]}>
+          <div className={styles["sheet-tabs-container"]}>
             {sheetNames.map((name, index) => (
               <button
                 key={index}
-                className={`${styles.sheettab} ${currentSheetName === name ? styles.active : ''}`}
+                className={`${styles["sheet-tab"]} ${currentSheetName === name ? styles["active"] : ''}`}
                 onClick={() => setCurrentSheetName(name)}
                 disabled={loading}
               >
                 {name}
-                {currentSheetName === name && <span className={styles.tabindicator}></span>}
+                {currentSheetName === name && <span className={styles["tab-indicator"]}></span>}
               </button>
             ))}
           </div>
+          
         </div>
       )}
 
       {/* 状态提示 */}
       {loading && (
-        <div className={styles.loadingoverlay}>
-          <div className={styles.loadingspinner}></div>
+        <div className={styles["loading-overlay"]}>
+          <div className={styles["loading-spinner"]}></div>
           <div>处理中...</div>
         </div>
       )}
       {error && (
-        <div className={styles.errormessage}>
-          <span className={styles.erroricon}>⚠️</span>
+        <div className={styles["error-message"]}>
+          <span className={styles["error-icon"]}>⚠️</span>
           <span>{error}</span>
-          <button className={styles.errorclose} onClick={() => setError(null)}>×</button>
+          <button className={styles["error-close"]} onClick={() => setError(null)}>×</button>
         </div>
       )}
       {showSaveNotification && (
-        <div className={styles.savenotification}>文件已保存并开始下载！</div>
+        <div className={styles["save-notification"]}>文件已保存并开始下载！</div>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 /* 主容器 */
-.excel-editor {
+.exceleditor {
   width: 100%;
   width: 100%;
   margin: 0 auto;
@@ -19,11 +19,11 @@
 .toolbar {
   background: white;
   border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 2px;
+  margin-bottom: 2px;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
   display: flex;
-  justify-content: space-between;
+  justify-content:end;
   align-items: center;
   flex-shrink: 0; /* 不收缩 */
 }
@@ -783,6 +783,8 @@
   box-sizing: border-box;
   padding: 0;
   gap: 5px;
+  width: 50px;
+  height: 30px;
 }
 .info-item-cell .info-value {
   background-color: #ffffff !important;
@@ -794,6 +796,7 @@
   fill: rgb(148, 146, 146);
   overflow: hidden;
 }
+
 /*  #endregion end */
 
 
