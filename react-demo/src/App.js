@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { MusicProvider } from './context/MusicContext';
+import { ShareExcelWordDataProvider } from './context/ShareExcelWordData';
 import { MessageProvider } from './components/UI/Message';
 import AppRoutes from './routes';
 import './assets/styles/variables.css';
@@ -35,20 +36,20 @@ function App() {
     <Router>
       <AuthProvider>
         <ThemeProvider>
+          <ShareExcelWordDataProvider>
+            <TravelThemeProvider>
+              <MusicProvider>
+                <MessageProvider>
+                  <AccountingProvider>
+                    <div className={styles.app}>
+                      <AppRoutes />
 
-          <TravelThemeProvider>
-            <MusicProvider>
-              <MessageProvider>
-                <AccountingProvider>
-                  <div className={styles.app}>
-                    <AppRoutes />
-
-                  </div>
-                </AccountingProvider>
-              </MessageProvider>
-            </MusicProvider>
-          </TravelThemeProvider>
-
+                    </div>
+                  </AccountingProvider>
+                </MessageProvider>
+              </MusicProvider>
+            </TravelThemeProvider>
+          </ShareExcelWordDataProvider>
         </ThemeProvider>
       </AuthProvider>
     </Router>

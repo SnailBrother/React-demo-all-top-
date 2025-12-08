@@ -492,73 +492,52 @@ const ExcelEditor = () => {
       //     });
       //   });
       // }
-      // 构建用于共享的完整数据结构 —— 仅包含命名区域中的单元格
-      const workbookDataForSharing = {};
-      for (const name of allSheetNames) {
-        const sheet = newExcelData[name];
-        if (!sheet) continue;
+// 构建用于共享的完整数据结构 —— 仅包含命名区域中的单元格
+const workbookDataForSharing = {};
+for (const name of allSheetNames) {
+  const sheet = newExcelData[name];
+  if (!sheet) continue;
 
-        // 获取当前工作表的所有命名区域地址集合
-        const namedAddresses = new Set();
-        namedRanges
-          .filter(nr => nr.sheet === name)
-          .forEach(nr => {
-            if (!nr.address.includes(':')) {
-              namedAddresses.add(nr.address);
-            } else {
-              const [start, end] = nr.address.split(':');
-              const startCell = parseCellRef(start);
-              const endCell = parseCellRef(end);
-              if (startCell && endCell) {
-                for (let r = startCell.r; r <= endCell.r; r++) {
-                  for (let c = startCell.c; c <= endCell.c; c++) {
-                    namedAddresses.add(encodeCellRef({ r, c }));
-                  }
-                }
-              }
+  // 获取当前工作表的所有命名区域地址集合
+  const namedAddresses = new Set();
+  namedRanges
+    .filter(nr => nr.sheet === name)
+    .forEach(nr => {
+      if (!nr.address.includes(':')) {
+        namedAddresses.add(nr.address);
+      } else {
+        const [start, end] = nr.address.split(':');
+        const startCell = parseCellRef(start);
+        const endCell = parseCellRef(end);
+        if (startCell && endCell) {
+          for (let r = startCell.r; r <= endCell.r; r++) {
+            for (let c = startCell.c; c <= endCell.c; c++) {
+              namedAddresses.add(encodeCellRef({ r, c }));
             }
-          });
-
-        workbookDataForSharing[name] = {};
-        sheet.cells.forEach((row, r) => {
-          row.forEach((cell, c) => {
-            const addr = `${getColumnLetter(c + 1)}${r + 1}`;
-            if (namedAddresses.has(addr)) {
-              // 构建用于求值的临时 map（仅当前 sheet 命名区域）
-              const tempSheetMap = {};
-              namedAddresses.forEach(a => {
-                const [c, rStr] = a.match(/^([A-Z]+)(\d+)$/).slice(1);
-                const r = parseInt(rStr) - 1;
-                const cIdx = columnToNumber(c) - 1;
-                const sourceCell = sheet.cells[r]?.[cIdx];
-                if (sourceCell) {
-                  tempSheetMap[a] = {
-                    v: sourceCell.value || '',
-                    f: sourceCell.formula,
-                  };
-                }
-              });
-
-              let displayValue = cell.value || '';
-              if (cell.formula) {
-                const result = evaluateFormula(`=${cell.formula}`, tempSheetMap, namedRanges);
-                displayValue = result != null ? String(result) : '#ERROR!';
-              }
-
-              workbookDataForSharing[name][addr] = {
-                value: cell.formula ? '' : (cell.value || ''),
-                formula: cell.formula || null,
-                type: cell.type || 'text',
-                displayValue,
-                dataValidation: cell.dataValidation || null,
-                isEmpty: cell.isEmpty,
-              };
-            }
-          });
-        });
+          }
+        }
       }
+    });
 
-      //样 fullWorkbookData 就只包含命名区域内的单元格了
+  workbookDataForSharing[name] = {};
+  sheet.cells.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      const addr = `${getColumnLetter(c + 1)}${r + 1}`;
+      if (namedAddresses.has(addr)) {
+        workbookDataForSharing[name][addr] = {
+          value: cell.value || '',
+          formula: cell.formula || null,
+          type: cell.type || 'text',
+          displayValue: cell.displayValue || '',
+          dataValidation: cell.dataValidation || null,
+          isEmpty: cell.isEmpty,
+        };
+      }
+    });
+  });
+}
+
+//样 fullWorkbookData 就只包含命名区域内的单元格了
       // 👇 分发到全局状态
       dispatch({
         type: 'LOAD_ENTIRE_WORKBOOK',
@@ -620,192 +599,63 @@ const ExcelEditor = () => {
   }, [excelData, currentSheetName, namedRanges]);
 
   // 编辑单元格（同时更新 ExcelJS workbook）
-const handleCellEdit = (rowIndex, colIndex, value) => {
-  const sheet = excelData[currentSheetName];
-  if (!sheet || !workbook) return;
+  const handleCellEdit = (rowIndex, colIndex, value) => {
+    const sheet = excelData[currentSheetName];
+    if (!sheet || !workbook) return;
 
-  // 保存历史
-  const currentHistory = [...(history[currentSheetName] || []).slice(0, (historyIndex[currentSheetName] || -1) + 1)];
-  currentHistory.push({
-    cells: sheet.cells.map(r => [...r]),
-    activeCell,
-    timestamp: new Date().toISOString()
+    // 保存历史
+    const currentHistory = [...(history[currentSheetName] || []).slice(0, (historyIndex[currentSheetName] || -1) + 1)];
+    currentHistory.push({
+      cells: sheet.cells.map(r => [...r]),
+      activeCell,
+      timestamp: new Date().toISOString()
+    });
+    setHistory(prev => ({ ...prev, [currentSheetName]: currentHistory }));
+    setHistoryIndex(prev => ({ ...prev, [currentSheetName]: currentHistory.length - 1 }));
+
+    // 更新 UI 数据
+    const newCells = [...sheet.cells];
+    const cell = newCells[rowIndex][colIndex];
+    if (value.startsWith('=')) {
+      cell.formula = value.substring(1);
+      cell.value = '';
+    } else {
+      cell.formula = null;
+      cell.value = value;
+    }
+    cell.isEmpty = !value && !cell.formula;
+
+    setExcelData(prev => ({
+      ...prev,
+      [currentSheetName]: { ...prev[currentSheetName], cells: newCells }
+    }));
+
+    // 同步更新 ExcelJS workbook
+    const ws = workbook.getWorksheet(currentSheetName);
+    const wsCell = ws.getCell(rowIndex + 1, colIndex + 1);
+    if (value.startsWith('=')) {
+      wsCell.value = { formula: value.substring(1) };
+    } else {
+      wsCell.value = value;
+    }
+
+    setEditingCell(null);
+
+    const address = `${getColumnLetter(colIndex + 1)}${rowIndex + 1}`;
+
+// ✅ 仅当该单元格属于某个命名区域时，才同步到全局
+if (isCellInNamedRange(address, namedRanges, currentSheetName)) {
+  dispatch({
+    type: 'UPDATE_CELL',
+    payload: {
+      sheetName: currentSheetName,
+      address,
+      value,
+    },
   });
-  setHistory(prev => ({ ...prev, [currentSheetName]: currentHistory }));
-  setHistoryIndex(prev => ({ ...prev, [currentSheetName]: currentHistory.length - 1 }));
+}
 
-  // 更新 UI 数据
-  const newCells = [...sheet.cells];
-  const cell = newCells[rowIndex][colIndex];
-  if (value.startsWith('=')) {
-    cell.formula = value.substring(1);
-    cell.value = '';
-  } else {
-    cell.formula = null;
-    cell.value = value;
-  }
-  cell.isEmpty = !value && !cell.formula;
-
-  setExcelData(prev => ({
-    ...prev,
-    [currentSheetName]: { ...prev[currentSheetName], cells: newCells }
-  }));
-
-  // 同步更新 ExcelJS workbook
-  const ws = workbook.getWorksheet(currentSheetName);
-  const wsCell = ws.getCell(rowIndex + 1, colIndex + 1);
-  if (value.startsWith('=')) {
-    wsCell.value = { formula: value.substring(1) };
-  } else {
-    wsCell.value = value;
-  }
-
-  setEditingCell(null);
-
-  const address = `${getColumnLetter(colIndex + 1)}${rowIndex + 1}`;
-
-  // ✅ 构建用于公式求值的 sheet 数据映射（仅命名区域内的单元格）
-  const buildSheetMapForEvaluation = (sheetName) => {
-    const sheetMap = {};
-    const sheetData = excelData[sheetName]?.cells;
-    if (!sheetData) return sheetMap;
-
-    // 获取当前工作表所有命名区域地址
-    const namedAddresses = new Set();
-    namedRanges
-      .filter(nr => nr.sheet === sheetName)
-      .forEach(nr => {
-        if (!nr.address.includes(':')) {
-          namedAddresses.add(nr.address);
-        } else {
-          const [start, end] = nr.address.split(':');
-          const startCell = parseCellRef(start);
-          const endCell = parseCellRef(end);
-          if (startCell && endCell) {
-            for (let r = startCell.r; r <= endCell.r; r++) {
-              for (let c = startCell.c; c <= endCell.c; c++) {
-                namedAddresses.add(encodeCellRef({ r, c }));
-              }
-            }
-          }
-        }
-      });
-
-    sheetData.forEach((row, r) => {
-      row.forEach((cell, c) => {
-        const addr = `${getColumnLetter(c + 1)}${r + 1}`;
-        if (namedAddresses.has(addr)) {
-          sheetMap[addr] = {
-            v: cell.value || '',
-            f: cell.formula,
-          };
-        }
-      });
-    });
-
-    return sheetMap;
   };
-
-  // ✅ 计算 displayValue
-  let computedDisplayValue = value;
-  if (value.startsWith('=')) {
-    const formula = value.substring(1);
-    const sheetMap = buildSheetMapForEvaluation(currentSheetName);
-    const result = evaluateFormula(`=${formula}`, sheetMap, namedRanges);
-    computedDisplayValue = result != null ? String(result) : '#ERROR!';
-  } else {
-    computedDisplayValue = value;
-  }
-
-  // ✅ 仅当该单元格属于某个命名区域时，才同步到全局
-  if (isCellInNamedRange(address, namedRanges, currentSheetName)) {
-    dispatch({
-      type: 'UPDATE_CELL',
-      payload: {
-        sheetName: currentSheetName,
-        address,
-        value: value.startsWith('=') ? '' : value, // value 字段存原始输入（非公式部分）
-        formula: value.startsWith('=') ? value.substring(1) : null,
-        displayValue: computedDisplayValue,
-        type: value.startsWith('=') ? 'formula' : typeof value === 'number' ? 'number' : 'text',
-      },
-    });
-  }
-
-  // ✅ 新增：同步所有受影响的命名区域公式单元格到全局状态
-  const syncAffectedNamedCellsToGlobal = () => {
-    const sheetData = excelData[currentSheetName]?.cells;
-    if (!sheetData) return;
-
-    // 构建当前 sheet 所有命名区域地址集合（用于判断是否需同步）
-    const namedAddresses = new Set();
-    const currentSheetNamedRanges = namedRanges.filter(nr => nr.sheet === currentSheetName);
-    currentSheetNamedRanges.forEach(nr => {
-      if (!nr.address.includes(':')) {
-        namedAddresses.add(nr.address);
-      } else {
-        const [start, end] = nr.address.split(':');
-        const startCell = parseCellRef(start);
-        const endCell = parseCellRef(end);
-        if (startCell && endCell) {
-          for (let r = startCell.r; r <= endCell.r; r++) {
-            for (let c = startCell.c; c <= endCell.c; c++) {
-              namedAddresses.add(encodeCellRef({ r, c }));
-            }
-          }
-        }
-      }
-    });
-
-    // 构建用于公式求值的完整 sheetMap（仅命名区域）
-    const sheetMap = {};
-    sheetData.forEach((row, r) => {
-      row.forEach((cell, c) => {
-        const addr = `${getColumnLetter(c + 1)}${r + 1}`;
-        if (namedAddresses.has(addr)) {
-          sheetMap[addr] = {
-            v: cell.value || '',
-            f: cell.formula,
-          };
-        }
-      });
-    });
-
-    // 遍历所有命名区域中的公式单元格，重新计算 displayValue
-    namedAddresses.forEach(addr => {
-      const cellRef = parseCellRef(addr);
-      if (!cellRef) return;
-      const { r, c } = cellRef;
-      const cell = sheetData[r]?.[c];
-      if (!cell) return;
-
-      let newValue = cell.value || '';
-      let newFormula = cell.formula;
-      let newDisplayValue = newValue;
-
-      if (newFormula) {
-        const result = evaluateFormula(`=${newFormula}`, sheetMap, namedRanges);
-        newDisplayValue = result != null ? String(result) : '#ERROR!';
-      }
-
-      // 派发更新（无论是否变化，或可加 diff 判断）
-      dispatch({
-        type: 'UPDATE_CELL',
-        payload: {
-          sheetName: currentSheetName,
-          address: addr,
-          value: newFormula ? '' : newValue,
-          formula: newFormula,
-          displayValue: newDisplayValue,
-          type: newFormula ? 'formula' : typeof newValue === 'number' ? 'number' : 'text',
-        },
-      });
-    });
-  };
-
-  // 在 handleCellEdit 最后调用
-  syncAffectedNamedCellsToGlobal();
-};
 
   // 单元格点击
   const handleCellClick = (rowIndex, colIndex) => {

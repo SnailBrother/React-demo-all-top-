@@ -9,7 +9,8 @@ import MusicRecommend from '../pages/modules/music/Recommend';
 import ChatChat from '../pages/modules/chat/Chat';
 import Musicplayer from '../pages/modules/music/Player';
 import SystemThemeSettings from '../pages/modules/system/SystemThemeSettings';
-
+import SystemReadExcelData from '../pages/modules/system/ReadExcelData';
+ 
 // 非核心页面 - 懒加载（不常用页面）
 const AccountingAdd = lazy(() => import('../pages/modules/accounting/AccountingAdd'));
 const AccountingCharts = lazy(() => import('../pages/modules/accounting/AccountingCharts'));
@@ -46,10 +47,12 @@ const OfficeNeighborhoodFinder = lazy(() => import('../pages/modules/office/Neig
 const ChatDressingGuidelines = lazy(() => import('../pages/modules/chat/DressingGuidelines'));
 const ChatUpdateWear = lazy(() => import('../pages/modules/chat/UpdateWear'));
 
+//------------------------------系统------------------------------
 const SystemProfile = lazy(() => import('../pages/modules/system/Profile'));
 const SystemBackendSettings = lazy(() => import('../pages/modules/system/BackendSettings'));
 const SystemWordEditing = lazy(() => import('../pages/modules/system/WordEditing'));
 const SystemExcelEditing = lazy(() => import('../pages/modules/system/ExcelEditing'));
+//const SystemReadExcelData = lazy(() => import('../pages/modules/system/ReadExcelData'));
 
 //------------------------------旅行------------------------------
 const FirstTimeTravel = lazy(() => import('../pages/modules/travel/FirstTime/HomeContainer'));
@@ -160,6 +163,8 @@ export const moduleConfig = {
       { key: 'profile', label: '个人资料', icon: '#icon-user-01', component: SystemProfile, showInNavigation: true },
        { key: 'WordEditing', label: 'word编辑', icon: '#icon-word', component: SystemWordEditing, showInNavigation: true },
        { key: 'ExcelEditing', label: 'Excel编辑', icon: '#icon-excel4', component: SystemExcelEditing, showInNavigation: true },
+       { key: 'ReadExcelData', label: 'Excel读取', icon: '#icon-excel4', component: SystemReadExcelData, showInNavigation: true },
+       
       { key: 'BackendSettings', label: '数据更新', icon: '#icon-gongjuxuanzhong', component: SystemBackendSettings, showInNavigation: true },
     ]
   },
