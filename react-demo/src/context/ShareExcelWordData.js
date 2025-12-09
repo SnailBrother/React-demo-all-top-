@@ -23,7 +23,7 @@ const buildAddressToNamedRangeMap = (namedRanges) => {
 const excelDataReducer = (state, action) => {
   switch (action.type) {
     case 'UPDATE_CELL':
-      const { sheetName, address, value, displayValue, formula, type } = action.payload;
+      const { sheetName, address, value, displayValue, formula, type, dataValidation } = action.payload;
       const key = `${sheetName}!${address}`;
       return {
         ...state,
@@ -31,9 +31,10 @@ const excelDataReducer = (state, action) => {
           ...state.customCellValues,
           [key]: {
             value: value || '',
-            formula: formula ?? (value?.startsWith('=') ? value.slice(1) : null),
+            formula: formula ?? null,
             displayValue: displayValue ?? (value || ''),
             type: type ?? (value?.startsWith('=') ? 'formula' : typeof value === 'number' ? 'number' : 'text'),
+            dataValidation: dataValidation ?? null, // 👈 显式保留
           },
         },
       };

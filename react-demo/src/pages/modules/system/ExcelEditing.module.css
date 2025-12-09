@@ -3,7 +3,7 @@
   width: 100%;
   width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px;
   background: #f5f5f5;
   height: calc(100dvh - 110px);
   /* 👇 新增：使用 flex 垂直布局 */
@@ -11,6 +11,7 @@
   flex-direction: column;
   box-sizing: border-box;
 }
+
 
 /* #region start 工具栏样式 */
 .toolbar {
@@ -28,6 +29,7 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+
 }
 
 .toolbarbtn {
@@ -162,8 +164,8 @@
 .excelgridcontainer {
   background: white;
   border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 2px;
+  padding: 0px;
+  margin-bottom: 0px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: auto;
   min-height: 300px;
@@ -545,3 +547,187 @@
   background: #e8f5e9;
 }
 /* #endregion end */
+
+
+/* #region start 顶部窗口工具栏 */
+
+
+/* 工具栏分区 - Flexbox */
+
+ /* #region start 顶部窗口工具栏 */
+
+/* 主容器 - Flexbox布局 */
+.WindowToolContainer {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  box-sizing: border-box;
+  height: 60px;
+  gap: 8px;
+}
+
+/* 工具栏分区 */
+.toolSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+
+}
+/* 单个选择项容器 */
+.selectItem {
+  display: flex;
+  align-items: center;
+ flex-direction: row;
+ justify-content: space-around;
+  color: #202124;
+  width: 100%;
+}
+
+/* 选择框样式 */
+.selectBox {
+  padding: 2px 10px; /* 内边距，提升点击体验 */
+  border: 1px solid #ddd; /* 浅灰色边框 */
+  border-radius: 4px; /* 轻微圆角，更美观 */
+  font-size: 14px; /* 选择框文字大小 */
+  cursor: pointer; /* 鼠标悬浮显示手型 */
+  background-color: #fff; /* 白色背景 */
+}
+
+/* 选择框hover/聚焦样式（可选增强） */
+.selectBox:hover {
+  border-color: #999;
+}
+
+.selectBox:focus {
+  outline: none;
+  border-color: #666;
+}
+/* 图标行 */
+.iconRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+ 
+}
+
+/* 图标组 */
+.iconGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+/* 图标样式 */
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  cursor: pointer;
+  fill: #5f6368;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 2px;
+}
+
+/* 图标悬停效果 */
+.icon:hover {
+  background: #f1f3f4;
+  fill: #202124;
+}
+
+/* 图标激活状态 */
+.icon:active {
+  background: #e8eaed;
+}
+
+/* 图标选中状态 */
+.icon.active {
+  background: #e8f0fe;
+  fill: #1a73e8;
+  border-color: #d2e3fc;
+}
+
+/* 分区标签 */
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #5f6368;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  height: 16px;
+}
+
+/* 分隔线 */
+.sectionDivider {
+  width: 1px;
+  height: 40px;
+  background: #e0e0e0;
+  margin: 0 8px;
+}
+
+/* 对齐方式容器 */
+.alignmentContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* 对齐方式行（两列布局） */
+.alignmentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+}
+
+/* 对齐方式列 */
+.alignmentColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+/* 水平对齐图标组 */
+.alignmentIcons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+/* 垂直对齐图标组 */
+.verticalAlignmentIcons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+ 
+}
+
+/* 额外工具列（自动换行、合并居中） */
+.extraToolsColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+
+
+/* #endregion end */
+
+/* #endregion end */
+

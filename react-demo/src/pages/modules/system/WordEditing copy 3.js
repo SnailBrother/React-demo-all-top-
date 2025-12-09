@@ -5,7 +5,6 @@ import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { renderAsync } from 'docx-preview';
 import styles from './WordEditing.module.css';
-import { useShareExcelWordData } from '../../../context/ShareExcelWordData'; // 👈 引入上下文 Hook
 
 const START_DELIMITER = '__START__';
 const END_DELIMITER = '__END__';
@@ -20,9 +19,7 @@ const WordEditing = () => {
   const originalTemplateRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const formDataRef = useRef(formData);
-  const editingInputRef = useRef(null);
-
-  const { state: excelState } = useShareExcelWordData(); // 👈 获取共享数据
+  const editingInputRef = useRef(null); // 新增：用于跟踪正在编辑的输入框
 
   useEffect(() => {
     formDataRef.current = formData;
@@ -96,7 +93,9 @@ const WordEditing = () => {
           span.onclick = (e) => {
             e.stopPropagation();
 
+            // 保存当前的滚动位置
             const scrollTop = scrollContainerRef.current.scrollTop;
+
             const scrollContainer = scrollContainerRef.current;
             const spanRect = span.getBoundingClientRect();
             const containerRect = scrollContainer.getBoundingClientRect();
@@ -105,14 +104,16 @@ const WordEditing = () => {
             input.type = 'text';
             input.value = formDataRef.current[key] || '';
             input.className = styles.inlineEditor;
-            editingInputRef.current = input;
+            editingInputRef.current = input; // 记录当前正在编辑的输入框
 
+            // --- Positioning Logic ---
             input.style.position = 'absolute';
             input.style.left = `${spanRect.left - containerRect.left + scrollContainer.scrollLeft}px`;
             input.style.top = `${spanRect.top - containerRect.top + scrollContainer.scrollTop}px`;
             input.style.width = `${spanRect.width + 4}px`;
             input.style.height = `${spanRect.height}px`;
 
+            // --- Styling to match the original text ---
             const computedStyle = window.getComputedStyle(span);
             input.style.fontSize = computedStyle.fontSize;
             input.style.fontFamily = computedStyle.fontFamily;
@@ -135,27 +136,32 @@ const WordEditing = () => {
               if (input.parentNode) {
                 input.parentNode.removeChild(input);
               }
-              editingInputRef.current = null;
+              editingInputRef.current = null; // 清除引用
             };
 
             const saveValue = () => {
               const newValue = input.value;
               const oldValue = formDataRef.current[key] || '';
               if (newValue !== oldValue) {
+                // 不立即调用handleFormChange，而是延迟更新
                 setTimeout(() => {
                   handleFormChange(key, newValue);
                 }, 0);
               }
               cleanup();
+              // 恢复滚动位置
               setTimeout(() => {
                 scrollContainerRef.current.scrollTop = scrollTop;
               }, 10);
             };
 
             input.addEventListener('blur', saveValue);
+
+            // 移除Enter键功能
             input.addEventListener('keydown', (e) => {
               if (e.key === 'Escape') {
                 cleanup();
+                // 恢复滚动位置
                 setTimeout(() => {
                   scrollContainerRef.current.scrollTop = scrollTop;
                 }, 10);
@@ -185,8 +191,10 @@ const WordEditing = () => {
     if (!previewRef.current || !originalTemplateRef.current) return;
 
     try {
+      // 保存当前的滚动位置
       const scrollTop = scrollContainerRef.current?.scrollTop || 0;
 
+      // 如果有正在编辑的输入框，先保存其值
       if (editingInputRef.current && editingInputRef.current.parentNode) {
         const input = editingInputRef.current;
         const key = input.dataset.key;
@@ -200,6 +208,8 @@ const WordEditing = () => {
       }
 
       const filledDocBlob = await fillTemplateForPreview(originalTemplateRef.current, data);
+
+      // 清空预览前先记录
       previewRef.current.innerHTML = '';
 
       await renderAsync(filledDocBlob, previewRef.current, null, {
@@ -208,6 +218,7 @@ const WordEditing = () => {
       });
       attachPlaceholderListeners();
 
+      // 如果preserveScroll为true，恢复滚动位置
       if (preserveScroll && scrollContainerRef.current) {
         setTimeout(() => {
           scrollContainerRef.current.scrollTop = scrollTop;
@@ -218,31 +229,20 @@ const WordEditing = () => {
     }
   }, [attachPlaceholderListeners]);
 
-  // 👇 新增：从 Excel 数据中查找匹配的值
-  const getInitialValueFromExcel = (placeholderKey) => {
-    // 先查 customCellValues（用户编辑过的）
-    for (const [addrKey, cell] of Object.entries(excelState.customCellValues)) {
-      const namedRangeName = excelState.addressToNamedRangeMap[addrKey];
-      if (namedRangeName === placeholderKey) {
-        return cell.displayValue || cell.value || '';
-      }
-    }
-
-    // 再查 fullWorkbookData（原始加载的数据）
-    for (const [addrKey, cell] of Object.entries(excelState.fullWorkbookData)) {
-      const namedRangeName = excelState.addressToNamedRangeMap[addrKey];
-      if (namedRangeName === placeholderKey) {
-        return cell.displayValue || cell.value || '';
-      }
-    }
-
-    return ''; // 未找到则为空
-  };
-
   useEffect(() => {
     const loadAndParseTemplate = async () => {
       try {
         setIsLoading(true);
+
+        //         const getTemplatePath = () => {
+        //   if (templateType === '商业') {
+        //     return '/backend/public/webreports/结果报告-单套商业-无家具家电.docx';
+        //   } else {
+        //     return hasFurnitureElectronics
+        //       ? '/backend/public/webreports/结果报告-单套住宅-有家具家电.docx'
+        //       : '/backend/public/webreports/结果报告-单套住宅-无家具家电.docx';
+        //   }
+        // };
 
         const response = await fetch('/test.docx');
         if (!response.ok) throw new Error('网络响应错误');
@@ -255,13 +255,7 @@ const WordEditing = () => {
 
         if (foundPlaceholders.length > 0) {
           setPlaceholders(foundPlaceholders);
-
-          // 👇 构建初始 formData，优先从 Excel 数据中取值
-          const initialFormData = {};
-          foundPlaceholders.forEach(key => {
-            initialFormData[key] = getInitialValueFromExcel(key);
-          });
-
+          const initialFormData = foundPlaceholders.reduce((acc, key) => ({ ...acc, [key]: '' }), {});
           setFormData(initialFormData);
         } else {
           await renderPreview({});
@@ -274,38 +268,18 @@ const WordEditing = () => {
       }
     };
     loadAndParseTemplate();
-  }, []); // 注意：这里不依赖 excelState，因为 Excel 数据可能异步加载
+  }, []);
 
-  // 👇 监听 Excel 数据变化，自动同步到 Word 表单（可选增强）
-  useEffect(() => {
-    if (!isLoading && placeholders.length > 0) {
-      // 只更新那些尚未被用户手动修改过的字段（可选策略）
-      // 这里我们选择：只要 Excel 有新值，就覆盖（除非用户正在编辑）
-      if (!editingInputRef.current) {
-        const updatedData = { ...formData };
-        let hasChange = false;
-        placeholders.forEach(key => {
-          const excelValue = getInitialValueFromExcel(key);
-          if (excelValue !== formData[key]) {
-            updatedData[key] = excelValue;
-            hasChange = true;
-          }
-        });
-        if (hasChange) {
-          setFormData(updatedData);
-        }
-      }
-    }
-  }, [excelState.customCellValues, excelState.fullWorkbookData, excelState.addressToNamedRangeMap, isLoading, placeholders]);
-
-  // 防抖渲染
+  // 修改后的useEffect，添加防抖处理
   useEffect(() => {
     if (!isLoading && originalTemplateRef.current) {
       const timer = setTimeout(() => {
+        // 只有在没有正在编辑的输入框时才重新渲染
         if (!editingInputRef.current) {
-          renderPreview(formData, true);
+          renderPreview(formData, true); // 传入true以保持滚动位置
         }
-      }, 500);
+      }, 500); // 500ms防抖延迟
+
       return () => clearTimeout(timer);
     }
   }, [formData, isLoading, renderPreview]);

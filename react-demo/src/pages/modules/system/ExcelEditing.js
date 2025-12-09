@@ -620,61 +620,132 @@ const ExcelEditor = () => {
   }, [excelData, currentSheetName, namedRanges]);
 
   // 编辑单元格（同时更新 ExcelJS workbook）
-const handleCellEdit = (rowIndex, colIndex, value) => {
-  const sheet = excelData[currentSheetName];
-  if (!sheet || !workbook) return;
+  const handleCellEdit = (rowIndex, colIndex, value) => {
+    const sheet = excelData[currentSheetName];
+    if (!sheet || !workbook) return;
 
-  // 保存历史
-  const currentHistory = [...(history[currentSheetName] || []).slice(0, (historyIndex[currentSheetName] || -1) + 1)];
-  currentHistory.push({
-    cells: sheet.cells.map(r => [...r]),
-    activeCell,
-    timestamp: new Date().toISOString()
-  });
-  setHistory(prev => ({ ...prev, [currentSheetName]: currentHistory }));
-  setHistoryIndex(prev => ({ ...prev, [currentSheetName]: currentHistory.length - 1 }));
+    // 保存历史
+    const currentHistory = [...(history[currentSheetName] || []).slice(0, (historyIndex[currentSheetName] || -1) + 1)];
+    currentHistory.push({
+      cells: sheet.cells.map(r => [...r]),
+      activeCell,
+      timestamp: new Date().toISOString()
+    });
+    setHistory(prev => ({ ...prev, [currentSheetName]: currentHistory }));
+    setHistoryIndex(prev => ({ ...prev, [currentSheetName]: currentHistory.length - 1 }));
 
-  // 更新 UI 数据
-  const newCells = [...sheet.cells];
-  const cell = newCells[rowIndex][colIndex];
-  if (value.startsWith('=')) {
-    cell.formula = value.substring(1);
-    cell.value = '';
-  } else {
-    cell.formula = null;
-    cell.value = value;
-  }
-  cell.isEmpty = !value && !cell.formula;
+    // 更新 UI 数据
+    const newCells = [...sheet.cells];
+    const cell = newCells[rowIndex][colIndex];
+    if (value.startsWith('=')) {
+      cell.formula = value.substring(1);
+      cell.value = '';
+    } else {
+      cell.formula = null;
+      cell.value = value;
+    }
+    cell.isEmpty = !value && !cell.formula;
 
-  setExcelData(prev => ({
-    ...prev,
-    [currentSheetName]: { ...prev[currentSheetName], cells: newCells }
-  }));
+    setExcelData(prev => ({
+      ...prev,
+      [currentSheetName]: { ...prev[currentSheetName], cells: newCells }
+    }));
 
-  // 同步更新 ExcelJS workbook
-  const ws = workbook.getWorksheet(currentSheetName);
-  const wsCell = ws.getCell(rowIndex + 1, colIndex + 1);
-  if (value.startsWith('=')) {
-    wsCell.value = { formula: value.substring(1) };
-  } else {
-    wsCell.value = value;
-  }
+    // 同步更新 ExcelJS workbook
+    const ws = workbook.getWorksheet(currentSheetName);
+    const wsCell = ws.getCell(rowIndex + 1, colIndex + 1);
+    if (value.startsWith('=')) {
+      wsCell.value = { formula: value.substring(1) };
+    } else {
+      wsCell.value = value;
+    }
 
-  setEditingCell(null);
+    setEditingCell(null);
 
-  const address = `${getColumnLetter(colIndex + 1)}${rowIndex + 1}`;
+    const address = `${getColumnLetter(colIndex + 1)}${rowIndex + 1}`;
 
-  // ✅ 构建用于公式求值的 sheet 数据映射（仅命名区域内的单元格）
-  const buildSheetMapForEvaluation = (sheetName) => {
-    const sheetMap = {};
-    const sheetData = excelData[sheetName]?.cells;
-    if (!sheetData) return sheetMap;
+    // ✅ 构建用于公式求值的 sheet 数据映射（仅命名区域内的单元格）
+    const buildSheetMapForEvaluation = (sheetName) => {
+      const sheetMap = {};
+      const sheetData = excelData[sheetName]?.cells;
+      if (!sheetData) return sheetMap;
 
-    // 获取当前工作表所有命名区域地址
-    const namedAddresses = new Set();
-    namedRanges
-      .filter(nr => nr.sheet === sheetName)
-      .forEach(nr => {
+      // 获取当前工作表所有命名区域地址
+      const namedAddresses = new Set();
+      namedRanges
+        .filter(nr => nr.sheet === sheetName)
+        .forEach(nr => {
+          if (!nr.address.includes(':')) {
+            namedAddresses.add(nr.address);
+          } else {
+            const [start, end] = nr.address.split(':');
+            const startCell = parseCellRef(start);
+            const endCell = parseCellRef(end);
+            if (startCell && endCell) {
+              for (let r = startCell.r; r <= endCell.r; r++) {
+                for (let c = startCell.c; c <= endCell.c; c++) {
+                  namedAddresses.add(encodeCellRef({ r, c }));
+                }
+              }
+            }
+          }
+        });
+
+      sheetData.forEach((row, r) => {
+        row.forEach((cell, c) => {
+          const addr = `${getColumnLetter(c + 1)}${r + 1}`;
+          if (namedAddresses.has(addr)) {
+            sheetMap[addr] = {
+              v: cell.value || '',
+              f: cell.formula,
+            };
+          }
+        });
+      });
+
+      return sheetMap;
+    };
+
+    // ✅ 计算 displayValue
+    let computedDisplayValue = value;
+    if (value.startsWith('=')) {
+      const formula = value.substring(1);
+      const sheetMap = buildSheetMapForEvaluation(currentSheetName);
+      const result = evaluateFormula(`=${formula}`, sheetMap, namedRanges);
+      computedDisplayValue = result != null ? String(result) : '#ERROR!';
+    } else {
+      computedDisplayValue = value;
+    }
+
+    // ✅ 仅当该单元格属于某个命名区域时，才同步到全局
+    if (isCellInNamedRange(address, namedRanges, currentSheetName)) {
+      // 获取当前 cell 的 dataValidation（从 UI 状态中）
+      const currentCell = excelData[currentSheetName]?.cells?.[rowIndex]?.[colIndex];
+      const dv = currentCell?.dataValidation || null;
+
+      dispatch({
+        type: 'UPDATE_CELL',
+        payload: {
+          sheetName: currentSheetName,
+          address,
+          value: value.startsWith('=') ? '' : value,
+          formula: value.startsWith('=') ? value.substring(1) : null,
+          displayValue: computedDisplayValue,
+          type: value.startsWith('=') ? 'formula' : typeof value === 'number' ? 'number' : 'text',
+          dataValidation: dv, // 👈 新增
+        },
+      });
+    }
+
+    // ✅ 新增：同步所有受影响的命名区域公式单元格到全局状态
+    const syncAffectedNamedCellsToGlobal = () => {
+      const sheetData = excelData[currentSheetName]?.cells;
+      if (!sheetData) return;
+
+      // 构建当前 sheet 所有命名区域地址集合（用于判断是否需同步）
+      const namedAddresses = new Set();
+      const currentSheetNamedRanges = namedRanges.filter(nr => nr.sheet === currentSheetName);
+      currentSheetNamedRanges.forEach(nr => {
         if (!nr.address.includes(':')) {
           namedAddresses.add(nr.address);
         } else {
@@ -691,121 +762,57 @@ const handleCellEdit = (rowIndex, colIndex, value) => {
         }
       });
 
-    sheetData.forEach((row, r) => {
-      row.forEach((cell, c) => {
-        const addr = `${getColumnLetter(c + 1)}${r + 1}`;
-        if (namedAddresses.has(addr)) {
-          sheetMap[addr] = {
-            v: cell.value || '',
-            f: cell.formula,
-          };
-        }
-      });
-    });
-
-    return sheetMap;
-  };
-
-  // ✅ 计算 displayValue
-  let computedDisplayValue = value;
-  if (value.startsWith('=')) {
-    const formula = value.substring(1);
-    const sheetMap = buildSheetMapForEvaluation(currentSheetName);
-    const result = evaluateFormula(`=${formula}`, sheetMap, namedRanges);
-    computedDisplayValue = result != null ? String(result) : '#ERROR!';
-  } else {
-    computedDisplayValue = value;
-  }
-
-  // ✅ 仅当该单元格属于某个命名区域时，才同步到全局
-  if (isCellInNamedRange(address, namedRanges, currentSheetName)) {
-    dispatch({
-      type: 'UPDATE_CELL',
-      payload: {
-        sheetName: currentSheetName,
-        address,
-        value: value.startsWith('=') ? '' : value, // value 字段存原始输入（非公式部分）
-        formula: value.startsWith('=') ? value.substring(1) : null,
-        displayValue: computedDisplayValue,
-        type: value.startsWith('=') ? 'formula' : typeof value === 'number' ? 'number' : 'text',
-      },
-    });
-  }
-
-  // ✅ 新增：同步所有受影响的命名区域公式单元格到全局状态
-  const syncAffectedNamedCellsToGlobal = () => {
-    const sheetData = excelData[currentSheetName]?.cells;
-    if (!sheetData) return;
-
-    // 构建当前 sheet 所有命名区域地址集合（用于判断是否需同步）
-    const namedAddresses = new Set();
-    const currentSheetNamedRanges = namedRanges.filter(nr => nr.sheet === currentSheetName);
-    currentSheetNamedRanges.forEach(nr => {
-      if (!nr.address.includes(':')) {
-        namedAddresses.add(nr.address);
-      } else {
-        const [start, end] = nr.address.split(':');
-        const startCell = parseCellRef(start);
-        const endCell = parseCellRef(end);
-        if (startCell && endCell) {
-          for (let r = startCell.r; r <= endCell.r; r++) {
-            for (let c = startCell.c; c <= endCell.c; c++) {
-              namedAddresses.add(encodeCellRef({ r, c }));
-            }
+      // 构建用于公式求值的完整 sheetMap（仅命名区域）
+      const sheetMap = {};
+      sheetData.forEach((row, r) => {
+        row.forEach((cell, c) => {
+          const addr = `${getColumnLetter(c + 1)}${r + 1}`;
+          if (namedAddresses.has(addr)) {
+            sheetMap[addr] = {
+              v: cell.value || '',
+              f: cell.formula,
+            };
           }
-        }
-      }
-    });
-
-    // 构建用于公式求值的完整 sheetMap（仅命名区域）
-    const sheetMap = {};
-    sheetData.forEach((row, r) => {
-      row.forEach((cell, c) => {
-        const addr = `${getColumnLetter(c + 1)}${r + 1}`;
-        if (namedAddresses.has(addr)) {
-          sheetMap[addr] = {
-            v: cell.value || '',
-            f: cell.formula,
-          };
-        }
+        });
       });
-    });
 
-    // 遍历所有命名区域中的公式单元格，重新计算 displayValue
-    namedAddresses.forEach(addr => {
-      const cellRef = parseCellRef(addr);
-      if (!cellRef) return;
-      const { r, c } = cellRef;
-      const cell = sheetData[r]?.[c];
-      if (!cell) return;
+      // 遍历所有命名区域中的公式单元格，重新计算 displayValue
+      namedAddresses.forEach(addr => {
+        const cellRef = parseCellRef(addr);
+        if (!cellRef) return;
+        const { r, c } = cellRef;
+        const cell = sheetData[r]?.[c];
+        if (!cell) return;
 
-      let newValue = cell.value || '';
-      let newFormula = cell.formula;
-      let newDisplayValue = newValue;
+        let newValue = cell.value || '';
+        let newFormula = cell.formula;
+        let newDisplayValue = newValue;
 
-      if (newFormula) {
-        const result = evaluateFormula(`=${newFormula}`, sheetMap, namedRanges);
-        newDisplayValue = result != null ? String(result) : '#ERROR!';
-      }
+        if (newFormula) {
+          const result = evaluateFormula(`=${newFormula}`, sheetMap, namedRanges);
+          newDisplayValue = result != null ? String(result) : '#ERROR!';
+        }
 
-      // 派发更新（无论是否变化，或可加 diff 判断）
-      dispatch({
-        type: 'UPDATE_CELL',
-        payload: {
-          sheetName: currentSheetName,
-          address: addr,
-          value: newFormula ? '' : newValue,
-          formula: newFormula,
-          displayValue: newDisplayValue,
-          type: newFormula ? 'formula' : typeof newValue === 'number' ? 'number' : 'text',
-        },
+        // 派发更新（无论是否变化，或可加 diff 判断）
+        // 派发更新
+        dispatch({
+          type: 'UPDATE_CELL',
+          payload: {
+            sheetName: currentSheetName,
+            address: addr,
+            value: newFormula ? '' : newValue,
+            formula: newFormula,
+            displayValue: newDisplayValue,
+            type: newFormula ? 'formula' : typeof newValue === 'number' ? 'number' : 'text',
+            dataValidation: cell.dataValidation || null, // 👈 新增
+          },
+        });
       });
-    });
+    };
+
+    // 在 handleCellEdit 最后调用
+    syncAffectedNamedCellsToGlobal();
   };
-
-  // 在 handleCellEdit 最后调用
-  syncAffectedNamedCellsToGlobal();
-};
 
   // 单元格点击
   const handleCellClick = (rowIndex, colIndex) => {
@@ -1033,7 +1040,174 @@ const handleCellEdit = (rowIndex, colIndex, value) => {
   return (
     <div className={styles.exceleditor}>
       {/* 工具栏 */}
-      <div className={styles.toolbar}>
+      <div className={styles.WindowToolContainer}>
+        {/* 剪贴板区域 */}
+
+        {/* 对齐方式区域 */}
+        <div className={styles.toolSection}>
+          <div className={styles.alignmentContainer}>
+            {/* 第一行：两列布局 */}
+            <div className={styles.alignmentRow}>
+              {/* 第一列：对齐方式 */}
+              <div className={styles.alignmentColumn}>
+                <div className={styles.alignmentIcons}>
+                  <svg className={styles.icon} aria-hidden="true" title="打开" onClick={loadExcelFromPublic} disabled={loading}>
+                    <use xlinkHref="#icon-folderOpen1"></use>
+                  </svg>
+                  <svg className={styles.icon} aria-hidden="true" title="保存" onClick={saveAndExportExcel} disabled={!workbook || loading}>
+                    <use xlinkHref="#icon-save__easyico"></use>
+                  </svg>
+
+                </div>
+
+
+                <div className={styles.verticalAlignmentIcons}>
+                  <svg className={styles.icon} aria-hidden="true" title="撤销" onClick={undo} disabled={(historyIndex[currentSheetName] || -1) <= 0}>
+                    <use xlinkHref="#icon-chexiao1"></use>
+                  </svg>
+                  <svg className={styles.icon} aria-hidden="true" title="恢复" onClick={redo} disabled={(historyIndex[currentSheetName] || -1) >= (history[currentSheetName]?.length - 1 || 0)}>
+                    <use xlinkHref="#icon-huifu"></use>
+                  </svg>
+                </div>
+              </div>
+              {/* 分隔线 */}
+              <div className={styles.sectionDivider}></div>
+
+              {/* 第二列：换行和合并 */}
+              <div className={styles.extraToolsColumn}>
+                <svg className={styles.icon} aria-hidden="true" title="复制">
+                  <use xlinkHref="#icon-fuzhi"></use>
+                </svg>
+                <svg className={styles.icon} aria-hidden="true" title="剪切">
+                  <use xlinkHref="#icon-jianqie"></use>
+                </svg>
+                {/* <svg className={styles.icon} aria-hidden="true" title="格式刷">
+                  <use xlinkHref="#icon-geshishua"></use>
+                </svg> */}
+              </div>
+            </div>
+
+            {/* 第二行：文字标签 */}
+            <div className={styles.sectionLabel}>剪贴板</div>
+          </div>
+        </div>
+
+        {/* 分隔线 */}
+        <div className={styles.sectionDivider}></div>
+
+        {/* 字体区域 */}
+        <div className={styles.toolSection}>
+          <div className={styles.iconRow}>
+            <div className={styles.iconGroup}>
+              {/* 字体选择框 */}
+              <div className={styles.selectItem}>
+                <select defaultValue="宋体" className={styles.selectBox}>
+                  <option value="宋体">宋体</option>
+                  <option value="楷体">楷体</option>
+                  <option value="方正">方正</option>
+                </select>
+              </div>
+              {/* 字号选择框 */}
+              <div className={styles.selectItem}>
+                <select defaultValue="10" className={styles.selectBox}>
+                  <option value="10">10</option>
+                  <option value="15">15</option>
+                  <option value="25">25</option>
+                  <option value="30">30</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+
+          <div className={styles.iconRow}>
+            <div className={styles.iconGroup}>
+              <svg className={styles.icon} aria-hidden="true" title="加粗">
+                <use xlinkHref="#icon-zitijiacu"></use>
+              </svg>
+              <svg className={styles.icon} aria-hidden="true" title="下划线">
+                <use xlinkHref="#icon-xiahuaxian1"></use>
+              </svg>
+              <svg className={styles.icon} aria-hidden="true" title="上标">
+                <use xlinkHref="#icon-shangbiao1"></use>
+              </svg>
+              <svg className={styles.icon} aria-hidden="true" title="下标">
+                <use xlinkHref="#icon-xiabiao"></use>
+              </svg>
+              <svg className={styles.icon} aria-hidden="true" title="边框">
+                <use xlinkHref="#icon-biankuang1"></use>
+              </svg>
+              <svg className={styles.icon} aria-hidden="true" title="填充颜色">
+                <use xlinkHref="#icon-beijingyanse"></use>
+              </svg>
+              <svg className={styles.icon} aria-hidden="true" title="字体颜色">
+                <use xlinkHref="#icon-wenziyanse"></use>
+              </svg>
+            </div>
+          </div>
+          <div className={styles.sectionLabel}>字体</div>
+        </div>
+
+
+
+        {/* 分隔线 */}
+        <div className={styles.sectionDivider}></div>
+
+        {/* 对齐方式区域 */}
+        <div className={styles.toolSection}>
+          <div className={styles.alignmentContainer}>
+            {/* 第一行：两列布局 */}
+            <div className={styles.alignmentRow}>
+              {/* 第一列：对齐方式 */}
+              <div className={styles.alignmentColumn}>
+                <div className={styles.alignmentIcons}>
+                  <svg className={styles.icon} aria-hidden="true" title="左对齐">
+                    <use xlinkHref="#icon-zuoduiqi1"></use>
+                  </svg>
+                  <svg className={styles.icon} aria-hidden="true" title="居中">
+                    <use xlinkHref="#icon-juzhongduiqi1"></use>
+                  </svg>
+                  <svg className={styles.icon} aria-hidden="true" title="右对齐">
+                    <use xlinkHref="#icon-youduiqi"></use>
+                  </svg>
+                </div>
+
+
+
+
+                <div className={styles.verticalAlignmentIcons}>
+                  <svg className={styles.icon} aria-hidden="true" title="顶端对齐">
+                    <use xlinkHref="#icon-dingbuduiqi"></use>
+                  </svg>
+                  <svg className={styles.icon} aria-hidden="true" title="垂直居中">
+                    <use xlinkHref="#icon-chuizhijuzhongduiqi1"></use>
+                  </svg>
+                  <svg className={styles.icon} aria-hidden="true" title="底部对齐">
+                    <use xlinkHref="#icon-dibuduiqi"></use>
+                  </svg>
+                </div>
+              </div>
+              {/* 分隔线 */}
+              <div className={styles.sectionDivider}></div>
+
+              {/* 第二列：换行和合并 */}
+              <div className={styles.extraToolsColumn}>
+                <svg className={styles.icon} aria-hidden="true" title="自动换行">
+                  <use xlinkHref="#icon-jurassic_word-wrap"></use>
+                </svg>
+                <svg className={styles.icon} aria-hidden="true" title="合并居中">
+                  <use xlinkHref="#icon-hebingjuzhong"></use>
+                </svg>
+              </div>
+            </div>
+
+            {/* 第二行：文字标签 */}
+            <div className={styles.sectionLabel}>对齐方式</div>
+          </div>
+        </div>
+      </div>
+
+      {/* <div className={styles.toolbar}>
         <div className={styles.toolbarsection}>
           <button className={`${styles.toolbarbtn} ${styles.primary}`} onClick={loadExcelFromPublic} disabled={loading}>
             <Icon type="load" /> 加载Excel
@@ -1048,9 +1222,9 @@ const handleCellEdit = (rowIndex, colIndex, value) => {
             <Icon type="save" /> 恢复
           </button>
         </div>
-      </div>
+      </div> */}
       {/* 信息栏 */}
-      <div className={styles.infobar}>
+      {/* <div className={styles.infobar}>
         <div className={styles.infoitem}>
           <span className={styles.infobarlabel}>工作表:</span>
           <span className={styles.infobarvalue}>{currentSheetName || '未加载'}</span>
@@ -1071,7 +1245,7 @@ const handleCellEdit = (rowIndex, colIndex, value) => {
           <span className={styles.infobarlabel}>显示值:</span>
           <span className={`${styles.infobarvalue} ${styles.displayvalue}`}>{cellDisplayValue || '空'}</span>
         </div>
-      </div>
+      </div> */}
       {/* 编辑输入框 */}
       <div className={styles.cellinputbar}>
         <div className={`${styles.infoitem} ${styles.infoitemcell}`}>
