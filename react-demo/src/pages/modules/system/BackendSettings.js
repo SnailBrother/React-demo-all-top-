@@ -7,6 +7,8 @@ import DeleteMusic from './music/DeleteMusic';
 import WebsiteManager from './usedwebsites/AddNewSiteLinks';
 import MessagePublisher from './publicnews/AddNewPublicNews';
 import SpecialNotice from './specialtips/AddNewSpecialtips';
+import AddBuildingsPrice from './buildings/AddBuildingsPriceData';
+
 
 const BackendSettings = () => {
   const [activeTab, setActiveTab] = useState('music');
@@ -17,7 +19,8 @@ const BackendSettings = () => {
     { id: 'deletemusic', label: '音乐删除', icon: '🎵' },
     { id: 'website', label: '添加网站', icon: '🌐' },
     { id: 'message', label: '发布消息', icon: '📢' },
-    { id: 'notice', label: '特别提示', icon: '⚠️' }
+    { id: 'notice', label: '特别提示', icon: '⚠️' },
+     { id: 'addBuildingsPrice', label: '建筑物价格', icon: '⚠️' }
   ];
 
   // 获取标签页名称
@@ -69,6 +72,10 @@ const BackendSettings = () => {
         <div className={activeTab === 'notice' ? styles.tabActive : styles.tabHidden}>
           <SpecialNotice />
         </div>
+ <div className={activeTab === 'addBuildingsPrice' ? styles.tabActive : styles.tabHidden}>
+          <AddBuildingsPrice />
+        </div>
+        
       </div>
     </div>
   );

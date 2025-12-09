@@ -884,3 +884,28 @@ CREATE TABLE WebWordReports.dbo.SystemThemeDB (
 99	60%	153
 CC	80%	204
 FF	100% (完全不透明)	255
+
+
+构筑物表
+
+-- 创建 BuildingsPricePicture 表
+CREATE TABLE Buildings.dbo.BuildingsPricePicture (
+    pictureId INT IDENTITY(1,1) PRIMARY KEY,       -- 图片ID，主键，自增长
+    pictureFileName NVARCHAR(100) NOT NULL,         -- 图片文件名
+    buildingsPriceid INT NOT NULL,                  -- 外键字段，关联 BuildingsPrice 表
+    FOREIGN KEY (buildingsPriceid) REFERENCES Buildings.dbo.BuildingsPrice(buildingsPriceid) 
+        ON DELETE CASCADE                          -- 外键约束，级联删除
+);
+
+ 
+-- 创建 BuildingsPrice 表
+CREATE TABLE Buildings.dbo.BuildingsPrice (
+    buildingsPriceid INT IDENTITY(1,1) PRIMARY KEY,  -- ID，主键
+    name NVARCHAR(100) NOT NULL,                     -- 名称
+    structure NVARCHAR(100),                         -- 结构
+    area NVARCHAR(100),                              -- 区域
+    unit NVARCHAR(50),                               -- 单位
+    price NVARCHAR(50),                              -- 价格
+createdDate DATE NOT NULL DEFAULT GETDATE(),      -- 日期字段，默认当前日期
+    notes NVARCHAR(MAX)                              -- 备注
+);

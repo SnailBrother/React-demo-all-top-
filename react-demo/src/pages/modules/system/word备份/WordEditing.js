@@ -5,7 +5,7 @@ import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { renderAsync } from 'docx-preview';
 import styles from './WordEditing.module.css';
-import { useShareExcelWordData } from '../../../context/ShareExcelWordData';
+import { useShareExcelWordData } from '../../../context/ShareExcelWordData'; // 👈 引入上下文 Hook
 
 const START_DELIMITER = '__START__';
 const END_DELIMITER = '__END__';
@@ -22,28 +22,14 @@ const WordEditing = () => {
   const formDataRef = useRef(formData);
   const editingInputRef = useRef(null);
 
-  const { state: excelState } = useShareExcelWordData();
+  const { state: excelState } = useShareExcelWordData(); // 👈 获取共享数据
 
   useEffect(() => {
     formDataRef.current = formData;
   }, [formData]);
 
-  // ✅ 新增：仅更新 DOM 中指定 key 的 placeholder 显示文本
-  const updatePlaceholderInDOM = useCallback((key, value) => {
-    if (!previewRef.current) return;
-    const spans = previewRef.current.querySelectorAll(`span.${styles.placeholderHighlight}[data-key="${key}"]`);
-    spans.forEach(span => {
-      span.textContent = value || '[空]';
-    });
-  }, []);
-
-  // ✅ 修改：更新表单 + 局部刷新预览
   const handleFormChange = (key, value) => {
-    setFormData(prev => {
-      const newFormData = { ...prev, [key]: value };
-      updatePlaceholderInDOM(key, value);
-      return newFormData;
-    });
+    setFormData(prev => ({ ...prev, [key]: value }));
   };
 
   const fillTemplateForPreview = async (arrayBuffer, data) => {
@@ -119,7 +105,6 @@ const WordEditing = () => {
             input.type = 'text';
             input.value = formDataRef.current[key] || '';
             input.className = styles.inlineEditor;
-            input.dataset.key = key; // 👈 用于 blur 时识别
             editingInputRef.current = input;
 
             input.style.position = 'absolute';
@@ -157,7 +142,9 @@ const WordEditing = () => {
               const newValue = input.value;
               const oldValue = formDataRef.current[key] || '';
               if (newValue !== oldValue) {
-                handleFormChange(key, newValue); // 直接触发，无需 setTimeout
+                setTimeout(() => {
+                  handleFormChange(key, newValue);
+                }, 0);
               }
               cleanup();
               setTimeout(() => {
@@ -200,7 +187,6 @@ const WordEditing = () => {
     try {
       const scrollTop = scrollContainerRef.current?.scrollTop || 0;
 
-      // 如果正在编辑，先保存
       if (editingInputRef.current && editingInputRef.current.parentNode) {
         const input = editingInputRef.current;
         const key = input.dataset.key;
@@ -232,20 +218,25 @@ const WordEditing = () => {
     }
   }, [attachPlaceholderListeners]);
 
+  // 👇 新增：从 Excel 数据中查找匹配的值
   const getInitialValueFromExcel = (placeholderKey) => {
+    // 先查 customCellValues（用户编辑过的）
     for (const [addrKey, cell] of Object.entries(excelState.customCellValues)) {
       const namedRangeName = excelState.addressToNamedRangeMap[addrKey];
       if (namedRangeName === placeholderKey) {
         return cell.displayValue || cell.value || '';
       }
     }
+
+    // 再查 fullWorkbookData（原始加载的数据）
     for (const [addrKey, cell] of Object.entries(excelState.fullWorkbookData)) {
       const namedRangeName = excelState.addressToNamedRangeMap[addrKey];
       if (namedRangeName === placeholderKey) {
         return cell.displayValue || cell.value || '';
       }
     }
-    return '';
+
+    return ''; // 未找到则为空
   };
 
   useEffect(() => {
@@ -265,14 +256,13 @@ const WordEditing = () => {
         if (foundPlaceholders.length > 0) {
           setPlaceholders(foundPlaceholders);
 
+          // 👇 构建初始 formData，优先从 Excel 数据中取值
           const initialFormData = {};
           foundPlaceholders.forEach(key => {
             initialFormData[key] = getInitialValueFromExcel(key);
           });
 
           setFormData(initialFormData);
-          // ✅ 初次渲染带标记的预览
-          await renderPreview(initialFormData);
         } else {
           await renderPreview({});
         }
@@ -284,27 +274,41 @@ const WordEditing = () => {
       }
     };
     loadAndParseTemplate();
-  }, []);
+  }, []); // 注意：这里不依赖 excelState，因为 Excel 数据可能异步加载
 
-  // 监听 Excel 数据变化，同步到表单（会触发局部更新）
+  // 👇 监听 Excel 数据变化，自动同步到 Word 表单（可选增强）
   useEffect(() => {
-    if (!isLoading && placeholders.length > 0 && !editingInputRef.current) {
-      const updatedData = { ...formData };
-      let hasChange = false;
-      placeholders.forEach(key => {
-        const excelValue = getInitialValueFromExcel(key);
-        if (excelValue !== formData[key]) {
-          updatedData[key] = excelValue;
-          hasChange = true;
+    if (!isLoading && placeholders.length > 0) {
+      // 只更新那些尚未被用户手动修改过的字段（可选策略）
+      // 这里我们选择：只要 Excel 有新值，就覆盖（除非用户正在编辑）
+      if (!editingInputRef.current) {
+        const updatedData = { ...formData };
+        let hasChange = false;
+        placeholders.forEach(key => {
+          const excelValue = getInitialValueFromExcel(key);
+          if (excelValue !== formData[key]) {
+            updatedData[key] = excelValue;
+            hasChange = true;
+          }
+        });
+        if (hasChange) {
+          setFormData(updatedData);
         }
-      });
-      if (hasChange) {
-        setFormData(updatedData);
       }
     }
   }, [excelState.customCellValues, excelState.fullWorkbookData, excelState.addressToNamedRangeMap, isLoading, placeholders]);
 
-  // ❌ 移除了监听 formData 并全量重绘的 useEffect！
+  // 防抖渲染
+  useEffect(() => {
+    if (!isLoading && originalTemplateRef.current) {
+      const timer = setTimeout(() => {
+        if (!editingInputRef.current) {
+          renderPreview(formData, true);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [formData, isLoading, renderPreview]);
 
   const handleExport = async () => {
     if (!originalTemplateRef.current) return;

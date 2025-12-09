@@ -11606,6 +11606,586 @@ app.get('/api/QueryNearbyPricesEnhanced', async (req, res) => {
 }
 
 
+
+{  //新写的构筑物 👇
+
+// 添加建筑造价数据
+app.post('/api/AddBuildingsPriceData', async (req, res) => {
+    const { name, structure, area, unit, price, notes } = req.body;
+
+    // 验证输入
+    if (!name) {
+        return res.status(400).json({ error: '缺少必要参数: name' });
+    }
+
+    let pool;
+    try {
+        pool = await sql.connect(config);
+
+        // 插入新记录
+        const insertResult = await pool.request()
+            .input('name', sql.NVarChar(100), name)
+            .input('structure', sql.NVarChar(100), structure || null)
+            .input('area', sql.NVarChar(100), area || null)
+            .input('unit', sql.NVarChar(50), unit || null)
+            .input('price', sql.NVarChar(50), price || null)
+            .input('notes', sql.NVarChar(sql.MAX), notes || null)
+            .query(`
+                INSERT INTO Buildings.dbo.BuildingsPrice 
+                (name, structure, area, unit, price, notes, createdDate) 
+                VALUES (@name, @structure, @area, @unit, @price, @notes, GETDATE())
+            `);
+
+        // 获取新插入记录的ID（可选，如果需要返回给前端）
+        const idResult = await pool.request()
+            .query('SELECT SCOPE_IDENTITY() as newId');
+
+        res.status(200).json({ 
+            success: true, 
+            message: '建筑造价数据添加成功',
+            newId: idResult.recordset[0].newId 
+        });
+    } catch (err) {
+        console.error('添加建筑造价数据失败:', err);
+        res.status(500).json({ error: '添加建筑造价数据失败' });
+    } finally {
+        if (pool) {
+            pool.close();
+        }
+    }
+});
+
+
+// 分页查询建筑造价数据（支持无限滚动）
+app.get('/api/QueryBuildingsPrice', async (req, res) => {
+    const { 
+        searchText = '',
+        page = 1, 
+        pageSize = 20,
+        sortField = 'createdDate',
+        sortOrder = 'DESC'
+    } = req.query;
+
+    const currentPage = parseInt(page);
+    const pageSizeInt = parseInt(pageSize);
+    const offset = (currentPage - 1) * pageSizeInt;
+
+    let pool;
+    try {
+        pool = await sql.connect(config);
+
+        // 构建查询条件
+        let whereClause = 'WHERE 1=1';
+        const params = [];
+        
+        if (searchText) {
+            whereClause += ` AND (
+                name LIKE @searchText OR 
+                structure LIKE @searchText OR 
+                area LIKE @searchText OR 
+                unit LIKE @searchText OR 
+                price LIKE @searchText OR 
+                notes LIKE @searchText
+            )`;
+            params.push({ name: 'searchText', value: `%${searchText}%` });
+        }
+
+        // 获取总记录数
+        const countQuery = `
+            SELECT COUNT(*) as totalCount 
+            FROM Buildings.dbo.BuildingsPrice 
+            ${whereClause}
+        `;
+        
+        let request = pool.request();
+        params.forEach(param => {
+            request.input(param.name, sql.NVarChar, param.value);
+        });
+        
+        const countResult = await request.query(countQuery);
+        const totalCount = countResult.recordset[0].totalCount;
+        const totalPages = Math.ceil(totalCount / pageSizeInt);
+
+        // 获取分页数据
+        const dataQuery = `
+            SELECT *
+            FROM (
+                SELECT 
+                    buildingsPriceid,
+                    name,
+                    structure,
+                    area,
+                    unit,
+                    price,
+                    createdDate,
+                    notes,
+                    ROW_NUMBER() OVER (ORDER BY ${sortField} ${sortOrder}) as rowNum
+                FROM Buildings.dbo.BuildingsPrice 
+                ${whereClause}
+            ) as numbered
+            WHERE rowNum > @offset AND rowNum <= @offset + @pageSize
+            ORDER BY rowNum
+        `;
+
+        request = pool.request();
+        params.forEach(param => {
+            request.input(param.name, sql.NVarChar, param.value);
+        });
+        request.input('offset', sql.Int, offset);
+        request.input('pageSize', sql.Int, pageSizeInt);
+
+        const dataResult = await request.query(dataQuery);
+
+        // 格式化数据
+        const formattedData = dataResult.recordset.map(item => ({
+            id: item.buildingsPriceid,
+            name: item.name,
+            structure: item.structure,
+            area: item.area,
+            unit: item.unit,
+            price: item.price,
+            notes: item.notes,
+            createdDate: item.createdDate,
+            formattedDate: item.createdDate ? 
+                new Date(item.createdDate).toLocaleDateString('zh-CN') : '未知',
+            formattedPrice: item.price && item.unit ? 
+                `${item.price} ${item.unit}` : item.price || '未设置'
+        }));
+
+        res.json({
+            success: true,
+            data: formattedData,
+            pagination: {
+                currentPage: currentPage,
+                pageSize: pageSizeInt,
+                totalCount: totalCount,
+                totalPages: totalPages,
+                hasNextPage: currentPage < totalPages,
+                hasPrevPage: currentPage > 1
+            },
+            message: `找到 ${totalCount} 条记录，显示第 ${currentPage} 页`
+        });
+        
+    } catch (error) {
+        console.error('查询建筑造价数据失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '查询失败',
+            error: error.message 
+        });
+    } finally {
+        if (pool) {
+            pool.close();
+        }
+    }
+});
+
+// 根据ID获取单条记录
+app.get('/api/GetBuildingsPriceById/:id', async (req, res) => {
+    const { id } = req.params;
+
+    let pool;
+    try {
+        pool = await sql.connect(config);
+
+        const result = await pool.request()
+            .input('id', sql.Int, id)
+            .query(`
+                SELECT * FROM Buildings.dbo.BuildingsPrice 
+                WHERE buildingsPriceid = @id
+            `);
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: '记录不存在' 
+            });
+        }
+
+        const item = result.recordset[0];
+        const formattedData = {
+            id: item.buildingsPriceid,
+            name: item.name,
+            structure: item.structure,
+            area: item.area,
+            unit: item.unit,
+            price: item.price,
+            notes: item.notes,
+            createdDate: item.createdDate,
+            formattedDate: item.createdDate ? 
+                new Date(item.createdDate).toLocaleDateString('zh-CN') : '未知'
+        };
+
+        res.json({
+            success: true,
+            data: formattedData
+        });
+        
+    } catch (error) {
+        console.error('获取记录失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '获取记录失败',
+            error: error.message 
+        });
+    } finally {
+        if (pool) {
+            pool.close();
+        }
+    }
+});
+
+// 更新建筑造价数据
+app.put('/api/UpdateBuildingsPrice/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, structure, area, unit, price, notes } = req.body;
+
+    if (!name) {
+        return res.status(400).json({ success: false, message: '缺少必要参数: 名称' });
+    }
+
+    let pool;
+    try {
+        pool = await sql.connect(config);
+
+        const result = await pool.request()
+            .input('id', sql.Int, id)
+            .input('name', sql.NVarChar(100), name)
+            .input('structure', sql.NVarChar(100), structure || null)
+            .input('area', sql.NVarChar(100), area || null)
+            .input('unit', sql.NVarChar(50), unit || null)
+            .input('price', sql.NVarChar(50), price || null)
+            .input('notes', sql.NVarChar(sql.MAX), notes || null)
+            .query(`
+                UPDATE Buildings.dbo.BuildingsPrice 
+                SET name = @name,
+                    structure = @structure,
+                    area = @area,
+                    unit = @unit,
+                    price = @price,
+                    notes = @notes
+                WHERE buildingsPriceid = @id
+            `);
+
+        res.json({
+            success: true,
+            message: '更新成功',
+            affectedRows: result.rowsAffected[0]
+        });
+        
+    } catch (error) {
+        console.error('更新记录失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '更新失败',
+            error: error.message 
+        });
+    } finally {
+        if (pool) {
+            pool.close();
+        }
+    }
+});
+
+// 删除建筑造价数据
+app.delete('/api/DeleteBuildingsPrice/:id', async (req, res) => {
+    const { id } = req.params;
+
+    let pool;
+    try {
+        pool = await sql.connect(config);
+
+        const result = await pool.request()
+            .input('id', sql.Int, id)
+            .query(`
+                DELETE FROM Buildings.dbo.BuildingsPrice 
+                WHERE buildingsPriceid = @id
+            `);
+
+        res.json({
+            success: true,
+            message: '删除成功',
+            affectedRows: result.rowsAffected[0]
+        });
+        
+    } catch (error) {
+        console.error('删除记录失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '删除失败',
+            error: error.message 
+        });
+    } finally {
+        if (pool) {
+            pool.close();
+        }
+    }
+});
+
+//新写的构筑物 👆
+
+
+
+//上传构筑物查询图片 👇
+// 在服务器端添加以下API
+
+// 获取建筑物图片列表
+// 获取建筑物图片列表
+app.get('/api/GetBuildingsPricePictures', async (req, res) => {
+    try {
+        const { buildingsPriceid } = req.query;
+
+        if (!buildingsPriceid) {
+            return res.status(400).json({
+                success: false,
+                error: '建筑物数据ID必须提供'
+            });
+        }
+
+        // 连接到数据库
+        const pool = await sql.connect(config);
+        const request = new sql.Request(pool);
+
+        // 查询该建筑物的所有图片
+        const query = `
+            SELECT pictureFileName, buildingsPriceid
+            FROM Buildings.dbo.BuildingsPricePicture
+            WHERE buildingsPriceid = @buildingsPriceid
+            ORDER BY pictureId DESC
+        `;
+
+        request.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
+        const result = await request.query(query);
+
+        res.json({
+            success: true,
+            buildingsPriceid: parseInt(buildingsPriceid),
+            images: result.recordset
+        });
+
+    } catch (error) {
+        console.error('获取建筑物图片错误:', error);
+        res.status(500).json({
+            success: false,
+            error: '获取图片失败',
+            message: error.message
+        });
+    }
+});
+// Multer配置
+const storageUploadBuildingsPricePicture = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const { buildingsPriceid } = req.body;
+        if (!buildingsPriceid) {
+            return cb(new Error('buildingsPriceid is required'), null);
+        }
+
+        // 创建基于buildingsPriceid的文件夹路径
+        const uploadPath = path.join(__dirname, 'images', 'BuildingsPricePictures', buildingsPriceid.toString());
+
+        // 如果文件夹不存在，则递归创建
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        // 使用原始文件名
+        cb(null, file.originalname);
+    }
+});
+
+const uploadUploadBuildingsPricePicture = multer({
+    storage: storageUploadBuildingsPricePicture,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.match(/image\/(jpeg|jpg|png|gif)/)) {
+            cb(null, true);
+        } else {
+            cb(new Error('只允许上传图片文件 (JPG, PNG, GIF)'), false);
+        }
+    },
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 限制10MB，与前端一致
+    }
+});
+// 上传建筑物图片
+app.post('/api/UploadBuildingsPricePicture',
+    uploadUploadBuildingsPricePicture.array('images'),
+    async (req, res) => {
+        try {
+            const { buildingsPriceid } = req.body;
+
+            // 验证必填字段
+            if (!buildingsPriceid) {
+                // 删除已上传的文件（如果有）
+                if (req.files && req.files.length > 0) {
+                    req.files.forEach(file => {
+                        fs.unlink(file.path, () => { });
+                    });
+                }
+                return res.status(400).json({ 
+                    success: false,
+                    error: '建筑物数据ID必须提供' 
+                });
+            }
+
+            // 验证图片
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: '至少上传一张图片' 
+                });
+            }
+
+            // 连接到数据库
+            const pool = await sql.connect(config);
+
+            // 获取已存在的图片文件名
+            const checkRequest = new sql.Request(pool);
+            const checkQuery = `
+                SELECT pictureFileName 
+                FROM Buildings.dbo.BuildingsPricePicture
+                WHERE buildingsPriceid = @buildingsPriceid
+            `;
+            checkRequest.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
+            const existingImages = await checkRequest.query(checkQuery);
+            const existingFileNames = existingImages.recordset.map(img => img.pictureFileName);
+
+            // 过滤重复文件
+            const newFiles = req.files.filter(file =>
+                !existingFileNames.includes(file.originalname)
+            );
+
+            // 如果有重复文件，删除它们
+            const duplicateFiles = req.files.filter(file =>
+                existingFileNames.includes(file.originalname)
+            );
+
+            // 删除重复的文件
+            duplicateFiles.forEach(file => {
+                fs.unlink(file.path, () => { });
+            });
+
+            // 如果没有新文件可上传
+            if (newFiles.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: '上传失败',
+                    message: '所有图片在服务器中已存在'
+                });
+            }
+
+            // 插入新图片数据到Buildings.dbo.BuildingsPricePicture表
+            for (let i = 0; i < newFiles.length; i++) {
+                const file = newFiles[i];
+
+                const imageRequest = new sql.Request(pool);
+                const imageQuery = `
+                    INSERT INTO Buildings.dbo.BuildingsPricePicture 
+                        (pictureFileName, buildingsPriceid)
+                    VALUES 
+                        (@pictureFileName, @buildingsPriceid)
+                `;
+
+                imageRequest.input('pictureFileName', sql.NVarChar(100), file.originalname);
+                imageRequest.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
+
+                await imageRequest.query(imageQuery);
+            }
+
+            res.json({
+                success: true,
+                message: `成功上传 ${newFiles.length} 张图片${duplicateFiles.length > 0 ? `，跳过 ${duplicateFiles.length} 张重复图片` : ''}`,
+                buildingsPriceid: buildingsPriceid,
+                uploadedCount: newFiles.length,
+                skippedCount: duplicateFiles.length,
+                images: newFiles.map(file => ({
+                    pictureFileName: file.originalname,
+                    buildingsPriceid: buildingsPriceid,
+                    url: `http://121.4.22.55:80/backend/images/BuildingsPricePictures/${buildingsPriceid}/${file.originalname}`
+                }))
+            });
+
+        } catch (error) {
+            // 出错时删除已上传的文件
+            if (req.files && req.files.length > 0) {
+                req.files.forEach(file => {
+                    fs.unlink(file.path, () => { });
+                });
+            }
+
+            console.error('上传建筑物图片错误:', error);
+            res.status(500).json({
+                success: false,
+                error: '上传失败',
+                message: error.message
+            });
+        }
+    }
+);
+
+// 获取建筑物详细信息
+app.get('/api/GetBuildingsPriceInfo', async (req, res) => {
+    try {
+        const { buildingsPriceid } = req.query;
+
+        if (!buildingsPriceid) {
+            return res.status(400).json({
+                success: false,
+                error: '建筑物ID必须提供'
+            });
+        }
+
+        // 连接到数据库
+        const pool = await sql.connect(config);
+        const request = new sql.Request(pool);
+
+        const query = `
+            SELECT 
+                buildingsPriceid,
+                name,
+                structure,
+                area,
+                unit,
+                price,
+                createdDate,
+                notes
+            FROM Buildings.dbo.BuildingsPrice 
+            WHERE buildingsPriceid = @buildingsPriceid
+        `;
+
+        request.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
+        const result = await request.query(query);
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: '未找到该建筑物信息'
+            });
+        }
+
+        const buildingInfo = result.recordset[0];
+        
+        res.json({
+            success: true,
+            buildingInfo: buildingInfo
+        });
+
+    } catch (error) {
+        console.error('获取建筑物信息错误:', error);
+        res.status(500).json({
+            success: false,
+            error: '获取信息失败',
+            message: error.message
+        });
+    }
+});
+//上传构筑物查询图片👆
+
+
+}
+
 // 启动服务器
 // app.listen(port, () => {
 //     console.log(`Server is running on http://localhost:${port}`);

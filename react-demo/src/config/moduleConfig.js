@@ -35,6 +35,7 @@ const OfficeFeeCalculation = lazy(() => import('../pages/modules/office/FeeCalcu
 const OfficeEvaluationFilePreview = lazy(() => import('../pages/modules/office/EvaluationFilePreview'));
 const OfficeSearchPrice = lazy(() => import('../pages/modules/office/SearchPrice'));
 const OfficeLookHousePricePicture = lazy(() => import('../pages/modules/office/SearchPrice/LookHousePricePicture'));
+const OfficeLookBuildingsPricePicture = lazy(() => import('../pages/modules/office/SearchPrice/LookBuildingsPricePicture'));
 const OfficeUploadHousePricePicture = lazy(() => import('../pages/modules/office/SearchPrice/UploadHousePricePicture'));
 const OfficeTemplateManagement = lazy(() => import('../pages/modules/office/TemplateManagement'));
 const OfficeSpecialtips = lazy(() => import('../pages/modules/office/Specialtips'));
@@ -52,6 +53,7 @@ const SystemProfile = lazy(() => import('../pages/modules/system/Profile'));
 const SystemBackendSettings = lazy(() => import('../pages/modules/system/BackendSettings'));
 const SystemWordEditing = lazy(() => import('../pages/modules/system/WordEditing'));
 const SystemExcelEditing = lazy(() => import('../pages/modules/system/ExcelEditing'));
+const SystemUploadBuildingsPricePicture = lazy(() => import('../pages/modules/system/buildings/UploadBuildingsPricePicture'));
 //const SystemReadExcelData = lazy(() => import('../pages/modules/system/ReadExcelData'));
 
 //------------------------------旅行------------------------------
@@ -126,6 +128,7 @@ export const moduleConfig = {
       // { key: 'MessageDetail', label: '消息通知', icon: '#icon-yinliang2', component: OfficeMessageDetail,  showInNavigation: false, showInTabs: false },
     
       { key: 'LookHousePricePicture', label: '查看图片', icon: '#icon-chakantupian4', component: OfficeLookHousePricePicture, showInNavigation: false, showInTabs: false  },
+      { key: 'LookBuildingsPricePicture', label: '查看图片', icon: '#icon-chakantupian4', component: OfficeLookBuildingsPricePicture, showInNavigation: false, showInTabs: false  },
       { key: 'UploadHousePricePicture', label: '上传图片', icon: '#icon-chakantupian4', component: OfficeUploadHousePricePicture, showInNavigation: false, showInTabs: false  },
       
 
@@ -166,6 +169,8 @@ export const moduleConfig = {
        { key: 'ReadExcelData', label: 'Excel读取', icon: '#icon-excel4', component: SystemReadExcelData, showInNavigation: true },
        
       { key: 'BackendSettings', label: '数据更新', icon: '#icon-gongjuxuanzhong', component: SystemBackendSettings, showInNavigation: true },
+      { key: 'UploadBuildingsPricePicture', label: '更新建筑物图片', icon: '#icon-gongjuxuanzhong', component: SystemUploadBuildingsPricePicture, showInTabs: false, showInNavigation: false },
+     
     ]
   },
   tool: {
