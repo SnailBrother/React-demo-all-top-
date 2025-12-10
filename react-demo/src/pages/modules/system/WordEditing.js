@@ -214,12 +214,20 @@ const WordEditing = () => {
       }
 
       const filledDocBlob = await fillTemplateForPreview(originalTemplateRef.current, data);
-      previewRef.current.innerHTML = '';
+      // 👇 新增：将 Blob 转为 ArrayBuffer
+      const arrayBuffer = await filledDocBlob.arrayBuffer();
 
-      await renderAsync(filledDocBlob, previewRef.current, null, {
+      previewRef.current.innerHTML = '';
+      await renderAsync(arrayBuffer, previewRef.current, null, {
         className: styles.docxViewer,
         inWrapper: true,
       });
+      // previewRef.current.innerHTML = '';
+
+      // await renderAsync(filledDocBlob, previewRef.current, null, {
+      //   className: styles.docxViewer,
+      //   inWrapper: true,
+      // });
       attachPlaceholderListeners();
 
       if (preserveScroll && scrollContainerRef.current) {
