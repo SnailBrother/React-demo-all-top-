@@ -298,14 +298,18 @@
     flex-direction: column;
     justify-content: space-between;
     border-left: 1px solid #f0f0f0;
-    padding-left: 20px;
+    /* padding-left: 20px; */
+    align-items: center;
+    margin-top: 70px;
 }
 
 .priceSection {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-bottom: 12px;
+    
+    justify-content: center;
+    align-items: center;
 }
 
 .priceLabel {
@@ -323,13 +327,13 @@
 
 /* 单价样式 */
 .priceValue {
-    color: #1890ff;
+    color: #f00e12;
     font-size: 16px;
     font-weight: 600;
 }
 
 /* 操作按钮区域 */
-.actionSection {
+/* .actionSection {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -375,7 +379,7 @@
 .editIcon, .uploadIcon {
     width: 16px;
     height: 16px;
-}
+} */
 
 /* 加载更多 */
 .loadingMore {

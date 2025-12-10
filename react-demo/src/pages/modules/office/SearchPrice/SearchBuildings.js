@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import styles from './Buildings.module.css';
+import styles from './SearchBuildings.module.css';
 import { Loading } from '../../../../components/UI';
 
 const Buildings = () => {
@@ -195,16 +195,31 @@ const Buildings = () => {
             price: record.price
         };
         const queryParams = new URLSearchParams(params).toString();
-        const uploadPageUrl = `/app/office/LookBuildingsPricePicture?${queryParams}`;
-        navigate(uploadPageUrl);
+        // const uploadPageUrl = `${window.location.origin}/app/office/LookBuildingsPricePicture?${queryParams}`;
+        // navigate(uploadPageUrl);
+        const uploadPageUrl = `${window.location.origin}/app/office/LookBuildingsPricePicture?${queryParams}`;
+    
+        window.open(uploadPageUrl, '_blank');
     };
 
+    // const handleImageClick = (record) => {
+    //     if (!record.previewImage) return;
+
+    //     const reportData = {
+    //         reportsID: record.reportsID,
+    //         location: record.location || '？'
+    //     };
+    //     const queryParams = new URLSearchParams(reportData).toString();
+    //     const qrCodePageUrl = `${window.location.origin}/app/office/LookHousePricePicture?${queryParams}`;
+    //     window.open(qrCodePageUrl, '_blank');
+    // };
+
     // 处理编辑操作
-    const handleEditClick = (record) => {
-        // 这里可以打开编辑模态框或跳转到编辑页面
-        console.log('编辑记录:', record);
-        // 根据你的实际需求实现编辑功能
-    };
+    // const handleEditClick = (record) => {
+    //     // 这里可以打开编辑模态框或跳转到编辑页面
+    //     console.log('编辑记录:', record);
+    //     // 根据你的实际需求实现编辑功能
+    // };
 
     // 无限滚动观察器
     const setupObserver = useCallback(() => {
@@ -327,21 +342,21 @@ const Buildings = () => {
                     {/* 右侧：价格信息 */}
                     <div className={styles.rightColumn}>
                         {/* 评估总价 */}
-                        <div className={styles.priceSection}>
+                        {/* <div className={styles.priceSection}>
                             <div className={styles.priceLabel}>估算总价：</div>
                             <span className={styles.totalPriceValue}>
                                 {calculateTotalPrice(record.area, record.price, record.unit)}
                             </span>
-                        </div>
+                        </div> */}
 
                         {/* 单价 */}
                         <div className={styles.priceSection}>
-                            <div className={styles.priceLabel}>单价：</div>
+                            {/* <div className={styles.priceLabel}>单价：</div> */}
                             <span className={styles.priceValue}>{formatUnitPrice(record.price, record.unit)}</span>
                         </div>
 
                         {/* 操作按钮 */}
-                        <div className={styles.actionSection}>
+                        {/* <div className={styles.actionSection}>
                             <button 
                                 className={styles.editButton}
                                 onClick={() => handleEditClick(record)}
@@ -362,7 +377,7 @@ const Buildings = () => {
                                 </svg>
                                 管理图片
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

@@ -2,18 +2,21 @@ import React, { useState } from 'react';
 import styles from './SearchPrice.module.css';
 
 import SearchHousePrice from './SearchPrice/SearchHousePrice';
-import Buildings from './SearchPrice/Buildings';
+import Buildings from './SearchPrice/SearchBuildings';
 import Tree from './SearchPrice/Tree';
 import Equipment from './SearchPrice/Equipment';
+import NeighborhoodFinder from './SearchPrice/NeighborhoodFinder';
 
 const SearchPrice = () => {
   const [activeTab, setActiveTab] = useState('房地产');
 
   const tabs = [
     { id: 'realEstate', label: '房地产', component: SearchHousePrice },
+    { id: 'neighborhood', label: '地图找房', component: NeighborhoodFinder },
     { id: 'buildings', label: '构筑物', component: Buildings },
     { id: 'tree', label: '苗木', component: Tree },
     { id: 'equipment', label: '机器设备', component: Equipment }
+
   ];
 
   return (

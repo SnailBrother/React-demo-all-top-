@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import styles from './NeighborhoodFinder.module.css';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../../context/AuthContext';
 
 //const API_CONFIG_URL = '/api/getApiDatabas';
 const SEARCH_NEIGHBORHOODS_API = '/api/SearchNeighborhoodsByArea';
@@ -633,9 +633,9 @@ const NeighborhoodFinder = () => {
         {/* 搜索区域 */}
         <div className={styles.searchSection}>
           <div className={styles.searchCard}>
-            <div className={styles.searchHeader}>
+            {/* <div className={styles.searchHeader}>
               <h3>查询</h3>
-            </div>
+            </div> */}
 
             <div className={styles.searchInputGroup}>
               <input

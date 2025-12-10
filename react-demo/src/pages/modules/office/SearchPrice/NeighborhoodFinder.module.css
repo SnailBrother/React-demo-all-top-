@@ -1,9 +1,9 @@
 /* src/pages/modules/office/NeighborhoodFinder.module.css */
 .pageContainer {
-  height: calc(100vh - 70px); /* 减去padding */
+  height: calc(100dvh - 125px); /* 减去padding */
   width: 100%;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 10px;
+   padding: 10px;  
   box-sizing: border-box;
   overflow: hidden; /* 防止滚动条出现 */
 }
@@ -172,6 +172,7 @@
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 4px;
+  color: #000;
 }
 
 .statValue.hasData {

@@ -1633,7 +1633,7 @@ const handleSavePreviewData = (updatedData) => {
                                         title="报告预览"
                                     >
                                         <svg className="reportgenerator-menu-icon" aria-hidden="true">
-                                            <use xlinkHref="#icon-yulan2" /> {/* 建议使用预览图标 */}
+                                            <use xlinkHref="#icon-docx" />
                                         </svg>
                                         <span>报告预览</span>
                                     </li>

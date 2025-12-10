@@ -3,7 +3,7 @@
   min-width: 800px;
   margin: 20px auto;
   padding: 30px;
-  background-color: transparent;
+  background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   font-family: 'Arial', sans-serif;
@@ -28,14 +28,14 @@
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.3s ease, color 0.3s ease;
-  color: var(--fontColor);
+  color: black;
   position: relative;
   /* 为伪元素定位 */
   /* background-color: var(--my-bg-color); */
 }
 
 .tab:hover {
-  background-color: rgba(60, 128, 255, 0.1);
+  background-color: rgba(12, 87, 226, 0.1);
   /* 悬浮时的背景色 */
   color: var(--hoverFontColor);
   background-color: var(--hoverBackground);

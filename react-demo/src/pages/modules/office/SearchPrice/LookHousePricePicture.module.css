@@ -474,8 +474,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
-  padding-bottom: 5px;
+  margin-bottom: 8px;
+  padding: 10px;
   border-bottom: 2px solid #f0f0f0;
 }
 

@@ -251,14 +251,14 @@ const LookBuildingsPricePicture = () => {
                   {/* 价格信息 */}
                   <div className={styles.priceInfo}>
                     <div className={styles.priceRow}>
-                      <div className={styles.priceItem}>
+                      {/* <div className={styles.priceItem}>
                         <div className={styles.priceLabel}>估算总价</div>
                         <div className={styles.priceValue}>
                           {totalPrice ? `${totalPrice} 万元` : '-'}
                         </div>
-                      </div>
+                      </div> */}
                       <div className={styles.priceItem}>
-                        <div className={styles.priceLabel}>单价</div>
+                        {/* <div className={styles.priceLabel}>单价</div> */}
                         <div className={styles.priceValue}>
                           {formatUnitPrice(buildingInfo.price, buildingInfo.unit)}
                         </div>
@@ -266,16 +266,16 @@ const LookBuildingsPricePicture = () => {
                     </div>
 
                     <div className={styles.areaRow}>
-                      <div className={styles.areaItem}>
+                      {/* <div className={styles.areaItem}>
                         <div className={styles.areaLabel}>数量/面积</div>
                         <span className={styles.areaValue}>
                           {formatArea(buildingInfo.area, buildingInfo.unit)}
                         </span>
-                      </div>
-                      <div className={styles.areaItem}>
+                      </div> */}
+                      {/* <div className={styles.areaItem}>
                         <div className={styles.areaLabel}>单位</div>
                         <span className={styles.areaValue}>{buildingInfo.unit || '-'}</span>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 
@@ -341,7 +341,7 @@ const LookBuildingsPricePicture = () => {
                         <div className={styles.avatarSection}>
                           <div className={styles.avatarCircle}>
                             <svg className={styles.avatarIcon} aria-hidden="true">
-                              <use xlinkHref="#icon-jianzhugongchengshi" />
+                              <use xlinkHref="#icon-ertongleyuan" />
                             </svg>
                           </div>
                           <div className={styles.avatarStatus}>
@@ -407,7 +407,7 @@ const LookBuildingsPricePicture = () => {
           {/* 第二行：详细信息 */}
           <div className={styles.secondRow}>
             <div className={styles.detailSection}>
-              <h4 className={styles.sectionTitle}>技术参数</h4>
+              <h4 className={styles.sectionTitle}>参数</h4>
               <div className={styles.detailGrid}>
                 <div className={styles.detailColumn}>
                   <div className={styles.detailItem}>
@@ -468,7 +468,7 @@ const LookBuildingsPricePicture = () => {
           </div>
 
           {/* 第三行：图片管理 */}
-          <div className={styles.thirdRow}>
+          {/* <div className={styles.thirdRow}>
             <div className={styles.imagesSection}>
               <div className={styles.imagesHeader}>
                 <h4 className={styles.sectionTitle}>图片管理</h4>
@@ -529,7 +529,7 @@ const LookBuildingsPricePicture = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
         </>
       )}
     </div>
