@@ -12189,6 +12189,29 @@ app.get('/api/GetBuildingsPriceInfo', async (req, res) => {
 
 
 {//查看合并的pdf  👇  
+
+
+app.get('/api/ReportPdfPrintFile', async (req, res) => {
+    
+        // 连接到数据库
+        const pool = await sql.connect(config);
+        const request = new sql.Request(pool);
+
+    try {
+        // 假设你用 mssql 或其他 SQL 库
+        const result = await sql.query`
+            SELECT *
+            FROM PdfFileData.dbo.ReportPdfPrintFile
+            ORDER BY fileType, pdfPrintFileName
+        `;
+        res.json(result.recordset); // 返回 [{ fileType, pdfPrintFileName }, ...]
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database query failed' });
+    }
+});
+
+
     //后期如果有多个合并的pdf没有删除的话，
     //可以增加在打开合并的时候检查一下，
     //如果数量超过20个，就按照时间把以前的10个删了

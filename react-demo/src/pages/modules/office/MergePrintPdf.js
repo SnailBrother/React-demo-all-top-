@@ -5,27 +5,54 @@ import io from 'socket.io-client';
 // 创建全局 socket 实例（或放在 context 中更好，这里简化）
 const socket = io('http://121.4.22.55:5202'); // 👈 你的后端地址
 
-const categories = [
-    {
-        name: '房地产',
-        files: ['公司营业执照.pdf', '房地产评估资质.pdf', '房地产估价师A.pdf', '房地产估价师B.pdf'],
-    },
-    {
-        name: '资产',
-        files: ['公司营业执照.pdf', '资产评估资质.pdf', '资产估价师C.pdf', '资产估价师D.pdf'],
-    },
-    {
-        name: '土地',
-        files: ['公司营业执照.pdf', '土地评估资质.pdf', '土地估价师E.pdf', '土地估价师F.pdf'],
-    },
-];
+ 
 
 const MergePrintPdf = () => {
+      const [categories, setCategories] = useState([]); // 👈 动态加载
+    const [loading, setLoading] = useState(true);     // 👈 加载状态
     const [selectedFiles, setSelectedFiles] = useState([]); // [{ category, filename }]
     const [mergedPdfUrl, setMergedPdfUrl] = useState(null);
     const [isMerging, setIsMerging] = useState(false);
     const [expandedCategories, setExpandedCategories] = useState({});
     const [currentFilename, setCurrentFilename] = useState(null); // 存完整文件名，如 merged_12345.pdf
+
+    // 👇 获取 PDF 文件列表
+    useEffect(() => {
+        const fetchPdfFiles = async () => {
+            try {
+                const response = await fetch('/api/ReportPdfPrintFile');
+                if (!response.ok) throw new Error('Failed to fetch PDF files');
+                const data = await response.json(); // [{ fileType, pdfPrintFileName }, ...]
+
+                // 按 fileType 分组
+                const grouped = data.reduce((acc, item) => {
+                    const { fileType, pdfPrintFileName } = item;
+                    if (!acc[fileType]) {
+                        acc[fileType] = {
+                            name: fileType,
+                            files: []
+                        };
+                    }
+                    // 避免重复文件名（可选）
+                    if (!acc[fileType].files.includes(pdfPrintFileName)) {
+                        acc[fileType].files.push(pdfPrintFileName);
+                    }
+                    return acc;
+                }, {});
+
+                const categoriesArray = Object.values(grouped);
+                setCategories(categoriesArray);
+            } catch (err) {
+                console.error('Error fetching PDF files:', err);
+                alert('无法加载PDF文件列表，请检查网络或后端服务');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPdfFiles();
+    }, []);
+
     const toggleCategory = (categoryName) => {
         setExpandedCategories(prev => ({
             ...prev,
@@ -117,7 +144,11 @@ const MergePrintPdf = () => {
         };
     }, [currentFilename]);
 
-
+ // --- 渲染部分 ---
+    if (loading) {
+        return <div className={styles.container}>加载中...</div>;
+    }
+    
     return (
         <div className={styles.container}>
             {/* 左侧：分类选择 */}

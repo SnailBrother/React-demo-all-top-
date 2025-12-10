@@ -909,3 +909,14 @@ CREATE TABLE Buildings.dbo.BuildingsPrice (
 createdDate DATE NOT NULL DEFAULT GETDATE(),      -- 日期字段，默认当前日期
     notes NVARCHAR(MAX)                              -- 备注
 );
+
+-- 创建 ReportPdfPrintFile 评估报告附件装订pdf文件 表
+CREATE TABLE PdfFileData.dbo.ReportPdfPrintFile (
+    pdfPrintFileId INT IDENTITY(1,1) PRIMARY KEY,  -- ID，主键
+    fileType NVARCHAR(50) NOT NULL DEFAULT '房地产',        -- 文件类型，默认值为 '房地产'
+    pdfPrintFileName NVARCHAR(100) NOT NULL,         -- PDF文件名
+    paperSize NVARCHAR(10) NOT NULL DEFAULT 'A4',           -- 纸张大小，默认值为 A4
+    effectiveDate DATE NOT NULL DEFAULT GETDATE(),          -- 有效期字段（日期类型），默认值为当前日期
+    notes NVARCHAR(MAX) NULL                                 -- 备注，允许为空
+);
+
