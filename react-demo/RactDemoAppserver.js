@@ -8157,74 +8157,74 @@ const uploadUploadHousePricePicture = multer({
     }
 });
 {
-//写重了的代码
-// 获取已存在图片的API
-// app.get('/api/GetHousePricePictures-old', async (req, res) => {
-//     try {
-//         const { reportsID } = req.query;
+    //写重了的代码
+    // 获取已存在图片的API
+    // app.get('/api/GetHousePricePictures-old', async (req, res) => {
+    //     try {
+    //         const { reportsID } = req.query;
 
-//         if (!reportsID) {
-//             return res.status(400).json({ error: '报告ID必须提供' });
-//         }
+    //         if (!reportsID) {
+    //             return res.status(400).json({ error: '报告ID必须提供' });
+    //         }
 
-//         const pool = await sql.connect(config);
-//         const request = new sql.Request(pool);
+    //         const pool = await sql.connect(config);
+    //         const request = new sql.Request(pool);
 
-//         const query = `
-//             SELECT pictureFileName 
-//             FROM WebWordReports.dbo.HousePricePicture 
-//             WHERE reportsID = @reportsID
-//         `;
+    //         const query = `
+    //             SELECT pictureFileName 
+    //             FROM WebWordReports.dbo.HousePricePicture 
+    //             WHERE reportsID = @reportsID
+    //         `;
 
-//         request.input('reportsID', sql.Int, parseInt(reportsID));
-//         const result = await request.query(query);
+    //         request.input('reportsID', sql.Int, parseInt(reportsID));
+    //         const result = await request.query(query);
 
-//         res.json({
-//             success: true,
-//             images: result.recordset
-//         });
+    //         res.json({
+    //             success: true,
+    //             images: result.recordset
+    //         });
 
-//     } catch (error) {
-//         console.error('获取房价图片错误:', error);
-//         res.status(500).json({
-//             error: '获取图片失败',
-//             message: error.message
-//         });
-//     }
-// });
-// app.get('/api/GetHousePricePictures-old', async (req, res) => {
-//     try {
-//         const { reportsID } = req.query;
+    //     } catch (error) {
+    //         console.error('获取房价图片错误:', error);
+    //         res.status(500).json({
+    //             error: '获取图片失败',
+    //             message: error.message
+    //         });
+    //     }
+    // });
+    // app.get('/api/GetHousePricePictures-old', async (req, res) => {
+    //     try {
+    //         const { reportsID } = req.query;
 
-//         if (!reportsID) {
-//             return res.status(400).json({ error: 'ID必须提供' });
-//         }
+    //         if (!reportsID) {
+    //             return res.status(400).json({ error: 'ID必须提供' });
+    //         }
 
-//         const pool = await sql.connect(config);
-//         const request = new sql.Request(pool);
+    //         const pool = await sql.connect(config);
+    //         const request = new sql.Request(pool);
 
-//         const query = `
-//             SELECT pictureFileName 
-//             FROM WebWordReports.dbo.HousePricePicture 
-//             WHERE reportsID = @reportsID
-//         `;
+    //         const query = `
+    //             SELECT pictureFileName 
+    //             FROM WebWordReports.dbo.HousePricePicture 
+    //             WHERE reportsID = @reportsID
+    //         `;
 
-//         request.input('reportsID', sql.Int, parseInt(reportsID));
-//         const result = await request.query(query);
+    //         request.input('reportsID', sql.Int, parseInt(reportsID));
+    //         const result = await request.query(query);
 
-//         res.json({
-//             success: true,
-//             images: result.recordset
-//         });
+    //         res.json({
+    //             success: true,
+    //             images: result.recordset
+    //         });
 
-//     } catch (error) {
-//         console.error('获取房价图片错误:', error);
-//         res.status(500).json({
-//             error: '获取图片失败',
-//             message: error.message
-//         });
-//     }
-// });
+    //     } catch (error) {
+    //         console.error('获取房价图片错误:', error);
+    //         res.status(500).json({
+    //             error: '获取图片失败',
+    //             message: error.message
+    //         });
+    //     }
+    // });
 
 }
 // 修改上传API，添加重复检查
@@ -8944,10 +8944,10 @@ app.get('/api/getallmusics-bug', async (req, res) => {
         // 非搜索时：一次性获取所有数据，然后在内存中随机分页
         const allResult = await request.query(`SELECT * FROM ChatApp.dbo.Music`);
         const allMusics = allResult.recordset;
-        
+
         // 随机打乱数组
         const shuffledMusics = [...allMusics].sort(() => Math.random() - 0.5);
-        
+
         // 计算分页
         const totalCount = allMusics.length;
         const startIndex = (page - 1) * pageSize;
@@ -9027,7 +9027,7 @@ app.delete('/api/deletemusic/:id', async (req, res) => {
         // 1. 首先从数据库获取音乐信息
         await sql.connect(config);
         const request = new sql.Request();
-        
+
         // 查询音乐文件信息 - 需要知道是否有歌词文件
         const queryResult = await request.query(`
             SELECT src, coverimage 
@@ -9040,7 +9040,7 @@ app.delete('/api/deletemusic/:id', async (req, res) => {
         }
 
         const musicInfo = queryResult.recordset[0];
-        
+
         // 2. 从数据库删除记录
         const deleteResult = await request.query(`
             DELETE FROM ChatApp.dbo.Music 
@@ -9049,30 +9049,30 @@ app.delete('/api/deletemusic/:id', async (req, res) => {
 
         // 3. 删除对应的文件
         const musicDir = path.join(__dirname, 'musics');
-        
+
         // 删除音频文件
         const audioFilePath = path.join(musicDir, musicInfo.src);
         if (fs.existsSync(audioFilePath)) {
             fs.unlinkSync(audioFilePath);
         }
-        
+
         // 删除封面文件
         const coverFilePath = path.join(musicDir, musicInfo.coverimage);
         if (fs.existsSync(coverFilePath)) {
             fs.unlinkSync(coverFilePath);
         }
-        
+
         // 删除歌词文件 - 根据音频文件名生成歌词文件名
         const audioFileName = path.parse(musicInfo.src).name; // 去掉扩展名
         const lyricsFilePath = path.join(musicDir, `${audioFileName}.lrc`);
         if (fs.existsSync(lyricsFilePath)) {
             fs.unlinkSync(lyricsFilePath);
         }
-        
+
         // 4. 通知所有客户端音乐列表已更新
         io.emit('music-list-updated');
 
-        res.json({ 
+        res.json({
             message: '音乐删除成功',
             deletedFiles: [musicInfo.src, musicInfo.coverimage, `${audioFileName}.lrc`]
         });
@@ -9145,7 +9145,7 @@ app.get('/backend/api/reactdemofavorites', async (req, res) => {
 
         const totalPages = Math.ceil(total / pageSize);
 
-       // console.log(`找到 ${result.recordset.length} 条收藏记录，总计: ${total}，总页数: ${totalPages}`);
+        // console.log(`找到 ${result.recordset.length} 条收藏记录，总计: ${total}，总页数: ${totalPages}`);
 
         res.json({
             data: result.recordset,
@@ -9224,7 +9224,7 @@ app.get('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
 
         const totalPages = Math.ceil(total / pageSize);
 
-      //  console.log(`找到 ${result.recordset.length} 条最近播放记录，总计: ${total}，总页数: ${totalPages}`);
+        //  console.log(`找到 ${result.recordset.length} 条最近播放记录，总计: ${total}，总页数: ${totalPages}`);
 
         res.json({
             data: result.recordset,
@@ -9239,7 +9239,7 @@ app.get('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
         res.status(500).json({ error: '服务器错误' });
     }
 });
- 
+
 
 //获取推荐音乐
 // 后端 API 接口 - 获取推荐音乐 这是所有的歌曲推荐
@@ -9392,8 +9392,8 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
 
         // 验证必填字段
         if (!email || !title || !artist || !src) {
-            return res.status(400).json({ 
-                error: '邮箱、标题、艺术家和音乐源路径为必填字段' 
+            return res.status(400).json({
+                error: '邮箱、标题、艺术家和音乐源路径为必填字段'
             });
         }
 
@@ -9404,12 +9404,12 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
             SELECT id FROM ChatApp.dbo.RecentlyPlayedMusic 
             WHERE email = @email AND title = @title AND artist = @artist
         `;
-        
+
         const checkRequest = new sql.Request();
         checkRequest.input('email', sql.NVarChar, email);
         checkRequest.input('title', sql.NVarChar, title);
         checkRequest.input('artist', sql.NVarChar, artist);
-        
+
         const existingRecord = await checkRequest.query(checkQuery);
 
         if (existingRecord.recordset.length > 0) {
@@ -9419,7 +9419,7 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
                 WHERE email = @email AND title = @title AND artist = @artist
             `;
             await checkRequest.query(deleteQuery);
-         //   console.log('删除旧的播放记录:', { email, title, artist });
+            //   console.log('删除旧的播放记录:', { email, title, artist });
         }
 
         // 检查当前用户的记录数量（包括刚刚删除的那条）
@@ -9428,12 +9428,12 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
             FROM ChatApp.dbo.RecentlyPlayedMusic 
             WHERE email = @email
         `;
-        
+
         const countRequest = new sql.Request();
         countRequest.input('email', sql.NVarChar, email);
         const countResult = await countRequest.query(countQuery);
         const recordCount = countResult.recordset[0].recordCount;
-        
+
         // 如果记录数量达到或超过100条，删除最早的一条记录
         if (recordCount >= 100) {
             const deleteOldestQuery = `
@@ -9445,20 +9445,20 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
                     ORDER BY playtime ASC, id ASC
                 )
             `;
-            
+
             const deleteRequest = new sql.Request();
             deleteRequest.input('email', sql.NVarChar, email);
             await deleteRequest.query(deleteOldestQuery);
-         //   console.log('删除最早的一条记录，邮箱:', email);
+            //   console.log('删除最早的一条记录，邮箱:', email);
         }
-        
+
         // 插入新记录（无论是否已存在，都重新插入）
         const insertQuery = `
             INSERT INTO ChatApp.dbo.RecentlyPlayedMusic 
             (email, title, artist, coverimage, src, genre, playtime)
             VALUES (@email, @title, @artist, @coverimage, @src, @genre, GETDATE())
         `;
-        
+
         const insertRequest = new sql.Request();
         insertRequest.input('email', sql.NVarChar, email);
         insertRequest.input('title', sql.NVarChar, title);
@@ -9466,21 +9466,21 @@ app.post('/api/reactdemoRecentlyPlayedmusic', async (req, res) => {
         insertRequest.input('coverimage', sql.NVarChar, coverimage || '');
         insertRequest.input('src', sql.NVarChar, src);
         insertRequest.input('genre', sql.NVarChar, genre || '');
-        
+
         await insertRequest.query(insertQuery);
-       // console.log('新增最近播放记录:', { email, title, artist });
-        
-        res.json({ 
-            success: true, 
+        // console.log('新增最近播放记录:', { email, title, artist });
+
+        res.json({
+            success: true,
             message: existingRecord.recordset.length > 0 ? '更新记录成功' : '添加记录成功',
             action: existingRecord.recordset.length > 0 ? 'updated' : 'added'
         });
 
     } catch (err) {
-       // console.error('添加最近播放记录错误:', err);
-        res.status(500).json({ 
+        // console.error('添加最近播放记录错误:', err);
+        res.status(500).json({
             success: false,
-            error: '服务器错误' 
+            error: '服务器错误'
         });
     }
 });
@@ -9493,8 +9493,8 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
 
         // 验证必填字段
         if (!title || !artist) {
-            return res.status(400).json({ 
-                error: '标题和艺术家为必填字段' 
+            return res.status(400).json({
+                error: '标题和艺术家为必填字段'
             });
         }
 
@@ -9505,11 +9505,11 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
             SELECT id FROM ChatApp.dbo.Music 
             WHERE title = @title AND artist = @artist
         `;
-        
+
         const checkRequest = new sql.Request();
         checkRequest.input('title', sql.NVarChar, title);
         checkRequest.input('artist', sql.NVarChar, artist);
-        
+
         const existingRecord = await checkRequest.query(checkQuery);
 
         if (existingRecord.recordset.length > 0) {
@@ -9520,11 +9520,11 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
                     updatetime = GETDATE()
                 WHERE title = @title AND artist = @artist
             `;
-            
+
             const updateRequest = new sql.Request();
             updateRequest.input('title', sql.NVarChar, title);
             updateRequest.input('artist', sql.NVarChar, artist);
-            
+
             await updateRequest.query(updateQuery);
 
             // 获取更新后的播放量（可选，用于日志记录）
@@ -9534,20 +9534,20 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
             `;
             const countResult = await updateRequest.query(getCountQuery);
             const newPlayCount = countResult.recordset[0].playcount;
-            
+
             //console.log('更新播放量成功:', { title, artist, newPlayCount });
-            
-            res.json({ 
-                success: true, 
+
+            res.json({
+                success: true,
                 message: '播放量更新成功',
                 playcount: newPlayCount
             });
         } else {
             // 如果歌曲不存在，不创建新记录，直接返回成功但跳过计数
-          //  console.log('歌曲不存在，跳过播放量统计:', { title, artist });
-            
-            res.json({ 
-                success: true, 
+            //  console.log('歌曲不存在，跳过播放量统计:', { title, artist });
+
+            res.json({
+                success: true,
                 message: '歌曲不存在，跳过播放量统计',
                 playcount: 0,
                 skipped: true
@@ -9555,10 +9555,10 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
         }
 
     } catch (err) {
-      //  console.error('更新播放量错误:', err);
-        res.status(500).json({ 
+        //  console.error('更新播放量错误:', err);
+        res.status(500).json({
             success: false,
-            error: '服务器错误' 
+            error: '服务器错误'
         });
     }
 });
@@ -9571,23 +9571,23 @@ app.post('/api/reactdemoIncreasePlayCount', async (req, res) => {
 
 
 //reactdemo 一起听歌曲管理  👇
- 
+
 
 // 一起听歌房间相关 API
 // 获取房间 开始
- 
+
 // 1. 获取所有房间 (【核心修改】: 现在每个房间都附带用户列表)
 // 1. 获取所有房间 (现在每个房间都附带用户列表)
 // GET /api/ReactDemomusic-rooms (最终正确版)
 app.get('/api/ReactDemomusic-rooms', async (req, res) => {
-  try {
-    console.log('开始获取房间列表...');
-    const pool = await poolConnect;
-    console.log('数据库连接成功');
-    
-    // ====================== 【【【 核心修改点 】】】 ======================
-    // 采用子查询预先计算每个房间的人数，避免 GROUP BY 的问题
-    const query = `
+    try {
+        console.log('开始获取房间列表...');
+        const pool = await poolConnect;
+        console.log('数据库连接成功');
+
+        // ====================== 【【【 核心修改点 】】】 ======================
+        // 采用子查询预先计算每个房间的人数，避免 GROUP BY 的问题
+        const query = `
       SELECT 
         r.*,
         ISNULL(u_count.current_users, 0) as current_users
@@ -9610,223 +9610,223 @@ app.get('/api/ReactDemomusic-rooms', async (req, res) => {
       ORDER BY 
         r.created_at DESC;
     `;
-    
-    console.log('执行SQL查询...');
-    const result = await pool.request().query(query);
-    
-    console.log('查询到的房间数量:', result.recordset.length);
-    
-    if (result.recordset.length === 0) {
-      return res.json([]); // 如果没有房间，直接返回空数组
-    }
 
-    // ====================== 【【【 性能优化 】】】 ======================
-    // 不再为每个房间单独查询用户，而是一次性获取所有用户，然后在内存中组合
-    
-    // 1. 获取所有房间的所有用户信息
-    const usersQuery = `
+        console.log('执行SQL查询...');
+        const result = await pool.request().query(query);
+
+        console.log('查询到的房间数量:', result.recordset.length);
+
+        if (result.recordset.length === 0) {
+            return res.json([]); // 如果没有房间，直接返回空数组
+        }
+
+        // ====================== 【【【 性能优化 】】】 ======================
+        // 不再为每个房间单独查询用户，而是一次性获取所有用户，然后在内存中组合
+
+        // 1. 获取所有房间的所有用户信息
+        const usersQuery = `
       SELECT ru.room_name, ru.email, u.username, ru.is_host, ru.join_time
       FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers ru
       LEFT JOIN reactDemoApp.dbo.userAccounts u ON ru.email = u.email
       ORDER BY ru.is_host DESC, ru.join_time ASC
     `;
-    const usersResult = await pool.request().query(usersQuery);
-    const allUsers = usersResult.recordset;
+        const usersResult = await pool.request().query(usersQuery);
+        const allUsers = usersResult.recordset;
 
-    // 2. 将用户信息组合到每个房间对象中
-    const roomsWithUsers = result.recordset.map(room => {
-      return {
-        ...room,
-        // 在内存中为每个房间筛选出属于它的用户列表
-        users: allUsers.filter(user => user.room_name === room.room_name)
-      };
-    });
-    
-    res.json(roomsWithUsers);
+        // 2. 将用户信息组合到每个房间对象中
+        const roomsWithUsers = result.recordset.map(room => {
+            return {
+                ...room,
+                // 在内存中为每个房间筛选出属于它的用户列表
+                users: allUsers.filter(user => user.room_name === room.room_name)
+            };
+        });
 
-  } catch (err) {
-    console.error('获取房间列表失败:', err.message);
-    res.status(500).json({ error: '获取房间列表失败: ' + err.message });
-  }
+        res.json(roomsWithUsers);
+
+    } catch (err) {
+        console.error('获取房间列表失败:', err.message);
+        res.status(500).json({ error: '获取房间列表失败: ' + err.message });
+    }
 });
 
 // 创建房间
 // POST /api/ReactDemomusic-rooms (修正版)
 app.post('/api/ReactDemomusic-rooms', async (req, res) => {
-  const { room_name, password, host, max_users = 10 } = req.body;
+    const { room_name, password, host, max_users = 10 } = req.body;
 
-  console.log('收到创建房间请求:', { room_name, password, host, max_users });
+    console.log('收到创建房间请求:', { room_name, password, host, max_users });
 
-  if (!room_name || !host) {
-    return res.status(400).json({ error: '房间名称和主持人邮箱不能为空' });
-  }
+    if (!room_name || !host) {
+        return res.status(400).json({ error: '房间名称和主持人邮箱不能为空' });
+    }
 
-  try {
-    const pool = await poolConnect;
-    
-    // 检查房间名是否已存在 (无变化)
-    const checkResult = await pool.request()
-      .input('room_name', sql.NVarChar, room_name)
-      .query(`
+    try {
+        const pool = await poolConnect;
+
+        // 检查房间名是否已存在 (无变化)
+        const checkResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query(`
         SELECT id FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms 
         WHERE room_name = @room_name 
         AND (room_status != '已关闭' OR room_status IS NULL)
       `);
-    
-    if (checkResult.recordset.length > 0) {
-      return res.status(400).json({ error: '房间名已存在' });
-    }
 
-    // ====================== 【【【 核心修改点 】】】 ======================
-    // 创建房间 - 将保留关键字 current_time 用方括号 [] 包裹起来
-    const insertResult = await pool.request()
-      .input('room_name', sql.NVarChar, room_name)
-      .input('password', sql.NVarChar, password || null)
-      .input('host', sql.NVarChar, host)
-      .input('max_users', sql.Int, max_users)
-      .input('title', sql.NVarChar, '暂无歌曲')
-      .input('artist', sql.NVarChar, '暂无歌手')
-      .input('coverimage', sql.NVarChar, 'http://121.4.22.55:80/backend/musics/default.jpg')
-      .input('src', sql.NVarChar, '')
-      .input('genre', sql.NVarChar, '')
-      .input('current_time', sql.Float, 0)
-      .input('is_playing', sql.Bit, 0)
-      .input('play_mode', sql.NVarChar, 'repeat')
-      .query(`
+        if (checkResult.recordset.length > 0) {
+            return res.status(400).json({ error: '房间名已存在' });
+        }
+
+        // ====================== 【【【 核心修改点 】】】 ======================
+        // 创建房间 - 将保留关键字 current_time 用方括号 [] 包裹起来
+        const insertResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .input('password', sql.NVarChar, password || null)
+            .input('host', sql.NVarChar, host)
+            .input('max_users', sql.Int, max_users)
+            .input('title', sql.NVarChar, '暂无歌曲')
+            .input('artist', sql.NVarChar, '暂无歌手')
+            .input('coverimage', sql.NVarChar, 'http://121.4.22.55:80/backend/musics/default.jpg')
+            .input('src', sql.NVarChar, '')
+            .input('genre', sql.NVarChar, '')
+            .input('current_time', sql.Float, 0)
+            .input('is_playing', sql.Bit, 0)
+            .input('play_mode', sql.NVarChar, 'repeat')
+            .query(`
         INSERT INTO reactDemoApp.dbo.ListenMusicTogetherMusicRooms 
         (room_name, password, host, max_users, title, artist, coverimage, src, genre, [current_time], is_playing, play_mode, room_status)
         VALUES (@room_name, @password, @host, @max_users, @title, @artist, @coverimage, @src, @genre, @current_time, @is_playing, @play_mode, '等待中');
         SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE id = SCOPE_IDENTITY();
       `);
-    // ====================================================================
+        // ====================================================================
 
-    const room = insertResult.recordset[0];
-    console.log('创建的房间:', room);
+        const room = insertResult.recordset[0];
+        console.log('创建的房间:', room);
 
-    // 添加创建者到房间用户表 (无变化)
-    await pool.request()
-      .input('room_name', sql.NVarChar, room_name)
-      .input('email', sql.NVarChar, host)
-      .input('is_host', sql.Bit, 1)
-      .query(`
+        // 添加创建者到房间用户表 (无变化)
+        await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .input('email', sql.NVarChar, host)
+            .input('is_host', sql.Bit, 1)
+            .query(`
         INSERT INTO reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
         (room_name, email, is_host)
         VALUES (@room_name, @email, @is_host)
       `);
 
-    console.log('添加创建者到用户表成功');
+        console.log('添加创建者到用户表成功');
 
-    // 获取完整的房间信息（包含用户列表） (无变化)
-    const usersResult = await pool.request()
-      .input('room_name', sql.NVarChar, room_name)
-      .query(`
+        // 获取完整的房间信息（包含用户列表） (无变化)
+        const usersResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query(`
         SELECT email, is_host, join_time
         FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
         WHERE room_name = @room_name
         ORDER BY is_host DESC, join_time ASC
       `);
 
-    const roomWithUsers = {
-      ...room,
-      users: usersResult.recordset,
-      current_users: usersResult.recordset.length
-    };
+        const roomWithUsers = {
+            ...room,
+            users: usersResult.recordset,
+            current_users: usersResult.recordset.length
+        };
 
-    // 通过 Socket.IO 广播新房间 (无变化)
-    if (io) {
-      io.emit('rooms-updated');
+        // 通过 Socket.IO 广播新房间 (无变化)
+        if (io) {
+            io.emit('rooms-updated');
+        }
+
+        res.json({ success: true, room: roomWithUsers });
+    } catch (err) {
+        console.error('创建房间失败:', err);
+        res.status(500).json({ error: '创建房间失败: ' + err.message });
     }
-
-    res.json({ success: true, room: roomWithUsers });
-  } catch (err) {
-    console.error('创建房间失败:', err);
-    res.status(500).json({ error: '创建房间失败: ' + err.message });
-  }
 });
 
 // 加入房间
 app.post('/api/ReactDemomusic-rooms/join', async (req, res) => {
-  const { room_name, password, email } = req.body;
+    const { room_name, password, email } = req.body;
 
-  try {
-    const pool = await poolConnect;
-    
-    // 获取房间信息
-    const roomResult = await pool.request()
-      .input('room_name', sql.NVarChar, room_name)
-      .query('SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name AND room_status != \'已关闭\'');
-    
-    if (roomResult.recordset.length === 0) {
-      return res.status(404).json({ error: '房间不存在或已关闭' });
-    }
+    try {
+        const pool = await poolConnect;
 
-    const room = roomResult.recordset[0];
+        // 获取房间信息
+        const roomResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query('SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name AND room_status != \'已关闭\'');
 
-    // 检查密码
-    if (room.password && room.password !== password) {
-      return res.status(401).json({ error: '房间密码错误' });
-    }
+        if (roomResult.recordset.length === 0) {
+            return res.status(404).json({ error: '房间不存在或已关闭' });
+        }
 
-    // 检查用户是否已在房间中
-    const userCheck = await pool.request()
-      .input('room_name', sql.NVarChar, room_name)
-      .input('email', sql.NVarChar, email)
-      .query('SELECT id FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name AND email = @email');
-    
-    if (userCheck.recordset.length > 0) {
-      return res.status(400).json({ error: '您已在此房间中' });
-    }
+        const room = roomResult.recordset[0];
 
-    // 检查房间人数
-    const userCountResult = await pool.request()
-      .input('room_name', sql.NVarChar, room_name)
-      .query('SELECT COUNT(*) as user_count FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name');
-    
-    const userCount = userCountResult.recordset[0].user_count;
-    if (userCount >= room.max_users) {
-      return res.status(400).json({ error: '房间已满' });
-    }
+        // 检查密码
+        if (room.password && room.password !== password) {
+            return res.status(401).json({ error: '房间密码错误' });
+        }
 
-    // 添加用户到房间
-    await pool.request()
-      .input('room_name', sql.NVarChar, room_name)
-      .input('email', sql.NVarChar, email)
-      .input('is_host', sql.Bit, 0)
-      .query(`
+        // 检查用户是否已在房间中
+        const userCheck = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .input('email', sql.NVarChar, email)
+            .query('SELECT id FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name AND email = @email');
+
+        if (userCheck.recordset.length > 0) {
+            return res.status(400).json({ error: '您已在此房间中' });
+        }
+
+        // 检查房间人数
+        const userCountResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query('SELECT COUNT(*) as user_count FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name');
+
+        const userCount = userCountResult.recordset[0].user_count;
+        if (userCount >= room.max_users) {
+            return res.status(400).json({ error: '房间已满' });
+        }
+
+        // 添加用户到房间
+        await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .input('email', sql.NVarChar, email)
+            .input('is_host', sql.Bit, 0)
+            .query(`
         INSERT INTO reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
         (room_name, email, is_host)
         VALUES (@room_name, @email, @is_host)
       `);
 
-    // 获取更新后的用户列表
-    const usersResult = await pool.request()
-      .input('room_name', sql.NVarChar, room_name)
-      .query(`
+        // 获取更新后的用户列表
+        const usersResult = await pool.request()
+            .input('room_name', sql.NVarChar, room_name)
+            .query(`
         SELECT email, is_host, join_time
         FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
         WHERE room_name = @room_name
         ORDER BY is_host DESC, join_time ASC
       `);
 
-    // 通过 Socket.IO 广播用户加入
-    if (io) {
-      io.to(`room-${room.id}`).emit('room-users-update', usersResult.recordset);
-      io.emit('rooms-updated');
-    }
+        // 通过 Socket.IO 广播用户加入
+        if (io) {
+            io.to(`room-${room.id}`).emit('room-users-update', usersResult.recordset);
+            io.emit('rooms-updated');
+        }
 
-    res.json({ 
-      success: true, 
-      room: {
-        ...room,
-        users: usersResult.recordset,
-        current_users: usersResult.recordset.length
-      },
-      users: usersResult.recordset
-    });
-  } catch (err) {
-    console.error('加入房间失败:', err);
-    res.status(500).json({ error: '加入房间失败: ' + err.message });
-  }
+        res.json({
+            success: true,
+            room: {
+                ...room,
+                users: usersResult.recordset,
+                current_users: usersResult.recordset.length
+            },
+            users: usersResult.recordset
+        });
+    } catch (err) {
+        console.error('加入房间失败:', err);
+        res.status(500).json({ error: '加入房间失败: ' + err.message });
+    }
 });
 
 // 房主解散房间 (DELETE 请求)
@@ -9840,16 +9840,16 @@ app.delete('/api/ReactDemomusic-rooms/:room_name', async (req, res) => {
 
     try {
         const pool = await poolConnect;
-        
+
         // 获取房间信息并验证房主身份
         const roomResult = await pool.request()
             .input('room_name', sql.NVarChar, room_name)
             .query('SELECT id, host FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name');
-        
+
         if (roomResult.recordset.length === 0) {
             return res.status(404).json({ error: '房间不存在' });
         }
-        
+
         const room = roomResult.recordset[0];
         if (room.host !== email) {
             return res.status(403).json({ error: '权限不足，只有房主才能解散房间' });
@@ -9859,11 +9859,11 @@ app.delete('/api/ReactDemomusic-rooms/:room_name', async (req, res) => {
         await pool.request()
             .input('room_name', sql.NVarChar, room_name)
             .query('DELETE FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name');
-        
+
         await pool.request()
             .input('room_name', sql.NVarChar, room_name)
             .query('DELETE FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name');
-        
+
         // 广播房间解散事件
         if (io) {
             io.to(`room-${room.id}`).emit('room-dissolved');
@@ -9883,12 +9883,12 @@ app.post('/api/ReactDemomusic-rooms/leave', async (req, res) => {
 
     try {
         const pool = await poolConnect;
-        
+
         // 获取房间信息
         const roomResult = await pool.request()
             .input('room_name', sql.NVarChar, room_name)
             .query('SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name');
-        
+
         if (roomResult.recordset.length === 0) {
             return res.status(404).json({ error: '房间不存在' });
         }
@@ -9900,7 +9900,7 @@ app.post('/api/ReactDemomusic-rooms/leave', async (req, res) => {
             .input('room_name', sql.NVarChar, room_name)
             .input('email', sql.NVarChar, email)
             .query('SELECT is_host FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name AND email = @email');
-        
+
         if (userCheck.recordset.length === 0) {
             return res.status(400).json({ error: '您不在此房间中' });
         }
@@ -9917,7 +9917,7 @@ app.post('/api/ReactDemomusic-rooms/leave', async (req, res) => {
         const remainingUsersResult = await pool.request()
             .input('room_name', sql.NVarChar, room_name)
             .query('SELECT COUNT(*) as user_count FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name');
-        
+
         const remainingUserCount = remainingUsersResult.recordset[0].user_count;
 
         // 处理房主离开的情况
@@ -9927,16 +9927,16 @@ app.post('/api/ReactDemomusic-rooms/leave', async (req, res) => {
                 const newHostResult = await pool.request()
                     .input('room_name', sql.NVarChar, room_name)
                     .query('SELECT TOP 1 email FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers WHERE room_name = @room_name ORDER BY join_time ASC');
-                
+
                 if (newHostResult.recordset.length > 0) {
                     const newHost = newHostResult.recordset[0].email;
-                    
+
                     // 更新房间的房主
                     await pool.request()
                         .input('room_name', sql.NVarChar, room_name)
                         .input('new_host', sql.NVarChar, newHost)
                         .query('UPDATE reactDemoApp.dbo.ListenMusicTogetherMusicRooms SET host = @new_host WHERE room_name = @room_name');
-                    
+
                     // 更新新用户的房主状态
                     await pool.request()
                         .input('room_name', sql.NVarChar, room_name)
@@ -9972,8 +9972,8 @@ app.post('/api/ReactDemomusic-rooms/leave', async (req, res) => {
             }
         }
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: wasHost ? '已退出房间，房主权限已转移' : '已成功离开房间',
             roomClosed: remainingUserCount === 0
         });
@@ -9985,23 +9985,23 @@ app.post('/api/ReactDemomusic-rooms/leave', async (req, res) => {
 
 // 更新房间状态（主持人用）
 app.put('/api/ReactDemomusic-rooms/:roomId', async (req, res) => {
-  const { roomId } = req.params;
-  const { title, artist, coverimage, src, genre, current_time, is_playing, play_mode } = req.body;
+    const { roomId } = req.params;
+    const { title, artist, coverimage, src, genre, current_time, is_playing, play_mode } = req.body;
 
-  try {
-    const pool = await poolConnect;
-    
-    await pool.request()
-      .input('room_id', sql.Int, roomId)
-      .input('title', sql.NVarChar, title)
-      .input('artist', sql.NVarChar, artist)
-      .input('coverimage', sql.NVarChar, coverimage)
-      .input('src', sql.NVarChar, src)
-      .input('genre', sql.NVarChar, genre)
-      .input('current_time', sql.Float, current_time)
-      .input('is_playing', sql.Bit, is_playing)
-      .input('play_mode', sql.NVarChar, play_mode)
-      .query(`
+    try {
+        const pool = await poolConnect;
+
+        await pool.request()
+            .input('room_id', sql.Int, roomId)
+            .input('title', sql.NVarChar, title)
+            .input('artist', sql.NVarChar, artist)
+            .input('coverimage', sql.NVarChar, coverimage)
+            .input('src', sql.NVarChar, src)
+            .input('genre', sql.NVarChar, genre)
+            .input('current_time', sql.Float, current_time)
+            .input('is_playing', sql.Bit, is_playing)
+            .input('play_mode', sql.NVarChar, play_mode)
+            .query(`
         UPDATE reactDemoApp.dbo.ListenMusicTogetherMusicRooms 
         SET title = @title, artist = @artist, coverimage = @coverimage, 
             src = @src, genre = @genre, current_time = @current_time, 
@@ -10009,83 +10009,83 @@ app.put('/api/ReactDemomusic-rooms/:roomId', async (req, res) => {
         WHERE id = @room_id
       `);
 
-    // 获取更新后的房间信息
-    const roomResult = await pool.request()
-      .input('room_id', sql.Int, roomId)
-      .query('SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE id = @room_id');
+        // 获取更新后的房间信息
+        const roomResult = await pool.request()
+            .input('room_id', sql.Int, roomId)
+            .query('SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE id = @room_id');
 
-    const room = roomResult.recordset[0];
+        const room = roomResult.recordset[0];
 
-    // 通过 Socket.IO 广播状态更新
-    if (io) {
-      io.to(`room-${roomId}`).emit('room-state-update', room);
+        // 通过 Socket.IO 广播状态更新
+        if (io) {
+            io.to(`room-${roomId}`).emit('room-state-update', room);
+        }
+
+        res.json({ success: true, room });
+    } catch (err) {
+        console.error('更新房间状态失败:', err);
+        res.status(500).json({ error: '更新房间状态失败' });
     }
-
-    res.json({ success: true, room });
-  } catch (err) {
-    console.error('更新房间状态失败:', err);
-    res.status(500).json({ error: '更新房间状态失败' });
-  }
 });
 
 // 获取房间用户列表
 app.get('/api/ReactDemomusic-rooms/:roomName/users', async (req, res) => {
-  const { roomName } = req.params;
+    const { roomName } = req.params;
 
-  try {
-    const pool = await poolConnect;
-    
-    const usersResult = await pool.request()
-      .input('room_name', sql.NVarChar, roomName)
-      .query(`
+    try {
+        const pool = await poolConnect;
+
+        const usersResult = await pool.request()
+            .input('room_name', sql.NVarChar, roomName)
+            .query(`
         SELECT email, is_host, join_time
         FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
         WHERE room_name = @room_name
         ORDER BY is_host DESC, join_time ASC
       `);
 
-    res.json(usersResult.recordset);
-  } catch (err) {
-    console.error('获取房间用户失败:', err);
-    res.status(500).json({ error: '获取房间用户失败' });
-  }
+        res.json(usersResult.recordset);
+    } catch (err) {
+        console.error('获取房间用户失败:', err);
+        res.status(500).json({ error: '获取房间用户失败' });
+    }
 });
 
 // 发送消息
 app.post('/api/ReactDemomusic-rooms/:roomName/messages', async (req, res) => {
-  const { roomName } = req.params;
-  const { email, message } = req.body;
+    const { roomName } = req.params;
+    const { email, message } = req.body;
 
-  try {
-    const pool = await poolConnect;
-    
-    // 获取房间ID
-    const roomResult = await pool.request()
-      .input('room_name', sql.NVarChar, roomName)
-      .query('SELECT id FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name');
-    
-    if (roomResult.recordset.length === 0) {
-      return res.status(404).json({ error: '房间不存在' });
-    }
+    try {
+        const pool = await poolConnect;
 
-    const roomId = roomResult.recordset[0].id;
+        // 获取房间ID
+        const roomResult = await pool.request()
+            .input('room_name', sql.NVarChar, roomName)
+            .query('SELECT id FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms WHERE room_name = @room_name');
 
-    // 插入消息
-    await pool.request()
-      .input('room_name', sql.NVarChar, roomName)
-      .input('email', sql.NVarChar, email)
-      .input('message', sql.NVarChar, message)
-      .query(`
+        if (roomResult.recordset.length === 0) {
+            return res.status(404).json({ error: '房间不存在' });
+        }
+
+        const roomId = roomResult.recordset[0].id;
+
+        // 插入消息
+        await pool.request()
+            .input('room_name', sql.NVarChar, roomName)
+            .input('email', sql.NVarChar, email)
+            .input('message', sql.NVarChar, message)
+            .query(`
         INSERT INTO reactDemoApp.dbo.MusicRoomMessages 
         (room_name, email, message)
         VALUES (@room_name, @email, @message)
       `);
 
-    // 获取完整的消息信息（包含用户信息）
-    const messageResult = await pool.request()
-      .input('room_name', sql.NVarChar, roomName)
-      .input('email', sql.NVarChar, email)
-      .query(`
+        // 获取完整的消息信息（包含用户信息）
+        const messageResult = await pool.request()
+            .input('room_name', sql.NVarChar, roomName)
+            .input('email', sql.NVarChar, email)
+            .query(`
         SELECT m.*, u.username 
         FROM reactDemoApp.dbo.MusicRoomMessages m
         LEFT JOIN BillingApp.dbo.users u ON m.email = u.email
@@ -10093,30 +10093,30 @@ app.post('/api/ReactDemomusic-rooms/:roomName/messages', async (req, res) => {
         ORDER BY m.sent_at DESC
       `);
 
-    const newMessage = messageResult.recordset[0];
+        const newMessage = messageResult.recordset[0];
 
-    // 通过 Socket.IO 广播新消息
-    if (io) {
-      io.to(`room-${roomId}`).emit('new-message', newMessage);
+        // 通过 Socket.IO 广播新消息
+        if (io) {
+            io.to(`room-${roomId}`).emit('new-message', newMessage);
+        }
+
+        res.json({ success: true, message: newMessage });
+    } catch (err) {
+        console.error('发送消息失败:', err);
+        res.status(500).json({ error: '发送消息失败' });
     }
-
-    res.json({ success: true, message: newMessage });
-  } catch (err) {
-    console.error('发送消息失败:', err);
-    res.status(500).json({ error: '发送消息失败' });
-  }
 });
 
 // 获取房间消息
 app.get('/api/ReactDemomusic-rooms/:roomName/messages', async (req, res) => {
-  const { roomName } = req.params;
+    const { roomName } = req.params;
 
-  try {
-    const pool = await poolConnect;
-    
-    const result = await pool.request()
-      .input('room_name', sql.NVarChar, roomName)
-      .query(`
+    try {
+        const pool = await poolConnect;
+
+        const result = await pool.request()
+            .input('room_name', sql.NVarChar, roomName)
+            .query(`
         SELECT m.*, u.username 
         FROM reactDemoApp.dbo.MusicRoomMessages m
         LEFT JOIN reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers u ON m.email = u.email
@@ -10124,15 +10124,15 @@ app.get('/api/ReactDemomusic-rooms/:roomName/messages', async (req, res) => {
         ORDER BY m.sent_at ASC
       `);
 
-    res.json(result.recordset);
-  } catch (err) {
-    console.error('获取消息失败:', err);
-    res.status(500).json({ error: '获取消息失败' });
-  }
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('获取消息失败:', err);
+        res.status(500).json({ error: '获取消息失败' });
+    }
 });
- 
- 
- 
+
+
+
 //reactdemo 一起听歌曲管理  👆
 
 
@@ -10159,11 +10159,11 @@ app.get('/api/ReactDemomusic-id', async (req, res) => {
             FROM ChatApp.dbo.Music 
             WHERE title = ${title} AND artist = ${artist}
         `;
-        
+
         if (result.recordset.length === 0) {
             return res.status(404).json({ error: 'Music not found' });
         }
-        
+
         res.json({ music_id: result.recordset[0].music_id });
     } catch (err) {
         console.error('Error fetching music ID:', err);
@@ -10223,12 +10223,12 @@ app.post('/api/ReactDemomusiccomments', async (req, res) => {
 
     try {
         await sql.connect(config);
-        
+
         // 验证 music_id 是否存在
         const musicCheck = await sql.query`
             SELECT id FROM ChatApp.dbo.Music WHERE id = ${Number(music_id)}
         `;
-        
+
         if (musicCheck.recordset.length === 0) {
             return res.status(404).json({ error: 'Music not found' });
         }
@@ -10375,19 +10375,19 @@ app.get('/api/ReactDemomusic-comments/count', async (req, res) => {
 app.post('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
     // 设置响应头，支持UTF-8编码
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    
-    const { 
-        room_name, 
-        title, 
-        host, 
-        artist, 
-        coverimage, 
-        src, 
-        genre, 
-        is_playing, 
-        play_mode, 
-        email, 
-        is_host 
+
+    const {
+        room_name,
+        title,
+        host,
+        artist,
+        coverimage,
+        src,
+        genre,
+        is_playing,
+        play_mode,
+        email,
+        is_host
     } = req.body;
 
     console.log('接收到的播放歌曲数据:', {
@@ -10402,7 +10402,7 @@ app.post('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
             SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
             WHERE room_name = @room_name AND email = @email
         `;
-        
+
         const userCheckResult = await pool.request()
             .input('room_name', sql.NVarChar, room_name) // 使用 NVARCHAR 支持Unicode
             .input('email', sql.NVarChar, email) // 使用 NVARCHAR 支持Unicode
@@ -10441,7 +10441,7 @@ app.post('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
 
         // 返回成功响应
         res.status(201).json({ message: 'TogetherMusicRoomUsersChangePlaySong' });
-        
+
         // 广播消息给所有客户端
         io.emit('TogetherMusicRoomUsersChangePlaySong', {
             room_name,
@@ -10467,7 +10467,7 @@ app.post('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
 app.get('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
     // 设置响应头，支持UTF-8编码
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    
+
     const { room_name, email } = req.query;
 
     console.log('获取房间播放信息:', { room_name, email });
@@ -10480,7 +10480,7 @@ app.get('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
             SELECT * FROM reactDemoApp.dbo.ListenMusicTogetherMusicRoomUsers 
             WHERE room_name = @room_name AND email = @email
         `;
-        
+
         const userCheckResult = await pool.request()
             .input('room_name', sql.NVarChar, room_name)
             .input('email', sql.NVarChar, email)
@@ -10706,9 +10706,9 @@ app.post('/api/auth/login', async (req, res) => {
 //reactdemo 主题管理 👇
 // ==================== 主题设置相关API ====================
 
- 
+
 // 假设你的 express app 和数据库连接池 (poolConnect, pool) 已经设置好
-  
+
 
 // 2. 获取用户所有主题
 app.get('/api/UserThemeSettings', async (req, res) => {
@@ -10724,7 +10724,7 @@ app.get('/api/UserThemeSettings', async (req, res) => {
             WHERE email = @email 
             ORDER BY is_active DESC, id DESC
         `);
-        
+
         res.json({ success: true, themes: result.recordset });
     } catch (error) {
         console.error('获取用户主题失败:', error);
@@ -10734,67 +10734,67 @@ app.get('/api/UserThemeSettings', async (req, res) => {
 
 // 3. 创建新主题
 app.post('/api/UserThemeSettings', async (req, res) => {
-  try {
-    const { email, theme_name, is_active, background_animation, ...themeColors } = req.body;
-    
-    // 验证必需字段
-    if (!email || !theme_name) {
-      return res.status(400).json({ success: false, message: '邮箱和主题名称不能为空' });
-    }
+    try {
+        const { email, theme_name, is_active, background_animation, ...themeColors } = req.body;
 
-    // 验证主题名称长度（假设数据库中是 NVARCHAR(100)）
-    if (theme_name.length > 100) {
-      return res.status(400).json({ success: false, message: '主题名称过长' });
-    }
+        // 验证必需字段
+        if (!email || !theme_name) {
+            return res.status(400).json({ success: false, message: '邮箱和主题名称不能为空' });
+        }
 
-    await poolConnect;
-    const request = pool.request();
-    
-    // 处理必需字段
-    request.input('email', sql.NVarChar(255), email.substring(0, 255)); // 限制长度
-    request.input('theme_name', sql.NVarChar(100), theme_name.substring(0, 100));
-    request.input('is_active', sql.Bit, is_active || false);
-    request.input('background_animation', sql.NVarChar(50), (background_animation || 'WaterWave').substring(0, 50));
-    
-    const columns = ['email', 'theme_name', 'is_active', 'background_animation'];
-    const values = ['@email', '@theme_name', '@is_active', '@background_animation'];
+        // 验证主题名称长度（假设数据库中是 NVARCHAR(100)）
+        if (theme_name.length > 100) {
+            return res.status(400).json({ success: false, message: '主题名称过长' });
+        }
 
-    // 处理颜色字段 - 限制长度为9（#RRGGBBAA）
-    const colorFields = [
-      'background_color', 'secondary_background_color', 'hover_background_color', 'focus_background_color',
-      'font_color', 'secondary_font_color', 'hover_font_color', 'focus_font_color', 'watermark_font_color',
-      'border_color', 'secondary_border_color', 'hover_border_color', 'focus_border_color',
-      'shadow_color', 'hover_shadow_color', 'focus_shadow_color'
-    ];
+        await poolConnect;
+        const request = pool.request();
 
-    for(const key of colorFields) {
-      if (themeColors[key] !== undefined) {
-        columns.push(key);
-        values.push(`@${key}`);
-        // 限制颜色值为最大9个字符 (#RRGGBBAA)
-        const colorValue = String(themeColors[key] || '#ffffff').substring(0, 9);
-        request.input(key, sql.NVarChar(9), colorValue);
-      }
-    }
+        // 处理必需字段
+        request.input('email', sql.NVarChar(255), email.substring(0, 255)); // 限制长度
+        request.input('theme_name', sql.NVarChar(100), theme_name.substring(0, 100));
+        request.input('is_active', sql.Bit, is_active || false);
+        request.input('background_animation', sql.NVarChar(50), (background_animation || 'WaterWave').substring(0, 50));
 
-    // 处理字体家族字段
-    if (themeColors.font_family !== undefined) {
-      columns.push('font_family');
-      values.push('@font_family');
-      request.input('font_family', sql.NVarChar(200), String(themeColors.font_family || '').substring(0, 200));
-    }
+        const columns = ['email', 'theme_name', 'is_active', 'background_animation'];
+        const values = ['@email', '@theme_name', '@is_active', '@background_animation'];
 
-    const result = await request.query(`
+        // 处理颜色字段 - 限制长度为9（#RRGGBBAA）
+        const colorFields = [
+            'background_color', 'secondary_background_color', 'hover_background_color', 'focus_background_color',
+            'font_color', 'secondary_font_color', 'hover_font_color', 'focus_font_color', 'watermark_font_color',
+            'border_color', 'secondary_border_color', 'hover_border_color', 'focus_border_color',
+            'shadow_color', 'hover_shadow_color', 'focus_shadow_color'
+        ];
+
+        for (const key of colorFields) {
+            if (themeColors[key] !== undefined) {
+                columns.push(key);
+                values.push(`@${key}`);
+                // 限制颜色值为最大9个字符 (#RRGGBBAA)
+                const colorValue = String(themeColors[key] || '#ffffff').substring(0, 9);
+                request.input(key, sql.NVarChar(9), colorValue);
+            }
+        }
+
+        // 处理字体家族字段
+        if (themeColors.font_family !== undefined) {
+            columns.push('font_family');
+            values.push('@font_family');
+            request.input('font_family', sql.NVarChar(200), String(themeColors.font_family || '').substring(0, 200));
+        }
+
+        const result = await request.query(`
       INSERT INTO reactDemoApp.dbo.UserThemeSettings (${columns.join(', ')}) 
       OUTPUT INSERTED.*
       VALUES (${values.join(', ')});
     `);
 
-    res.status(201).json({ success: true, theme: result.recordset[0], message: '主题创建成功' });
-  } catch (error) {
-    console.error('创建主题失败:', error);
-    res.status(500).json({ success: false, message: '服务器错误: 创建主题失败' });
-  }
+        res.status(201).json({ success: true, theme: result.recordset[0], message: '主题创建成功' });
+    } catch (error) {
+        console.error('创建主题失败:', error);
+        res.status(500).json({ success: false, message: '服务器错误: 创建主题失败' });
+    }
 });
 
 // 4. 更新主题
@@ -10841,7 +10841,7 @@ app.put('/api/UserThemeSettings/setActive/:id', async (req, res) => {
     const transaction = new sql.Transaction(pool);
     try {
         await transaction.begin();
-        
+
         await transaction.request()
             .input('email', sql.NVarChar, email)
             .query('UPDATE reactDemoApp.dbo.UserThemeSettings SET is_active = 0 WHERE email = @email');
@@ -10850,11 +10850,11 @@ app.put('/api/UserThemeSettings/setActive/:id', async (req, res) => {
             .input('id', sql.Int, id)
             .input('email', sql.NVarChar, email)
             .query('UPDATE reactDemoApp.dbo.UserThemeSettings SET is_active = 1 OUTPUT INSERTED.* WHERE id = @id AND email = @email');
-        
+
         await transaction.commit();
 
         if (result.recordset.length === 0) return res.status(404).json({ success: false, message: '主题不存在或不属于该用户' });
-        
+
         res.json({ success: true, theme: result.recordset[0], message: '活动主题设置成功' });
     } catch (error) {
         await transaction.rollback();
@@ -10906,222 +10906,222 @@ app.delete('/api/UserThemeSettings/:id', async (req, res) => {
 
 // ReactDemo 主题背景图片上传配置
 const reactDemoThemeStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    try {
-      console.log('ReactDemo Multer 接收到的文件:', file);
-      console.log('ReactDemo Multer 请求体:', req.body);
-      
-      // 从请求体中获取参数 - 现在应该可以获取到了
-      const { email, themeId } = req.body;
-      
-      if (!email) {
-        return cb(new Error('ReactDemo: 邮箱不能为空'));
-      }
-      if (!themeId) {
-        return cb(new Error('ReactDemo: 主题ID不能为空'));
-      }
-      
-      const userDir = path.join(__dirname, 'images', 'ReactDemoUserThemeSettings', email, themeId.toString());
-      fs.mkdirSync(userDir, { recursive: true });
-      console.log('ReactDemo 目录创建成功:', userDir);
-      
-      cb(null, userDir);
-    } catch (error) {
-      console.error('ReactDemo Multer 目录创建错误:', error);
-      cb(error);
+    destination: function (req, file, cb) {
+        try {
+            console.log('ReactDemo Multer 接收到的文件:', file);
+            console.log('ReactDemo Multer 请求体:', req.body);
+
+            // 从请求体中获取参数 - 现在应该可以获取到了
+            const { email, themeId } = req.body;
+
+            if (!email) {
+                return cb(new Error('ReactDemo: 邮箱不能为空'));
+            }
+            if (!themeId) {
+                return cb(new Error('ReactDemo: 主题ID不能为空'));
+            }
+
+            const userDir = path.join(__dirname, 'images', 'ReactDemoUserThemeSettings', email, themeId.toString());
+            fs.mkdirSync(userDir, { recursive: true });
+            console.log('ReactDemo 目录创建成功:', userDir);
+
+            cb(null, userDir);
+        } catch (error) {
+            console.error('ReactDemo Multer 目录创建错误:', error);
+            cb(error);
+        }
+    },
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        cb(null, 'ReactDemoCustomBackground' + ext);
     }
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    cb(null, 'ReactDemoCustomBackground' + ext);
-  }
 });
 
 const reactDemoThemeUpload = multer({
-  storage: reactDemoThemeStorage,
-  fileFilter: function (req, file, cb) {
-    console.log('ReactDemo 文件过滤:', file.fieldname, file.originalname);
-    const allowedTypes = /jpeg|jpg|png|webp/;
-    const mimetype = allowedTypes.test(file.mimetype);
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    
-    if (mimetype && extname) {
-      return cb(null, true);
+    storage: reactDemoThemeStorage,
+    fileFilter: function (req, file, cb) {
+        console.log('ReactDemo 文件过滤:', file.fieldname, file.originalname);
+        const allowedTypes = /jpeg|jpg|png|webp/;
+        const mimetype = allowedTypes.test(file.mimetype);
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error('ReactDemo: 只允许上传PNG, JPG或WEBP格式的图片'));
+    },
+    limits: {
+        fileSize: 5 * 1024 * 1024
     }
-    cb(new Error('ReactDemo: 只允许上传PNG, JPG或WEBP格式的图片'));
-  },
-  limits: { 
-    fileSize: 5 * 1024 * 1024
-  }
 });
 
 // ReactDemo 上传背景图片 - 使用 busboy 手动解析
 app.post('/api/react-demo/upload-background', (req, res) => {
-  // 手动解析 multipart/form-data
-  const busboy = require('busboy');
-  const bb = busboy({ headers: req.headers });
-  
-  const fields = {};
-  let fileBuffer = null;
-  let fileName = null;
-  let fileMimetype = null;
+    // 手动解析 multipart/form-data
+    const busboy = require('busboy');
+    const bb = busboy({ headers: req.headers });
 
-  bb.on('field', (name, val) => {
-    console.log(`ReactDemo 解析字段: ${name} = ${val}`);
-    fields[name] = val;
-  });
+    const fields = {};
+    let fileBuffer = null;
+    let fileName = null;
+    let fileMimetype = null;
 
-  bb.on('file', (name, file, info) => {
-    const { filename, encoding, mimeType } = info;
-    console.log(`ReactDemo 解析文件: ${name} = ${filename}`);
-    
-    fileName = filename;
-    fileMimetype = mimeType;
-    
-    const chunks = [];
-    file.on('data', (chunk) => {
-      chunks.push(chunk);
+    bb.on('field', (name, val) => {
+        console.log(`ReactDemo 解析字段: ${name} = ${val}`);
+        fields[name] = val;
     });
-    
-    file.on('end', () => {
-      fileBuffer = Buffer.concat(chunks);
+
+    bb.on('file', (name, file, info) => {
+        const { filename, encoding, mimeType } = info;
+        console.log(`ReactDemo 解析文件: ${name} = ${filename}`);
+
+        fileName = filename;
+        fileMimetype = mimeType;
+
+        const chunks = [];
+        file.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+
+        file.on('end', () => {
+            fileBuffer = Buffer.concat(chunks);
+        });
     });
-  });
 
-  bb.on('close', async () => {
-    try {
-      console.log('ReactDemo 解析完成:', { fields, fileName, fileBuffer: fileBuffer ? fileBuffer.length + ' bytes' : 'null' });
+    bb.on('close', async () => {
+        try {
+            console.log('ReactDemo 解析完成:', { fields, fileName, fileBuffer: fileBuffer ? fileBuffer.length + ' bytes' : 'null' });
 
-      // 验证必需参数
-      const { email, themeId } = fields;
-      if (!email || !themeId) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'ReactDemo: 缺少email或themeId参数' 
-        });
-      }
+            // 验证必需参数
+            const { email, themeId } = fields;
+            if (!email || !themeId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ReactDemo: 缺少email或themeId参数'
+                });
+            }
 
-      if (!fileBuffer) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'ReactDemo: 没有上传文件' 
-        });
-      }
+            if (!fileBuffer) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ReactDemo: 没有上传文件'
+                });
+            }
 
-      // 创建目录
-      const userDir = path.join(__dirname, 'images', 'ReactDemoUserThemeSettings', email, themeId.toString());
-      fs.mkdirSync(userDir, { recursive: true });
-      
-      // 保存文件
-      const fileExt = path.extname(fileName) || '.jpg';
-      const savedFileName = 'CustomBackground' + fileExt;
-      const filePath = path.join(userDir, savedFileName);
-      
-      fs.writeFileSync(filePath, fileBuffer);
-      console.log('ReactDemo 文件保存成功:', filePath);
+            // 创建目录
+            const userDir = path.join(__dirname, 'images', 'ReactDemoUserThemeSettings', email, themeId.toString());
+            fs.mkdirSync(userDir, { recursive: true });
 
-      // 更新数据库
-      await poolConnect;
-      const request = pool.request();
-      await request
-        .input('id', sql.Int, themeId)
-        .input('email', sql.NVarChar, email)
-        .input('background_animation', sql.NVarChar, 'CustomBackground')
-        .query(`UPDATE reactDemoApp.dbo.UserThemeSettings 
+            // 保存文件
+            const fileExt = path.extname(fileName) || '.jpg';
+            const savedFileName = 'CustomBackground' + fileExt;
+            const filePath = path.join(userDir, savedFileName);
+
+            fs.writeFileSync(filePath, fileBuffer);
+            console.log('ReactDemo 文件保存成功:', filePath);
+
+            // 更新数据库
+            await poolConnect;
+            const request = pool.request();
+            await request
+                .input('id', sql.Int, themeId)
+                .input('email', sql.NVarChar, email)
+                .input('background_animation', sql.NVarChar, 'CustomBackground')
+                .query(`UPDATE reactDemoApp.dbo.UserThemeSettings 
                 SET background_animation = @background_animation 
                 WHERE id = @id AND email = @email`);
 
-      res.json({
-        success: true,
-        message: 'ReactDemo: 背景图片上传并关联成功',
-        filePath: filePath,
-        fileName: savedFileName
-      });
+            res.json({
+                success: true,
+                message: 'ReactDemo: 背景图片上传并关联成功',
+                filePath: filePath,
+                fileName: savedFileName
+            });
 
-    } catch (error) {
-      console.error('ReactDemo: 处理上传失败:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'ReactDemo: 处理上传失败: ' + error.message 
-      });
-    }
-  });
-
-  bb.on('error', (err) => {
-    console.error('ReactDemo: 解析表单数据失败:', err);
-    res.status(400).json({ 
-      success: false, 
-      message: 'ReactDemo: 解析表单数据失败: ' + err.message 
+        } catch (error) {
+            console.error('ReactDemo: 处理上传失败:', error);
+            res.status(500).json({
+                success: false,
+                message: 'ReactDemo: 处理上传失败: ' + error.message
+            });
+        }
     });
-  });
 
-  req.pipe(bb);
+    bb.on('error', (err) => {
+        console.error('ReactDemo: 解析表单数据失败:', err);
+        res.status(400).json({
+            success: false,
+            message: 'ReactDemo: 解析表单数据失败: ' + err.message
+        });
+    });
+
+    req.pipe(bb);
 });
 
 // ReactDemo 获取背景图片
 app.get('/api/react-demo/background-image/:email/:themeId', (req, res) => {
-  try {
-    const { email, themeId } = req.params;
-    const imageDir = path.join(__dirname, 'images', 'ReactDemoUserThemeSettings', email, themeId);
+    try {
+        const { email, themeId } = req.params;
+        const imageDir = path.join(__dirname, 'images', 'ReactDemoUserThemeSettings', email, themeId);
 
-    console.log('ReactDemo 查找背景图片:', imageDir);
+        console.log('ReactDemo 查找背景图片:', imageDir);
 
-    if (fs.existsSync(imageDir)) {
-      const files = fs.readdirSync(imageDir);
-      console.log('ReactDemo 目录中的文件:', files);
-      
-      // 查找以 CustomBackground 开头的文件
-      const backgroundFile = files.find(f => f.startsWith('CustomBackground'));
-      if (backgroundFile) {
-        const imagePath = path.join(imageDir, backgroundFile);
-        console.log('ReactDemo 找到背景图片:', imagePath);
-        
-        // 设置正确的 Content-Type
-        const ext = path.extname(backgroundFile).toLowerCase();
-        const contentType = {
-          '.jpg': 'image/jpeg',
-          '.jpeg': 'image/jpeg',
-          '.png': 'image/png',
-          '.webp': 'image/webp'
-        }[ext] || 'image/jpeg';
-        
-        res.setHeader('Content-Type', contentType);
-        return res.sendFile(imagePath);
-      }
+        if (fs.existsSync(imageDir)) {
+            const files = fs.readdirSync(imageDir);
+            console.log('ReactDemo 目录中的文件:', files);
+
+            // 查找以 CustomBackground 开头的文件
+            const backgroundFile = files.find(f => f.startsWith('CustomBackground'));
+            if (backgroundFile) {
+                const imagePath = path.join(imageDir, backgroundFile);
+                console.log('ReactDemo 找到背景图片:', imagePath);
+
+                // 设置正确的 Content-Type
+                const ext = path.extname(backgroundFile).toLowerCase();
+                const contentType = {
+                    '.jpg': 'image/jpeg',
+                    '.jpeg': 'image/jpeg',
+                    '.png': 'image/png',
+                    '.webp': 'image/webp'
+                }[ext] || 'image/jpeg';
+
+                res.setHeader('Content-Type', contentType);
+                return res.sendFile(imagePath);
+            }
+        }
+
+        console.log('ReactDemo 未找到背景图片，返回透明像素');
+        // 如果找不到图片，发送透明像素
+        res.setHeader('Content-Type', 'image/png');
+        const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+        res.send(transparentPixel);
+
+    } catch (error) {
+        console.error('ReactDemo: 获取背景图片失败:', error);
+        res.status(500).json({ success: false, message: 'ReactDemo: 获取背景图片失败' });
     }
-    
-    console.log('ReactDemo 未找到背景图片，返回透明像素');
-    // 如果找不到图片，发送透明像素
-    res.setHeader('Content-Type', 'image/png');
-    const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
-    res.send(transparentPixel);
-
-  } catch (error) {
-    console.error('ReactDemo: 获取背景图片失败:', error);
-    res.status(500).json({ success: false, message: 'ReactDemo: 获取背景图片失败' });
-  }
 });
 //reactdemo 主题管理 👆
 
 
 {
-//价格查询-网页询价 👇 NeighborhoodFinder
- 
-// API: 根据小区名查询评估报告
-app.get('/api/SearchNeighborhoodsByArea', async (req, res) => {
-    try {
-        const { searchText, location, page = 1, pageSize = 20 } = req.query;
-        
-        if (!searchText && !location) {
-            return res.status(400).json({ 
-                success: false, 
-                message: '请提供搜索关键词或位置' 
-            });
-        }
+    //价格查询-网页询价 👇 NeighborhoodFinder
 
-        const pool = await sql.connect(config);
-        
-        let query = `
+    // API: 根据小区名查询评估报告
+    app.get('/api/SearchNeighborhoodsByArea', async (req, res) => {
+        try {
+            const { searchText, location, page = 1, pageSize = 20 } = req.query;
+
+            if (!searchText && !location) {
+                return res.status(400).json({
+                    success: false,
+                    message: '请提供搜索关键词或位置'
+                });
+            }
+
+            const pool = await sql.connect(config);
+
+            let query = `
             SELECT TOP ${pageSize}
                 reportsID,
                 documentNo,
@@ -11144,75 +11144,75 @@ app.get('/api/SearchNeighborhoodsByArea', async (req, res) => {
             WHERE 1=1
         `;
 
-        const params = [];
-        
-        if (searchText) {
-            // 搜索小区名或位置
-            query += ` AND (
+            const params = [];
+
+            if (searchText) {
+                // 搜索小区名或位置
+                query += ` AND (
                 communityName LIKE @searchText OR 
                 location LIKE @searchText OR
                 entrustingParty LIKE @searchText OR
                 rightsHolder LIKE @searchText
             )`;
-            params.push({ name: 'searchText', value: `%${searchText}%` });
-        }
-        
-        if (location) {
-            query += ` AND location LIKE @location`;
-            params.push({ name: 'location', value: `%${location}%` });
-        }
-        
-        query += ` ORDER BY reportDate DESC`;
-        
-        const request = pool.request();
-        params.forEach(param => {
-            request.input(param.name, sql.NVarChar, param.value);
-        });
-        
-        const result = await request.query(query);
-        
-        res.json({
-            success: true,
-            data: result.recordset,
-            total: result.recordset.length,
-            message: `找到 ${result.recordset.length} 条记录`
-        });
-        
-    } catch (error) {
-        console.error('查询小区数据失败:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: '查询失败',
-            error: error.message 
-        });
-    }
-});
+                params.push({ name: 'searchText', value: `%${searchText}%` });
+            }
 
-// API: 批量查询多个小区
-app.post('/api/BatchSearchNeighborhoods-old', async (req, res) => {
-    try {
-        const { neighborhoods, location } = req.body;
-        
-        if (!neighborhoods || !Array.isArray(neighborhoods) || neighborhoods.length === 0) {
-            return res.status(400).json({ 
-                success: false, 
-                message: '请提供小区列表' 
+            if (location) {
+                query += ` AND location LIKE @location`;
+                params.push({ name: 'location', value: `%${location}%` });
+            }
+
+            query += ` ORDER BY reportDate DESC`;
+
+            const request = pool.request();
+            params.forEach(param => {
+                request.input(param.name, sql.NVarChar, param.value);
+            });
+
+            const result = await request.query(query);
+
+            res.json({
+                success: true,
+                data: result.recordset,
+                total: result.recordset.length,
+                message: `找到 ${result.recordset.length} 条记录`
+            });
+
+        } catch (error) {
+            console.error('查询小区数据失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '查询失败',
+                error: error.message
             });
         }
+    });
 
-        const pool = await sql.connect(config);
-        
-        // 创建临时表来存储要查询的小区名
-        let query = `
+    // API: 批量查询多个小区
+    app.post('/api/BatchSearchNeighborhoods-old', async (req, res) => {
+        try {
+            const { neighborhoods, location } = req.body;
+
+            if (!neighborhoods || !Array.isArray(neighborhoods) || neighborhoods.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: '请提供小区列表'
+                });
+            }
+
+            const pool = await sql.connect(config);
+
+            // 创建临时表来存储要查询的小区名
+            let query = `
             DECLARE @Neighborhoods TABLE (name NVARCHAR(100));
             INSERT INTO @Neighborhoods (name) VALUES `;
-        
-        neighborhoods.forEach((name, index) => {
-            query += `(@name${index})`;
-            if (index < neighborhoods.length - 1) query += ', ';
-        });
-        
-        query += `;
+
+            neighborhoods.forEach((name, index) => {
+                query += `(@name${index})`;
+                if (index < neighborhoods.length - 1) query += ', ';
+            });
+
+            query += `;
         
             SELECT 
                 reportsID,
@@ -11253,71 +11253,71 @@ app.post('/api/BatchSearchNeighborhoods-old', async (req, res) => {
                     r.location LIKE '%' + n.name + '%'
                 )
             )`;
-        
-        if (location) {
-            query += ` AND location LIKE @location`;
-        }
-        
-        query += ` ORDER BY reportDate DESC`;
-        
-        const request = pool.request();
-        
-        // 添加小区名参数
-        neighborhoods.forEach((name, index) => {
-            request.input(`name${index}`, sql.NVarChar, name);
-        });
-        
-        if (location) {
-            request.input('location', sql.NVarChar, `%${location}%`);
-        }
-        
-        const result = await request.query(query);
-        
-        res.json({
-            success: true,
-            data: result.recordset,
-            total: result.recordset.length,
-            message: `批量查询找到 ${result.recordset.length} 条记录`
-        });
-        
-    } catch (error) {
-        console.error('批量查询小区数据失败:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: '批量查询失败',
-            error: error.message 
-        });
-    }
-});
-app.post('/api/BatchSearchNeighborhoods', async (req, res) => {
-    try {
-        const { neighborhoods, location } = req.body;
-        
-        // 检查是否至少有一个查询条件
-        if ((!neighborhoods || !Array.isArray(neighborhoods) || neighborhoods.length === 0) && !location) {
-            return res.status(400).json({ 
-                success: false, 
-                message: '请提供小区列表或地点信息' 
+
+            if (location) {
+                query += ` AND location LIKE @location`;
+            }
+
+            query += ` ORDER BY reportDate DESC`;
+
+            const request = pool.request();
+
+            // 添加小区名参数
+            neighborhoods.forEach((name, index) => {
+                request.input(`name${index}`, sql.NVarChar, name);
+            });
+
+            if (location) {
+                request.input('location', sql.NVarChar, `%${location}%`);
+            }
+
+            const result = await request.query(query);
+
+            res.json({
+                success: true,
+                data: result.recordset,
+                total: result.recordset.length,
+                message: `批量查询找到 ${result.recordset.length} 条记录`
+            });
+
+        } catch (error) {
+            console.error('批量查询小区数据失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '批量查询失败',
+                error: error.message
             });
         }
+    });
+    app.post('/api/BatchSearchNeighborhoods', async (req, res) => {
+        try {
+            const { neighborhoods, location } = req.body;
 
-        const pool = await sql.connect(config);
-        
-        let query = '';
-        const request = pool.request();
-        
-        if (neighborhoods && neighborhoods.length > 0) {
-            // 创建临时表来存储要查询的小区名
-            query = `
+            // 检查是否至少有一个查询条件
+            if ((!neighborhoods || !Array.isArray(neighborhoods) || neighborhoods.length === 0) && !location) {
+                return res.status(400).json({
+                    success: false,
+                    message: '请提供小区列表或地点信息'
+                });
+            }
+
+            const pool = await sql.connect(config);
+
+            let query = '';
+            const request = pool.request();
+
+            if (neighborhoods && neighborhoods.length > 0) {
+                // 创建临时表来存储要查询的小区名
+                query = `
                 DECLARE @Neighborhoods TABLE (name NVARCHAR(200));
                 INSERT INTO @Neighborhoods (name) VALUES `;
-            
-            neighborhoods.forEach((name, index) => {
-                query += `(@name${index})`;
-                if (index < neighborhoods.length - 1) query += ', ';
-            });
-            
-            query += `;
+
+                neighborhoods.forEach((name, index) => {
+                    query += `(@name${index})`;
+                    if (index < neighborhoods.length - 1) query += ', ';
+                });
+
+                query += `;
                 
                 SELECT 
                     reportsID,
@@ -11359,19 +11359,19 @@ app.post('/api/BatchSearchNeighborhoods', async (req, res) => {
                         n.name LIKE '%' + r.location + '%'
                     )
                 )`;
-            
-            // 添加小区名参数
-            neighborhoods.forEach((name, index) => {
-                request.input(`name${index}`, sql.NVarChar, name);
-            });
-            
-            if (location) {
-                query += ` OR location LIKE @location OR communityName LIKE @location`;
-                request.input('location', sql.NVarChar, `%${location}%`);
-            }
-        } else if (location) {
-            // 只按location查询
-            query = `
+
+                // 添加小区名参数
+                neighborhoods.forEach((name, index) => {
+                    request.input(`name${index}`, sql.NVarChar, name);
+                });
+
+                if (location) {
+                    query += ` OR location LIKE @location OR communityName LIKE @location`;
+                    request.input('location', sql.NVarChar, `%${location}%`);
+                }
+            } else if (location) {
+                // 只按location查询
+                query = `
                 SELECT 
                     reportsID,
                     documentNo,
@@ -11405,56 +11405,56 @@ app.post('/api/BatchSearchNeighborhoods', async (req, res) => {
                 FROM WebWordReports.dbo.WordReportsInformation r
                 WHERE location LIKE @location OR communityName LIKE @location
             `;
-            
-            request.input('location', sql.NVarChar, `%${location}%`);
-        }
-        
-        query += ` ORDER BY reportDate DESC`;
-        
-        const result = await request.query(query);
-        
-        // 数据去重（按reportsID）
-        const uniqueRecords = [];
-        const seenIds = new Set();
-        
-        result.recordset.forEach(record => {
-            if (!seenIds.has(record.reportsID)) {
-                seenIds.add(record.reportsID);
-                uniqueRecords.push(record);
+
+                request.input('location', sql.NVarChar, `%${location}%`);
             }
-        });
-        
-        res.json({
-            success: true,
-            data: uniqueRecords,
-            total: uniqueRecords.length,
-            message: `查询找到 ${uniqueRecords.length} 条记录`
-        });
-        
-    } catch (error) {
-        console.error('批量查询小区数据失败:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: '批量查询失败',
-            error: error.message 
-        });
-    }
-});
-// API: 获取小区统计信息
-app.get('/api/NeighborhoodStatistics/:communityName', async (req, res) => {
-    try {
-        const { communityName } = req.params;
-        
-        if (!communityName) {
-            return res.status(400).json({ 
-                success: false, 
-                message: '请提供小区名称' 
+
+            query += ` ORDER BY reportDate DESC`;
+
+            const result = await request.query(query);
+
+            // 数据去重（按reportsID）
+            const uniqueRecords = [];
+            const seenIds = new Set();
+
+            result.recordset.forEach(record => {
+                if (!seenIds.has(record.reportsID)) {
+                    seenIds.add(record.reportsID);
+                    uniqueRecords.push(record);
+                }
+            });
+
+            res.json({
+                success: true,
+                data: uniqueRecords,
+                total: uniqueRecords.length,
+                message: `查询找到 ${uniqueRecords.length} 条记录`
+            });
+
+        } catch (error) {
+            console.error('批量查询小区数据失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '批量查询失败',
+                error: error.message
             });
         }
+    });
+    // API: 获取小区统计信息
+    app.get('/api/NeighborhoodStatistics/:communityName', async (req, res) => {
+        try {
+            const { communityName } = req.params;
 
-        const pool = await sql.connect(config);
-        
-        const query = `
+            if (!communityName) {
+                return res.status(400).json({
+                    success: false,
+                    message: '请提供小区名称'
+                });
+            }
+
+            const pool = await sql.connect(config);
+
+            const query = `
             SELECT 
                 communityName,
                 COUNT(*) as reportCount,
@@ -11470,42 +11470,42 @@ app.get('/api/NeighborhoodStatistics/:communityName', async (req, res) => {
             GROUP BY communityName
             ORDER BY reportCount DESC
         `;
-        
-        const result = await pool.request()
-            .input('communityName', sql.NVarChar, `%${communityName}%`)
-            .query(query);
-        
-        res.json({
-            success: true,
-            data: result.recordset,
-            message: `获取到 ${result.recordset.length} 个小区的统计信息`
-        });
-        
-    } catch (error) {
-        console.error('获取小区统计信息失败:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: '获取统计信息失败',
-            error: error.message 
-        });
-    }
-});
 
-// API: 查询某个地点的周边小区价格（增强版）
-app.get('/api/QueryNearbyPricesEnhanced', async (req, res) => {
-    try {
-        const { location, searchText, radius = 2000, limit = 20 } = req.query;
-        
-        if (!location && !searchText) {
-            return res.status(400).json({ 
-                success: false, 
-                message: '请提供位置或搜索关键词' 
+            const result = await pool.request()
+                .input('communityName', sql.NVarChar, `%${communityName}%`)
+                .query(query);
+
+            res.json({
+                success: true,
+                data: result.recordset,
+                message: `获取到 ${result.recordset.length} 个小区的统计信息`
+            });
+
+        } catch (error) {
+            console.error('获取小区统计信息失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '获取统计信息失败',
+                error: error.message
             });
         }
+    });
 
-        const pool = await sql.connect(config);
-        
-        let query = `
+    // API: 查询某个地点的周边小区价格（增强版）
+    app.get('/api/QueryNearbyPricesEnhanced', async (req, res) => {
+        try {
+            const { location, searchText, radius = 2000, limit = 20 } = req.query;
+
+            if (!location && !searchText) {
+                return res.status(400).json({
+                    success: false,
+                    message: '请提供位置或搜索关键词'
+                });
+            }
+
+            const pool = await sql.connect(config);
+
+            let query = `
             SELECT TOP ${limit}
                 reportsID,
                 documentNo,
@@ -11537,149 +11537,149 @@ app.get('/api/QueryNearbyPricesEnhanced', async (req, res) => {
             FROM WebWordReports.dbo.WordReportsInformation
             WHERE 1=1
         `;
-        
-        const params = [];
-        
-        if (location) {
-            query += ` AND location LIKE @location`;
-            params.push({ name: 'location', value: `%${location}%` });
-        }
-        
-        if (searchText) {
-            query += ` AND (
+
+            const params = [];
+
+            if (location) {
+                query += ` AND location LIKE @location`;
+                params.push({ name: 'location', value: `%${location}%` });
+            }
+
+            if (searchText) {
+                query += ` AND (
                 communityName LIKE @searchText OR 
                 location LIKE @searchText OR
                 documentNo LIKE @searchText
             )`;
-            params.push({ name: 'searchText', value: `%${searchText}%` });
+                params.push({ name: 'searchText', value: `%${searchText}%` });
+            }
+
+            query += ` ORDER BY reportDate DESC`;
+
+            const request = pool.request();
+            params.forEach(param => {
+                request.input(param.name, sql.NVarChar, param.value);
+            });
+
+            const result = await request.query(query);
+
+            // 处理结果，添加格式化字段
+            const processedData = result.recordset.map(item => ({
+                ...item,
+                formattedPrice: item.valuationPrice ?
+                    `¥${(item.valuationPrice / 10000).toLocaleString('zh-CN')}万` : '未知',
+                formattedPricePerSqm: item.pricePerSqm ?
+                    `¥${Math.round(item.pricePerSqm).toLocaleString('zh-CN')}/㎡` : '未知',
+                formattedArea: item.buildingArea ?
+                    `${item.buildingArea}㎡` : '未知',
+                formattedDate: item.reportDate ?
+                    new Date(item.reportDate).toLocaleDateString('zh-CN') : '未知',
+                hasElevator: item.elevator ? '有' : '无'
+            }));
+
+            res.json({
+                success: true,
+                data: processedData,
+                total: processedData.length,
+                statistics: {
+                    avgPrice: processedData.length > 0 ?
+                        processedData.reduce((sum, item) => sum + (item.valuationPrice || 0), 0) / processedData.length : 0,
+                    minYear: processedData.length > 0 ?
+                        Math.min(...processedData.filter(item => item.yearBuilt).map(item => item.yearBuilt)) : null,
+                    maxYear: processedData.length > 0 ?
+                        Math.max(...processedData.filter(item => item.yearBuilt).map(item => item.yearBuilt)) : null,
+                    totalReports: processedData.length
+                },
+                message: `找到 ${processedData.length} 条记录`
+            });
+
+        } catch (error) {
+            console.error('查询周边价格失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '查询失败',
+                error: error.message
+            });
         }
-        
-        query += ` ORDER BY reportDate DESC`;
-        
-        const request = pool.request();
-        params.forEach(param => {
-            request.input(param.name, sql.NVarChar, param.value);
-        });
-        
-        const result = await request.query(query);
-        
-        // 处理结果，添加格式化字段
-        const processedData = result.recordset.map(item => ({
-            ...item,
-            formattedPrice: item.valuationPrice ? 
-                `¥${(item.valuationPrice / 10000).toLocaleString('zh-CN')}万` : '未知',
-            formattedPricePerSqm: item.pricePerSqm ? 
-                `¥${Math.round(item.pricePerSqm).toLocaleString('zh-CN')}/㎡` : '未知',
-            formattedArea: item.buildingArea ? 
-                `${item.buildingArea}㎡` : '未知',
-            formattedDate: item.reportDate ? 
-                new Date(item.reportDate).toLocaleDateString('zh-CN') : '未知',
-            hasElevator: item.elevator ? '有' : '无'
-        }));
-        
-        res.json({
-            success: true,
-            data: processedData,
-            total: processedData.length,
-            statistics: {
-                avgPrice: processedData.length > 0 ? 
-                    processedData.reduce((sum, item) => sum + (item.valuationPrice || 0), 0) / processedData.length : 0,
-                minYear: processedData.length > 0 ? 
-                    Math.min(...processedData.filter(item => item.yearBuilt).map(item => item.yearBuilt)) : null,
-                maxYear: processedData.length > 0 ? 
-                    Math.max(...processedData.filter(item => item.yearBuilt).map(item => item.yearBuilt)) : null,
-                totalReports: processedData.length
-            },
-            message: `找到 ${processedData.length} 条记录`
-        });
-        
-    } catch (error) {
-        console.error('查询周边价格失败:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: '查询失败',
-            error: error.message 
-        });
-    }
-});
-//价格查询-网页询价  👆
+    });
+    //价格查询-网页询价  👆
 }
 
 
 
 {  //新写的构筑物 👇
 
-// 添加建筑造价数据
-app.post('/api/AddBuildingsPriceData', async (req, res) => {
-    const { name, structure, area, unit, price, notes } = req.body;
+    // 添加建筑造价数据
+    app.post('/api/AddBuildingsPriceData', async (req, res) => {
+        const { name, structure, area, unit, price, notes } = req.body;
 
-    // 验证输入
-    if (!name) {
-        return res.status(400).json({ error: '缺少必要参数: name' });
-    }
+        // 验证输入
+        if (!name) {
+            return res.status(400).json({ error: '缺少必要参数: name' });
+        }
 
-    let pool;
-    try {
-        pool = await sql.connect(config);
+        let pool;
+        try {
+            pool = await sql.connect(config);
 
-        // 插入新记录
-        const insertResult = await pool.request()
-            .input('name', sql.NVarChar(100), name)
-            .input('structure', sql.NVarChar(100), structure || null)
-            .input('area', sql.NVarChar(100), area || null)
-            .input('unit', sql.NVarChar(50), unit || null)
-            .input('price', sql.NVarChar(50), price || null)
-            .input('notes', sql.NVarChar(sql.MAX), notes || null)
-            .query(`
+            // 插入新记录
+            const insertResult = await pool.request()
+                .input('name', sql.NVarChar(100), name)
+                .input('structure', sql.NVarChar(100), structure || null)
+                .input('area', sql.NVarChar(100), area || null)
+                .input('unit', sql.NVarChar(50), unit || null)
+                .input('price', sql.NVarChar(50), price || null)
+                .input('notes', sql.NVarChar(sql.MAX), notes || null)
+                .query(`
                 INSERT INTO Buildings.dbo.BuildingsPrice 
                 (name, structure, area, unit, price, notes, createdDate) 
                 VALUES (@name, @structure, @area, @unit, @price, @notes, GETDATE())
             `);
 
-        // 获取新插入记录的ID（可选，如果需要返回给前端）
-        const idResult = await pool.request()
-            .query('SELECT SCOPE_IDENTITY() as newId');
+            // 获取新插入记录的ID（可选，如果需要返回给前端）
+            const idResult = await pool.request()
+                .query('SELECT SCOPE_IDENTITY() as newId');
 
-        res.status(200).json({ 
-            success: true, 
-            message: '建筑造价数据添加成功',
-            newId: idResult.recordset[0].newId 
-        });
-    } catch (err) {
-        console.error('添加建筑造价数据失败:', err);
-        res.status(500).json({ error: '添加建筑造价数据失败' });
-    } finally {
-        if (pool) {
-            pool.close();
+            res.status(200).json({
+                success: true,
+                message: '建筑造价数据添加成功',
+                newId: idResult.recordset[0].newId
+            });
+        } catch (err) {
+            console.error('添加建筑造价数据失败:', err);
+            res.status(500).json({ error: '添加建筑造价数据失败' });
+        } finally {
+            if (pool) {
+                pool.close();
+            }
         }
-    }
-});
+    });
 
 
-// 分页查询建筑造价数据（支持无限滚动）
-app.get('/api/QueryBuildingsPrice', async (req, res) => {
-    const { 
-        searchText = '',
-        page = 1, 
-        pageSize = 20,
-        sortField = 'createdDate',
-        sortOrder = 'DESC'
-    } = req.query;
+    // 分页查询建筑造价数据（支持无限滚动）
+    app.get('/api/QueryBuildingsPrice', async (req, res) => {
+        const {
+            searchText = '',
+            page = 1,
+            pageSize = 20,
+            sortField = 'createdDate',
+            sortOrder = 'DESC'
+        } = req.query;
 
-    const currentPage = parseInt(page);
-    const pageSizeInt = parseInt(pageSize);
-    const offset = (currentPage - 1) * pageSizeInt;
+        const currentPage = parseInt(page);
+        const pageSizeInt = parseInt(pageSize);
+        const offset = (currentPage - 1) * pageSizeInt;
 
-    let pool;
-    try {
-        pool = await sql.connect(config);
+        let pool;
+        try {
+            pool = await sql.connect(config);
 
-        // 构建查询条件
-        let whereClause = 'WHERE 1=1';
-        const params = [];
-        
-        if (searchText) {
-            whereClause += ` AND (
+            // 构建查询条件
+            let whereClause = 'WHERE 1=1';
+            const params = [];
+
+            if (searchText) {
+                whereClause += ` AND (
                 name LIKE @searchText OR 
                 structure LIKE @searchText OR 
                 area LIKE @searchText OR 
@@ -11687,27 +11687,27 @@ app.get('/api/QueryBuildingsPrice', async (req, res) => {
                 price LIKE @searchText OR 
                 notes LIKE @searchText
             )`;
-            params.push({ name: 'searchText', value: `%${searchText}%` });
-        }
+                params.push({ name: 'searchText', value: `%${searchText}%` });
+            }
 
-        // 获取总记录数
-        const countQuery = `
+            // 获取总记录数
+            const countQuery = `
             SELECT COUNT(*) as totalCount 
             FROM Buildings.dbo.BuildingsPrice 
             ${whereClause}
         `;
-        
-        let request = pool.request();
-        params.forEach(param => {
-            request.input(param.name, sql.NVarChar, param.value);
-        });
-        
-        const countResult = await request.query(countQuery);
-        const totalCount = countResult.recordset[0].totalCount;
-        const totalPages = Math.ceil(totalCount / pageSizeInt);
 
-        // 获取分页数据
-        const dataQuery = `
+            let request = pool.request();
+            params.forEach(param => {
+                request.input(param.name, sql.NVarChar, param.value);
+            });
+
+            const countResult = await request.query(countQuery);
+            const totalCount = countResult.recordset[0].totalCount;
+            const totalPages = Math.ceil(totalCount / pageSizeInt);
+
+            // 获取分页数据
+            const dataQuery = `
             SELECT *
             FROM (
                 SELECT 
@@ -11727,136 +11727,136 @@ app.get('/api/QueryBuildingsPrice', async (req, res) => {
             ORDER BY rowNum
         `;
 
-        request = pool.request();
-        params.forEach(param => {
-            request.input(param.name, sql.NVarChar, param.value);
-        });
-        request.input('offset', sql.Int, offset);
-        request.input('pageSize', sql.Int, pageSizeInt);
+            request = pool.request();
+            params.forEach(param => {
+                request.input(param.name, sql.NVarChar, param.value);
+            });
+            request.input('offset', sql.Int, offset);
+            request.input('pageSize', sql.Int, pageSizeInt);
 
-        const dataResult = await request.query(dataQuery);
+            const dataResult = await request.query(dataQuery);
 
-        // 格式化数据
-        const formattedData = dataResult.recordset.map(item => ({
-            id: item.buildingsPriceid,
-            name: item.name,
-            structure: item.structure,
-            area: item.area,
-            unit: item.unit,
-            price: item.price,
-            notes: item.notes,
-            createdDate: item.createdDate,
-            formattedDate: item.createdDate ? 
-                new Date(item.createdDate).toLocaleDateString('zh-CN') : '未知',
-            formattedPrice: item.price && item.unit ? 
-                `${item.price} ${item.unit}` : item.price || '未设置'
-        }));
+            // 格式化数据
+            const formattedData = dataResult.recordset.map(item => ({
+                id: item.buildingsPriceid,
+                name: item.name,
+                structure: item.structure,
+                area: item.area,
+                unit: item.unit,
+                price: item.price,
+                notes: item.notes,
+                createdDate: item.createdDate,
+                formattedDate: item.createdDate ?
+                    new Date(item.createdDate).toLocaleDateString('zh-CN') : '未知',
+                formattedPrice: item.price && item.unit ?
+                    `${item.price} ${item.unit}` : item.price || '未设置'
+            }));
 
-        res.json({
-            success: true,
-            data: formattedData,
-            pagination: {
-                currentPage: currentPage,
-                pageSize: pageSizeInt,
-                totalCount: totalCount,
-                totalPages: totalPages,
-                hasNextPage: currentPage < totalPages,
-                hasPrevPage: currentPage > 1
-            },
-            message: `找到 ${totalCount} 条记录，显示第 ${currentPage} 页`
-        });
-        
-    } catch (error) {
-        console.error('查询建筑造价数据失败:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: '查询失败',
-            error: error.message 
-        });
-    } finally {
-        if (pool) {
-            pool.close();
+            res.json({
+                success: true,
+                data: formattedData,
+                pagination: {
+                    currentPage: currentPage,
+                    pageSize: pageSizeInt,
+                    totalCount: totalCount,
+                    totalPages: totalPages,
+                    hasNextPage: currentPage < totalPages,
+                    hasPrevPage: currentPage > 1
+                },
+                message: `找到 ${totalCount} 条记录，显示第 ${currentPage} 页`
+            });
+
+        } catch (error) {
+            console.error('查询建筑造价数据失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '查询失败',
+                error: error.message
+            });
+        } finally {
+            if (pool) {
+                pool.close();
+            }
         }
-    }
-});
+    });
 
-// 根据ID获取单条记录
-app.get('/api/GetBuildingsPriceById/:id', async (req, res) => {
-    const { id } = req.params;
+    // 根据ID获取单条记录
+    app.get('/api/GetBuildingsPriceById/:id', async (req, res) => {
+        const { id } = req.params;
 
-    let pool;
-    try {
-        pool = await sql.connect(config);
+        let pool;
+        try {
+            pool = await sql.connect(config);
 
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .query(`
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .query(`
                 SELECT * FROM Buildings.dbo.BuildingsPrice 
                 WHERE buildingsPriceid = @id
             `);
 
-        if (result.recordset.length === 0) {
-            return res.status(404).json({ 
-                success: false, 
-                message: '记录不存在' 
+            if (result.recordset.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: '记录不存在'
+                });
+            }
+
+            const item = result.recordset[0];
+            const formattedData = {
+                id: item.buildingsPriceid,
+                name: item.name,
+                structure: item.structure,
+                area: item.area,
+                unit: item.unit,
+                price: item.price,
+                notes: item.notes,
+                createdDate: item.createdDate,
+                formattedDate: item.createdDate ?
+                    new Date(item.createdDate).toLocaleDateString('zh-CN') : '未知'
+            };
+
+            res.json({
+                success: true,
+                data: formattedData
             });
+
+        } catch (error) {
+            console.error('获取记录失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '获取记录失败',
+                error: error.message
+            });
+        } finally {
+            if (pool) {
+                pool.close();
+            }
+        }
+    });
+
+    // 更新建筑造价数据
+    app.put('/api/UpdateBuildingsPrice/:id', async (req, res) => {
+        const { id } = req.params;
+        const { name, structure, area, unit, price, notes } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ success: false, message: '缺少必要参数: 名称' });
         }
 
-        const item = result.recordset[0];
-        const formattedData = {
-            id: item.buildingsPriceid,
-            name: item.name,
-            structure: item.structure,
-            area: item.area,
-            unit: item.unit,
-            price: item.price,
-            notes: item.notes,
-            createdDate: item.createdDate,
-            formattedDate: item.createdDate ? 
-                new Date(item.createdDate).toLocaleDateString('zh-CN') : '未知'
-        };
+        let pool;
+        try {
+            pool = await sql.connect(config);
 
-        res.json({
-            success: true,
-            data: formattedData
-        });
-        
-    } catch (error) {
-        console.error('获取记录失败:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: '获取记录失败',
-            error: error.message 
-        });
-    } finally {
-        if (pool) {
-            pool.close();
-        }
-    }
-});
-
-// 更新建筑造价数据
-app.put('/api/UpdateBuildingsPrice/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name, structure, area, unit, price, notes } = req.body;
-
-    if (!name) {
-        return res.status(400).json({ success: false, message: '缺少必要参数: 名称' });
-    }
-
-    let pool;
-    try {
-        pool = await sql.connect(config);
-
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .input('name', sql.NVarChar(100), name)
-            .input('structure', sql.NVarChar(100), structure || null)
-            .input('area', sql.NVarChar(100), area || null)
-            .input('unit', sql.NVarChar(50), unit || null)
-            .input('price', sql.NVarChar(50), price || null)
-            .input('notes', sql.NVarChar(sql.MAX), notes || null)
-            .query(`
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .input('name', sql.NVarChar(100), name)
+                .input('structure', sql.NVarChar(100), structure || null)
+                .input('area', sql.NVarChar(100), area || null)
+                .input('unit', sql.NVarChar(50), unit || null)
+                .input('price', sql.NVarChar(50), price || null)
+                .input('notes', sql.NVarChar(sql.MAX), notes || null)
+                .query(`
                 UPDATE Buildings.dbo.BuildingsPrice 
                 SET name = @name,
                     structure = @structure,
@@ -11867,281 +11867,281 @@ app.put('/api/UpdateBuildingsPrice/:id', async (req, res) => {
                 WHERE buildingsPriceid = @id
             `);
 
-        res.json({
-            success: true,
-            message: '更新成功',
-            affectedRows: result.rowsAffected[0]
-        });
-        
-    } catch (error) {
-        console.error('更新记录失败:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: '更新失败',
-            error: error.message 
-        });
-    } finally {
-        if (pool) {
-            pool.close();
+            res.json({
+                success: true,
+                message: '更新成功',
+                affectedRows: result.rowsAffected[0]
+            });
+
+        } catch (error) {
+            console.error('更新记录失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '更新失败',
+                error: error.message
+            });
+        } finally {
+            if (pool) {
+                pool.close();
+            }
         }
-    }
-});
+    });
 
-// 删除建筑造价数据
-app.delete('/api/DeleteBuildingsPrice/:id', async (req, res) => {
-    const { id } = req.params;
+    // 删除建筑造价数据
+    app.delete('/api/DeleteBuildingsPrice/:id', async (req, res) => {
+        const { id } = req.params;
 
-    let pool;
-    try {
-        pool = await sql.connect(config);
+        let pool;
+        try {
+            pool = await sql.connect(config);
 
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .query(`
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .query(`
                 DELETE FROM Buildings.dbo.BuildingsPrice 
                 WHERE buildingsPriceid = @id
             `);
 
-        res.json({
-            success: true,
-            message: '删除成功',
-            affectedRows: result.rowsAffected[0]
-        });
-        
-    } catch (error) {
-        console.error('删除记录失败:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: '删除失败',
-            error: error.message 
-        });
-    } finally {
-        if (pool) {
-            pool.close();
-        }
-    }
-});
-
-//新写的构筑物 👆
-
-
-
-//上传构筑物查询图片 👇
-// 在服务器端添加以下API
-
-// 获取建筑物图片列表
-// 获取建筑物图片列表
-app.get('/api/GetBuildingsPricePictures', async (req, res) => {
-    try {
-        const { buildingsPriceid } = req.query;
-
-        if (!buildingsPriceid) {
-            return res.status(400).json({
-                success: false,
-                error: '建筑物数据ID必须提供'
+            res.json({
+                success: true,
+                message: '删除成功',
+                affectedRows: result.rowsAffected[0]
             });
+
+        } catch (error) {
+            console.error('删除记录失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '删除失败',
+                error: error.message
+            });
+        } finally {
+            if (pool) {
+                pool.close();
+            }
         }
+    });
 
-        // 连接到数据库
-        const pool = await sql.connect(config);
-        const request = new sql.Request(pool);
+    //新写的构筑物 👆
 
-        // 查询该建筑物的所有图片
-        const query = `
+
+
+    //上传构筑物查询图片 👇
+    // 在服务器端添加以下API
+
+    // 获取建筑物图片列表
+    // 获取建筑物图片列表
+    app.get('/api/GetBuildingsPricePictures', async (req, res) => {
+        try {
+            const { buildingsPriceid } = req.query;
+
+            if (!buildingsPriceid) {
+                return res.status(400).json({
+                    success: false,
+                    error: '建筑物数据ID必须提供'
+                });
+            }
+
+            // 连接到数据库
+            const pool = await sql.connect(config);
+            const request = new sql.Request(pool);
+
+            // 查询该建筑物的所有图片
+            const query = `
             SELECT pictureFileName, buildingsPriceid
             FROM Buildings.dbo.BuildingsPricePicture
             WHERE buildingsPriceid = @buildingsPriceid
             ORDER BY pictureId DESC
         `;
 
-        request.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
-        const result = await request.query(query);
+            request.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
+            const result = await request.query(query);
 
-        res.json({
-            success: true,
-            buildingsPriceid: parseInt(buildingsPriceid),
-            images: result.recordset
-        });
+            res.json({
+                success: true,
+                buildingsPriceid: parseInt(buildingsPriceid),
+                images: result.recordset
+            });
 
-    } catch (error) {
-        console.error('获取建筑物图片错误:', error);
-        res.status(500).json({
-            success: false,
-            error: '获取图片失败',
-            message: error.message
-        });
-    }
-});
-// Multer配置
-const storageUploadBuildingsPricePicture = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const { buildingsPriceid } = req.body;
-        if (!buildingsPriceid) {
-            return cb(new Error('buildingsPriceid is required'), null);
+        } catch (error) {
+            console.error('获取建筑物图片错误:', error);
+            res.status(500).json({
+                success: false,
+                error: '获取图片失败',
+                message: error.message
+            });
         }
-
-        // 创建基于buildingsPriceid的文件夹路径
-        const uploadPath = path.join(__dirname, 'images', 'BuildingsPricePictures', buildingsPriceid.toString());
-
-        // 如果文件夹不存在，则递归创建
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        // 使用原始文件名
-        cb(null, file.originalname);
-    }
-});
-
-const uploadUploadBuildingsPricePicture = multer({
-    storage: storageUploadBuildingsPricePicture,
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.match(/image\/(jpeg|jpg|png|gif)/)) {
-            cb(null, true);
-        } else {
-            cb(new Error('只允许上传图片文件 (JPG, PNG, GIF)'), false);
-        }
-    },
-    limits: {
-        fileSize: 10 * 1024 * 1024 // 限制10MB，与前端一致
-    }
-});
-// 上传建筑物图片
-app.post('/api/UploadBuildingsPricePicture',
-    uploadUploadBuildingsPricePicture.array('images'),
-    async (req, res) => {
-        try {
+    });
+    // Multer配置
+    const storageUploadBuildingsPricePicture = multer.diskStorage({
+        destination: (req, file, cb) => {
             const { buildingsPriceid } = req.body;
-
-            // 验证必填字段
             if (!buildingsPriceid) {
-                // 删除已上传的文件（如果有）
-                if (req.files && req.files.length > 0) {
-                    req.files.forEach(file => {
-                        fs.unlink(file.path, () => { });
+                return cb(new Error('buildingsPriceid is required'), null);
+            }
+
+            // 创建基于buildingsPriceid的文件夹路径
+            const uploadPath = path.join(__dirname, 'images', 'BuildingsPricePictures', buildingsPriceid.toString());
+
+            // 如果文件夹不存在，则递归创建
+            if (!fs.existsSync(uploadPath)) {
+                fs.mkdirSync(uploadPath, { recursive: true });
+            }
+
+            cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+            // 使用原始文件名
+            cb(null, file.originalname);
+        }
+    });
+
+    const uploadUploadBuildingsPricePicture = multer({
+        storage: storageUploadBuildingsPricePicture,
+        fileFilter: (req, file, cb) => {
+            if (file.mimetype.match(/image\/(jpeg|jpg|png|gif)/)) {
+                cb(null, true);
+            } else {
+                cb(new Error('只允许上传图片文件 (JPG, PNG, GIF)'), false);
+            }
+        },
+        limits: {
+            fileSize: 10 * 1024 * 1024 // 限制10MB，与前端一致
+        }
+    });
+    // 上传建筑物图片
+    app.post('/api/UploadBuildingsPricePicture',
+        uploadUploadBuildingsPricePicture.array('images'),
+        async (req, res) => {
+            try {
+                const { buildingsPriceid } = req.body;
+
+                // 验证必填字段
+                if (!buildingsPriceid) {
+                    // 删除已上传的文件（如果有）
+                    if (req.files && req.files.length > 0) {
+                        req.files.forEach(file => {
+                            fs.unlink(file.path, () => { });
+                        });
+                    }
+                    return res.status(400).json({
+                        success: false,
+                        error: '建筑物数据ID必须提供'
                     });
                 }
-                return res.status(400).json({ 
-                    success: false,
-                    error: '建筑物数据ID必须提供' 
-                });
-            }
 
-            // 验证图片
-            if (!req.files || req.files.length === 0) {
-                return res.status(400).json({ 
-                    success: false,
-                    error: '至少上传一张图片' 
-                });
-            }
+                // 验证图片
+                if (!req.files || req.files.length === 0) {
+                    return res.status(400).json({
+                        success: false,
+                        error: '至少上传一张图片'
+                    });
+                }
 
-            // 连接到数据库
-            const pool = await sql.connect(config);
+                // 连接到数据库
+                const pool = await sql.connect(config);
 
-            // 获取已存在的图片文件名
-            const checkRequest = new sql.Request(pool);
-            const checkQuery = `
+                // 获取已存在的图片文件名
+                const checkRequest = new sql.Request(pool);
+                const checkQuery = `
                 SELECT pictureFileName 
                 FROM Buildings.dbo.BuildingsPricePicture
                 WHERE buildingsPriceid = @buildingsPriceid
             `;
-            checkRequest.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
-            const existingImages = await checkRequest.query(checkQuery);
-            const existingFileNames = existingImages.recordset.map(img => img.pictureFileName);
+                checkRequest.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
+                const existingImages = await checkRequest.query(checkQuery);
+                const existingFileNames = existingImages.recordset.map(img => img.pictureFileName);
 
-            // 过滤重复文件
-            const newFiles = req.files.filter(file =>
-                !existingFileNames.includes(file.originalname)
-            );
+                // 过滤重复文件
+                const newFiles = req.files.filter(file =>
+                    !existingFileNames.includes(file.originalname)
+                );
 
-            // 如果有重复文件，删除它们
-            const duplicateFiles = req.files.filter(file =>
-                existingFileNames.includes(file.originalname)
-            );
+                // 如果有重复文件，删除它们
+                const duplicateFiles = req.files.filter(file =>
+                    existingFileNames.includes(file.originalname)
+                );
 
-            // 删除重复的文件
-            duplicateFiles.forEach(file => {
-                fs.unlink(file.path, () => { });
-            });
-
-            // 如果没有新文件可上传
-            if (newFiles.length === 0) {
-                return res.status(400).json({
-                    success: false,
-                    error: '上传失败',
-                    message: '所有图片在服务器中已存在'
+                // 删除重复的文件
+                duplicateFiles.forEach(file => {
+                    fs.unlink(file.path, () => { });
                 });
-            }
 
-            // 插入新图片数据到Buildings.dbo.BuildingsPricePicture表
-            for (let i = 0; i < newFiles.length; i++) {
-                const file = newFiles[i];
+                // 如果没有新文件可上传
+                if (newFiles.length === 0) {
+                    return res.status(400).json({
+                        success: false,
+                        error: '上传失败',
+                        message: '所有图片在服务器中已存在'
+                    });
+                }
 
-                const imageRequest = new sql.Request(pool);
-                const imageQuery = `
+                // 插入新图片数据到Buildings.dbo.BuildingsPricePicture表
+                for (let i = 0; i < newFiles.length; i++) {
+                    const file = newFiles[i];
+
+                    const imageRequest = new sql.Request(pool);
+                    const imageQuery = `
                     INSERT INTO Buildings.dbo.BuildingsPricePicture 
                         (pictureFileName, buildingsPriceid)
                     VALUES 
                         (@pictureFileName, @buildingsPriceid)
                 `;
 
-                imageRequest.input('pictureFileName', sql.NVarChar(100), file.originalname);
-                imageRequest.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
+                    imageRequest.input('pictureFileName', sql.NVarChar(100), file.originalname);
+                    imageRequest.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
 
-                await imageRequest.query(imageQuery);
-            }
+                    await imageRequest.query(imageQuery);
+                }
 
-            res.json({
-                success: true,
-                message: `成功上传 ${newFiles.length} 张图片${duplicateFiles.length > 0 ? `，跳过 ${duplicateFiles.length} 张重复图片` : ''}`,
-                buildingsPriceid: buildingsPriceid,
-                uploadedCount: newFiles.length,
-                skippedCount: duplicateFiles.length,
-                images: newFiles.map(file => ({
-                    pictureFileName: file.originalname,
+                res.json({
+                    success: true,
+                    message: `成功上传 ${newFiles.length} 张图片${duplicateFiles.length > 0 ? `，跳过 ${duplicateFiles.length} 张重复图片` : ''}`,
                     buildingsPriceid: buildingsPriceid,
-                    url: `http://121.4.22.55:80/backend/images/BuildingsPricePictures/${buildingsPriceid}/${file.originalname}`
-                }))
-            });
+                    uploadedCount: newFiles.length,
+                    skippedCount: duplicateFiles.length,
+                    images: newFiles.map(file => ({
+                        pictureFileName: file.originalname,
+                        buildingsPriceid: buildingsPriceid,
+                        url: `http://121.4.22.55:80/backend/images/BuildingsPricePictures/${buildingsPriceid}/${file.originalname}`
+                    }))
+                });
 
-        } catch (error) {
-            // 出错时删除已上传的文件
-            if (req.files && req.files.length > 0) {
-                req.files.forEach(file => {
-                    fs.unlink(file.path, () => { });
+            } catch (error) {
+                // 出错时删除已上传的文件
+                if (req.files && req.files.length > 0) {
+                    req.files.forEach(file => {
+                        fs.unlink(file.path, () => { });
+                    });
+                }
+
+                console.error('上传建筑物图片错误:', error);
+                res.status(500).json({
+                    success: false,
+                    error: '上传失败',
+                    message: error.message
+                });
+            }
+        }
+    );
+
+    // 获取建筑物详细信息
+    app.get('/api/GetBuildingsPriceInfo', async (req, res) => {
+        try {
+            const { buildingsPriceid } = req.query;
+
+            if (!buildingsPriceid) {
+                return res.status(400).json({
+                    success: false,
+                    error: '建筑物ID必须提供'
                 });
             }
 
-            console.error('上传建筑物图片错误:', error);
-            res.status(500).json({
-                success: false,
-                error: '上传失败',
-                message: error.message
-            });
-        }
-    }
-);
+            // 连接到数据库
+            const pool = await sql.connect(config);
+            const request = new sql.Request(pool);
 
-// 获取建筑物详细信息
-app.get('/api/GetBuildingsPriceInfo', async (req, res) => {
-    try {
-        const { buildingsPriceid } = req.query;
-
-        if (!buildingsPriceid) {
-            return res.status(400).json({
-                success: false,
-                error: '建筑物ID必须提供'
-            });
-        }
-
-        // 连接到数据库
-        const pool = await sql.connect(config);
-        const request = new sql.Request(pool);
-
-        const query = `
+            const query = `
             SELECT 
                 buildingsPriceid,
                 name,
@@ -12155,33 +12155,33 @@ app.get('/api/GetBuildingsPriceInfo', async (req, res) => {
             WHERE buildingsPriceid = @buildingsPriceid
         `;
 
-        request.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
-        const result = await request.query(query);
+            request.input('buildingsPriceid', sql.Int, parseInt(buildingsPriceid));
+            const result = await request.query(query);
 
-        if (result.recordset.length === 0) {
-            return res.status(404).json({
+            if (result.recordset.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    error: '未找到该建筑物信息'
+                });
+            }
+
+            const buildingInfo = result.recordset[0];
+
+            res.json({
+                success: true,
+                buildingInfo: buildingInfo
+            });
+
+        } catch (error) {
+            console.error('获取建筑物信息错误:', error);
+            res.status(500).json({
                 success: false,
-                error: '未找到该建筑物信息'
+                error: '获取信息失败',
+                message: error.message
             });
         }
-
-        const buildingInfo = result.recordset[0];
-        
-        res.json({
-            success: true,
-            buildingInfo: buildingInfo
-        });
-
-    } catch (error) {
-        console.error('获取建筑物信息错误:', error);
-        res.status(500).json({
-            success: false,
-            error: '获取信息失败',
-            message: error.message
-        });
-    }
-});
-//上传构筑物查询图片👆
+    });
+    //上传构筑物查询图片👆
 
 
 }
@@ -12191,25 +12191,25 @@ app.get('/api/GetBuildingsPriceInfo', async (req, res) => {
 {//查看合并的pdf  👇  
 
 
-app.get('/api/ReportPdfPrintFile', async (req, res) => {
-    
+    app.get('/api/ReportPdfPrintFile', async (req, res) => {
+
         // 连接到数据库
         const pool = await sql.connect(config);
         const request = new sql.Request(pool);
 
-    try {
-        // 假设你用 mssql 或其他 SQL 库
-        const result = await sql.query`
+        try {
+            // 假设你用 mssql 或其他 SQL 库
+            const result = await sql.query`
             SELECT *
             FROM PdfFileData.dbo.ReportPdfPrintFile
             ORDER BY fileType, pdfPrintFileName
         `;
-        res.json(result.recordset); // 返回 [{ fileType, pdfPrintFileName }, ...]
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database query failed' });
-    }
-});
+            res.json(result.recordset); // 返回 [{ fileType, pdfPrintFileName }, ...]
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Database query failed' });
+        }
+    });
 
 
     //后期如果有多个合并的pdf没有删除的话，
@@ -12218,137 +12218,237 @@ app.get('/api/ReportPdfPrintFile', async (req, res) => {
 
     app.use(express.static(path.join(__dirname, 'public')));
     app.use('/backend/mergedpdf', express.static(path.join(__dirname, 'mergedpdf')));
-    
+
     // ===== 核心状态管理 =====
     const userFileMap = {};        // socket.id → filename
     const fileRefCount = {};       // filename → 引用计数（支持多 tab）
     const pendingCleanup = new Set(); // 未被 use 的文件，需兜底删除
-    
+
     // 安全删除函数（同步）
     function deleteFile(filename) {
-      const filePath = path.join(__dirname, './mergedpdf', filename);
-      try {
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-          console.log(`🗑️ 已删除文件: ${filename}`);
+        const filePath = path.join(__dirname, './mergedpdf', filename);
+        try {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+                console.log(`🗑️ 已删除文件: ${filename}`);
+            }
+        } catch (err) {
+            console.warn(`❌ 删除失败 ${filename}:`, err.message);
         }
-      } catch (err) {
-        console.warn(`❌ 删除失败 ${filename}:`, err.message);
-      }
     }
-    
+
     // ===== Socket.IO 事件 =====
     io.on('connection', (socket) => {
-      console.log('✅ 用户连接:', socket.id);
-    
-      socket.on('useFile', ({ filename }) => {
-        // 如果之前是 pending 状态，取消兜底删除
-        if (pendingCleanup.has(filename)) {
-          pendingCleanup.delete(filename);
-        }
-    
-        // 引用计数 +1
-        fileRefCount[filename] = (fileRefCount[filename] || 0) + 1;
-        userFileMap[socket.id] = filename;
-        console.log(`📱 ${socket.id} 使用文件: ${filename} (引用: ${fileRefCount[filename]})`);
-      });
-    
-      socket.on('releaseFile', ({ filename }) => {
-        const current = userFileMap[socket.id];
-        if (current === filename) {
-          delete userFileMap[socket.id];
-          fileRefCount[filename]--;
-          if (fileRefCount[filename] <= 0) {
-            delete fileRefCount[filename];
-            deleteFile(filename);
-          }
-        }
-      });
-    
-      socket.on('disconnect', () => {
-        const filename = userFileMap[socket.id];
-        if (filename) {
-          fileRefCount[filename]--;
-          if (fileRefCount[filename] <= 0) {
-            delete fileRefCount[filename];
-            deleteFile(filename);
-          }
-          delete userFileMap[socket.id];
-        }
-        console.log('🔌 用户断开:', socket.id);
-      });
-    });
-    
-    // ===== 合并接口：所有逻辑在此 =====
-    app.post('/api/mergePdfs', async (req, res) => {
-      try {
-        const { files, oldFilename } = req.body; // 👈 新增 oldFilename 字段！
-    
-        // 如果有旧文件，尝试立即删除（无论是否被使用）
-        if (oldFilename && typeof oldFilename === 'string') {
-          // 如果还有引用，只是标记 release（由 socket 处理）
-          // 如果无引用，直接删
-          if (fileRefCount[oldFilename] > 0) {
-            // 模拟前端已 release（因为用户点了新合并）
-            fileRefCount[oldFilename]--;
-            if (fileRefCount[oldFilename] <= 0) {
-              delete fileRefCount[oldFilename];
-              deleteFile(oldFilename);
+        console.log('✅ 用户连接:', socket.id);
+
+        socket.on('useFile', ({ filename }) => {
+            // 如果之前是 pending 状态，取消兜底删除
+            if (pendingCleanup.has(filename)) {
+                pendingCleanup.delete(filename);
             }
-          } else {
-            deleteFile(oldFilename);
-          }
-        }
-    
-        if (!Array.isArray(files) || files.length === 0) {
-          return res.status(400).json({ error: '文件列表为空' });
-        }
-    
-        const mergedPdf = await PDFDocument.create();
-    
-        for (const file of files) {
-          if (!file.category || !file.filename) continue;
-          const filePath = path.join(__dirname, './public/', file.category, file.filename);
-          if (!fs.existsSync(filePath)) {
-            throw new Error(`文件不存在: ${filePath}`);
-          }
-          const bytes = fs.readFileSync(filePath);
-          const pdf = await PDFDocument.load(bytes);
-          const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-          pages.forEach(page => mergedPdf.addPage(page));
-        }
-    
-        const pdfBytes = await mergedPdf.save();
-        const filename = `merged_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.pdf`;
-        const outputPath = path.join(__dirname, './mergedpdf', filename);
-    
-        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-        fs.writeFileSync(outputPath, pdfBytes);
-    
-        // 👇 关键：设置 60 秒兜底（防止前端没连 socket）
-        pendingCleanup.add(filename);
-        setTimeout(() => {
-          if (pendingCleanup.has(filename)) {
-            pendingCleanup.delete(filename);
-            if (!fileRefCount[filename]) {
-              deleteFile(filename);
+
+            // 引用计数 +1
+            fileRefCount[filename] = (fileRefCount[filename] || 0) + 1;
+            userFileMap[socket.id] = filename;
+            console.log(`📱 ${socket.id} 使用文件: ${filename} (引用: ${fileRefCount[filename]})`);
+        });
+
+        socket.on('releaseFile', ({ filename }) => {
+            const current = userFileMap[socket.id];
+            if (current === filename) {
+                delete userFileMap[socket.id];
+                fileRefCount[filename]--;
+                if (fileRefCount[filename] <= 0) {
+                    delete fileRefCount[filename];
+                    deleteFile(filename);
+                }
             }
-          }
-        }, 60 * 1000); // 60 秒
-    
-        const url = `http://www.cyywork.top/backend/mergedpdf/${filename}`;
-        res.json({ url, filename }); // 👈 返回 filename 给前端
-    
-      } catch (err) {
-        console.error('[MERGE ERROR]', err);
-        res.status(500).json({ error: '合并失败' });
-      }
+        });
+
+        socket.on('disconnect', () => {
+            const filename = userFileMap[socket.id];
+            if (filename) {
+                fileRefCount[filename]--;
+                if (fileRefCount[filename] <= 0) {
+                    delete fileRefCount[filename];
+                    deleteFile(filename);
+                }
+                delete userFileMap[socket.id];
+            }
+            console.log('🔌 用户断开:', socket.id);
+        });
     });
+
+
     //查看合并的pdf   👆
+    // A4 纵向（目标页面）
+    const A4_WIDTH = 595.28;   // 210 mm
+    const A4_HEIGHT = 841.89;  // 297 mm
+
+    // A5 横向（你的源文件）—— 宽 > 高
+    const A5_LANDSCAPE_WIDTH = A4_WIDTH;      // 595.28 pt (≈210mm)
+    const A5_LANDSCAPE_HEIGHT = A4_HEIGHT / 2; // 420.945 pt (≈148.5mm)
+    // ===== 合并接口：所有逻辑在此 =====
+
+    app.post('/api/mergePdfs', async (req, res) => {
+        try {
+            const { files, oldFilename } = req.body;
+
+            // 🔒 第一重保险：清理超量旧文件（比如超过10个就删最旧的）
+            cleanupOldMergedFiles(10);
+
+            //如果有旧文件，尝试立即删除（无论是否被使用）
+            if (oldFilename && typeof oldFilename === 'string') {
+                // 如果还有引用，只是标记 release（由 socket 处理）
+                // 如果无引用，直接删
+                if (fileRefCount[oldFilename] > 0) {
+                    // 模拟前端已 release（因为用户点了新合并）
+                    fileRefCount[oldFilename]--;
+                    if (fileRefCount[oldFilename] <= 0) {
+                        delete fileRefCount[oldFilename];
+                        deleteFile(oldFilename);
+                    }
+                } else {
+                    deleteFile(oldFilename);
+                }
+            }
+
+            // 在 /api/mergePdfs 开头
+            if (oldFilename && typeof oldFilename === 'string') {
+                // 不管有没有引用，直接尝试删除（幂等操作）
+                const oldFilePath = path.join(__dirname, 'mergedpdf', oldFilename);
+                if (fs.existsSync(oldFilePath)) {
+                    try {
+                        fs.unlinkSync(oldFilePath);
+                        console.log(`🗑️ 主动删除旧合并文件: ${oldFilename}`);
+                    } catch (err) {
+                        console.warn(`⚠️ 删除失败:`, err.message);
+                    }
+                }
+            }
+
+            if (!Array.isArray(files) || files.length === 0) {
+                return res.status(400).json({ error: '文件列表为空' });
+            }
+
+            const mergedPdf = await PDFDocument.create();
+            let pendingA5EmbeddedPages = []; // 存储 PDFEmbeddedPage
+
+            for (const file of files) {
+                if (!file.category || !file.filename || !file.paperSize) continue;
+
+                const filePath = path.join(__dirname, './public/', file.category, file.filename);
+                if (!fs.existsSync(filePath)) {
+                    throw new Error(`文件不存在: ${filePath}`);
+                }
+
+                const bytes = fs.readFileSync(filePath);
+                const srcPdf = await PDFDocument.load(bytes);
+
+                const isA5 = file.paperSize.toUpperCase() === 'A5';
+
+                if (isA5) {
+                    // 只有 A5 才 embed（用于后续拼版）
+                    const embeddedPages = await mergedPdf.embedPdf(srcPdf);
+                    pendingA5EmbeddedPages.push(...embeddedPages);
+                } else {
+                    // 先处理 pending 的 A5
+                    await flushPendingA5Pages(mergedPdf, pendingA5EmbeddedPages);
+                    pendingA5EmbeddedPages = [];
+
+                    // A4 页面：原样复制，保留旋转
+                    const copiedPages = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices());
+                    for (const copiedPage of copiedPages) {
+                        mergedPdf.addPage(copiedPage);
+                    }
+                }
+            }
+            // 处理最后剩余的 A5
+            await flushPendingA5Pages(mergedPdf, pendingA5EmbeddedPages);
+
+            // 保存...
+            const pdfBytes = await mergedPdf.save();
+            const filename = `merged_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.pdf`;
+            const outputPath = path.join(__dirname, './mergedpdf', filename);
+            fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+            fs.writeFileSync(outputPath, pdfBytes);
+
+            // ... [cleanup logic unchanged] ...
+
+            const url = `http://www.cyywork.top/backend/mergedpdf/${filename}`;
+            res.json({ url, filename });
+
+        } catch (err) {
+            console.error('[MERGE ERROR]', err);
+            res.status(500).json({ error: '合并失败' });
+        }
+    });
+
+    // ✅ 修正后的 flush 函数：接收 PDFEmbeddedPage[]
+    async function flushPendingA5Pages(mergedPdf, a5EmbeddedPages) {
+        if (a5EmbeddedPages.length === 0) return;
+
+        for (let i = 0; i < a5EmbeddedPages.length; i += 2) {
+            const page = mergedPdf.addPage([A4_WIDTH, A4_HEIGHT]);
+
+            const topPage = a5EmbeddedPages[i];
+            // 绘制上方 A5（横向）—— 占据上半部分
+            page.drawPage(topPage, {
+                x: 0,
+                y: A4_HEIGHT / 2, // 从中间开始往上画（y=0 是底部）
+                width: A5_LANDSCAPE_WIDTH,
+                height: A5_LANDSCAPE_HEIGHT,
+            });
+
+            if (i + 1 < a5EmbeddedPages.length) {
+                const bottomPage = a5EmbeddedPages[i + 1];
+                // 绘制下方 A5 —— 占据下半部分（y=0 起）
+                page.drawPage(bottomPage, {
+                    x: 0,
+                    y: 0,
+                    width: A5_LANDSCAPE_WIDTH,
+                    height: A5_LANDSCAPE_HEIGHT,
+                });
+            }
+            // 如果只剩一个 A5，只画上方（下方留白），或你也可以画在下方？
+            // 根据需求调整：目前按“先上后下”顺序
+        }
+    }
+
+    // 👇 新增：清理 mergedpdf 目录中过多的旧文件（保留最新 10 个）
+    function cleanupOldMergedFiles(maxKeep = 10) {
+        const dirPath = path.join(__dirname, 'mergedpdf');
+        if (!fs.existsSync(dirPath)) return;
+
+        try {
+            const files = fs.readdirSync(dirPath)
+                .filter(f => f.startsWith('merged_') && f.endsWith('.pdf'))
+                .map(f => ({
+                    name: f,
+                    time: fs.statSync(path.join(dirPath, f)).mtimeMs // 修改时间（毫秒）
+                }))
+                .sort((a, b) => a.time - b.time); // 从旧到新
+
+            if (files.length > maxKeep) {
+                const toDelete = files.slice(0, files.length - maxKeep); // 删除最旧的那些
+                toDelete.forEach(file => {
+                    const filePath = path.join(dirPath, file.name);
+                    try {
+                        fs.unlinkSync(filePath);
+                        console.log(`🗑️ 清理超量旧文件: ${file.name}`);
+                    } catch (err) {
+                        console.warn(`⚠️ 清理失败: ${file.name}`, err.message);
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('❌ cleanupOldMergedFiles 出错:', err);
+        }
+    }
 }
 
- 
- 
+
+
 // 启动服务器
 http.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

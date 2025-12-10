@@ -2,54 +2,57 @@
 import React, { useState, useEffect } from 'react';
 import styles from './MergePrintPdf.module.css';
 import io from 'socket.io-client';
-// 创建全局 socket 实例（或放在 context 中更好，这里简化）
-const socket = io('http://121.4.22.55:5202'); // 👈 你的后端地址
 
- 
+// 创建全局 socket 实例
+const socket = io('http://121.4.22.55:5202');
 
 const MergePrintPdf = () => {
-      const [categories, setCategories] = useState([]); // 👈 动态加载
-    const [loading, setLoading] = useState(true);     // 👈 加载状态
-    const [selectedFiles, setSelectedFiles] = useState([]); // [{ category, filename }]
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedFiles, setSelectedFiles] = useState([]);
     const [mergedPdfUrl, setMergedPdfUrl] = useState(null);
     const [isMerging, setIsMerging] = useState(false);
     const [expandedCategories, setExpandedCategories] = useState({});
-    const [currentFilename, setCurrentFilename] = useState(null); // 存完整文件名，如 merged_12345.pdf
+    const [currentFilename, setCurrentFilename] = useState(null);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-    // 👇 获取 PDF 文件列表
+    // 获取 PDF 文件列表
+    const fetchPdfFiles = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/ReportPdfPrintFile');
+            if (!response.ok) throw new Error('Failed to fetch PDF files');
+            const data = await response.json();
+
+            // 按 fileType 分组
+            const grouped = data.reduce((acc, item) => {
+                const { fileType, pdfPrintFileName, paperSize } = item;
+                if (!acc[fileType]) {
+                    acc[fileType] = {
+                        name: fileType,
+                        files: []
+                    };
+                }
+                if (!acc[fileType].files.some(f => f.name === pdfPrintFileName)) {
+                    acc[fileType].files.push({
+                        name: pdfPrintFileName,
+                        paperSize: paperSize || 'A4'
+                    });
+                }
+                return acc;
+            }, {});
+
+            const categoriesArray = Object.values(grouped);
+            setCategories(categoriesArray);
+        } catch (err) {
+            console.error('Error fetching PDF files:', err);
+            alert('无法加载PDF文件列表，请检查网络或后端服务');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchPdfFiles = async () => {
-            try {
-                const response = await fetch('/api/ReportPdfPrintFile');
-                if (!response.ok) throw new Error('Failed to fetch PDF files');
-                const data = await response.json(); // [{ fileType, pdfPrintFileName }, ...]
-
-                // 按 fileType 分组
-                const grouped = data.reduce((acc, item) => {
-                    const { fileType, pdfPrintFileName } = item;
-                    if (!acc[fileType]) {
-                        acc[fileType] = {
-                            name: fileType,
-                            files: []
-                        };
-                    }
-                    // 避免重复文件名（可选）
-                    if (!acc[fileType].files.includes(pdfPrintFileName)) {
-                        acc[fileType].files.push(pdfPrintFileName);
-                    }
-                    return acc;
-                }, {});
-
-                const categoriesArray = Object.values(grouped);
-                setCategories(categoriesArray);
-            } catch (err) {
-                console.error('Error fetching PDF files:', err);
-                alert('无法加载PDF文件列表，请检查网络或后端服务');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchPdfFiles();
     }, []);
 
@@ -60,15 +63,14 @@ const MergePrintPdf = () => {
         }));
     };
 
-    const toggleFile = (category, filename) => {
+    const toggleFile = (category, filename, paperSize) => {
         const key = `${category}/${filename}`;
         const exists = selectedFiles.some((item) => `${item.category}/${item.filename}` === key);
         if (exists) {
             setSelectedFiles(selectedFiles.filter((item) => `${item.category}/${item.filename}` !== key));
         } else {
-            setSelectedFiles([...selectedFiles, { category, filename }]);
+            setSelectedFiles([...selectedFiles, { category, filename, paperSize }]);
         }
-        // 清除之前的合并结果
         setMergedPdfUrl(null);
     };
 
@@ -95,7 +97,6 @@ const MergePrintPdf = () => {
         setMergedPdfUrl(null);
     };
 
-    // 👇 核心：调用后端合并接口
     const handleMergePreview = async () => {
         if (selectedFiles.length === 0) return;
         setIsMerging(true);
@@ -105,16 +106,14 @@ const MergePrintPdf = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     files: selectedFiles,
-                    oldFilename: currentFilename, // 👈 关键：传旧文件名
+                    oldFilename: currentFilename,
                 }),
             });
 
             if (response.ok) {
                 const data = await response.json();
                 setMergedPdfUrl(data.url);
-                setCurrentFilename(data.filename); // 更新为新 filename
-
-                // 通知后端：我在用这个新文件
+                setCurrentFilename(data.filename);
                 socket.emit('useFile', { filename: data.filename });
             } else {
                 alert('合并失败');
@@ -125,6 +124,11 @@ const MergePrintPdf = () => {
         } finally {
             setIsMerging(false);
         }
+    };
+
+    const clearAll = () => {
+        setSelectedFiles([]);
+        setMergedPdfUrl(null);
     };
 
     // 页面卸载时释放
@@ -140,105 +144,179 @@ const MergePrintPdf = () => {
             if (currentFilename) {
                 socket.emit('releaseFile', { filename: currentFilename });
             }
-            // 不 close socket，因为可能多个组件共用
         };
     }, [currentFilename]);
 
- // --- 渲染部分 ---
     if (loading) {
         return <div className={styles.container}>加载中...</div>;
     }
-    
+
     return (
         <div className={styles.container}>
-            {/* 左侧：分类选择 */}
-            <div className={styles.sidebar}>
-                <h2>PDF 文件库</h2>
-                {categories.map((category) => (
-                    <div key={category.name} className={styles.category}>
-                        <div
-                            className={styles.categoryHeader}
-                            onClick={() => toggleCategory(category.name)}
+            {/* 头部功能区 */}
+            <div className={styles.header}>
+                <h1 className={styles.headerTitle}> </h1>
+                <div className={styles.headerActions}>
+                    <button 
+                        className={styles.refreshBtn}
+                        onClick={fetchPdfFiles}
+                    >
+                        🔄 刷新列表
+                    </button>
+                    {mergedPdfUrl && (
+                        <button
+                            className={styles.toggleBtn}
+                            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                         >
-                            <h3>{category.name}</h3>
-                            <button className={styles.toggleBtn}>
-                                {expandedCategories[category.name] ? '−' : '+'}
-                            </button>
-                        </div>
-                        <ul className={`${styles.categoryList} ${expandedCategories[category.name] ? styles.expanded : ''}`}>
-                            {category.files.map((file) => {
-                                const key = `${category.name}/${file}`;
-                                const isChecked = selectedFiles.some(
-                                    (item) => `${item.category}/${item.filename}` === key
-                                );
-                                return (
-                                    <li key={key} className={styles.categoryItem}>
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                checked={isChecked}
-                                                onChange={() => toggleFile(category.name, file)}
-                                            />
-                                            {file}
-                                        </label>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </div>
-                ))}
+                            {isSidebarCollapsed ? '展开列表' : '折叠列表'}
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {/* 右侧 */}
-            <div className={styles.main}>
-                <div className={styles.rightSection}>
-                    {/* 已选文件区域 */}
-                    <div className={styles.selectedSection}>
-                        <h2>合并预览 ({selectedFiles.length} 个文件)</h2>
+            <div className={styles.mainContent}>
+                {/* 左侧：文件库 */}
+                <div className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`}>
+                    <div className={styles.sidebarHeader}>
+                        <h2>PDF 文件库</h2>
+                        <span className={styles.countBadge}>{categories.reduce((acc, cat) => acc + cat.files.length, 0)}</span>
+                    </div>
+                    
+                    {categories.map((category) => (
+                        <div key={category.name} className={styles.category}>
+                            <div
+                                className={styles.categoryHeader}
+                                onClick={() => toggleCategory(category.name)}
+                            >
+                                <h3>{category.name}</h3>
+                                <span className={styles.toggleIcon}>
+                                    {expandedCategories[category.name] ? '−' : '+'}
+                                </span>
+                            </div>
+                            <ul className={`${styles.categoryList} ${expandedCategories[category.name] ? styles.expanded : ''}`}>
+                                {category.files.map((fileObj) => {
+                                    const key = `${category.name}/${fileObj.name}`;
+                                    const isChecked = selectedFiles.some(
+                                        (item) => `${item.category}/${item.filename}` === key
+                                    );
+                                    return (
+                                        <li key={key} className={styles.categoryItem}>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => toggleFile(category.name, fileObj.name, fileObj.paperSize)}
+                                                />
+                                                <span className={styles.fileName}>{fileObj.name}</span>
+                                                <span className={styles.paperSizeBadge}>{fileObj.paperSize}</span>
+                                            </label>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
 
-                        {selectedFiles.length === 0 ? (
-                            <p className={styles.empty}>请从左侧选择 PDF 文件</p>
-                        ) : (
+                {/* 中间：已选文件列表 */}
+                <div className={`${styles.centerPanel} ${isSidebarCollapsed ? styles.fullWidth : ''}`}>
+                    <div className={styles.centerHeader}>
+                        <h2>合并预览 ({selectedFiles.length} 个文件)</h2>
+                        {selectedFiles.length > 0 && (
+                            <button 
+                                className={styles.clearBtn}
+                                onClick={clearAll}
+                            >
+                                清空列表
+                            </button>
+                        )}
+                    </div>
+
+                    {selectedFiles.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyIcon}>📄</div>
+                            <p>请从左侧选择 PDF 文件</p>
+                            <p className={styles.emptyHint}>点击文件名称前的复选框添加文件</p>
+                        </div>
+                    ) : (
+                        <div className={styles.selectedContainer}>
                             <ul className={styles.selectedList}>
                                 {selectedFiles.map((item, index) => (
                                     <li key={`${item.category}-${item.filename}-${index}`} className={styles.selectedItem}>
-                                        <span className={styles.fileName}>
+                                        <span className={styles.itemIndex}>{index + 1}</span>
+                                        <div className={styles.itemContent}>
                                             <span className={styles.categoryBadge}>{item.category}</span>
-                                            {item.filename}
-                                        </span>
-                                        <div className={styles.actions}>
-                                            <button onClick={() => moveUp(index)} disabled={index === 0} title="上移">↑</button>
-                                            <button onClick={() => moveDown(index)} disabled={index === selectedFiles.length - 1} title="下移">↓</button>
-                                            <button onClick={() => removeFile(index)} title="移除" className={styles.removeBtn}>×</button>
+                                            <span className={styles.fileName}>{item.filename}</span>
+                                            <span className={styles.paperSizeTag}>{item.paperSize}</span>
+                                        </div>
+                                        <div className={styles.itemActions}>
+                                            <button 
+                                                onClick={() => moveUp(index)} 
+                                                disabled={index === 0}
+                                                title="上移"
+                                            >
+                                                ↑
+                                            </button>
+                                            <button 
+                                                onClick={() => moveDown(index)} 
+                                                disabled={index === selectedFiles.length - 1}
+                                                title="下移"
+                                            >
+                                                ↓
+                                            </button>
+                                            <button 
+                                                onClick={() => removeFile(index)} 
+                                                title="移除"
+                                                className={styles.removeBtn}
+                                            >
+                                                ×
+                                            </button>
                                         </div>
                                     </li>
                                 ))}
                             </ul>
-                        )}
-
-                        {/* 操作按钮 */}
-                        <div className={styles.mergeActions}>
-                            <button
-                                onClick={handleMergePreview}
-                                disabled={isMerging || selectedFiles.length === 0}
-                                className={styles.mergeBtn}
-                            >
-                                {isMerging ? '合并中...' : '生成合并预览'}
-                            </button>
                         </div>
+                    )}
+
+                    <div className={styles.mergeActions}>
+                        <button
+                            onClick={handleMergePreview}
+                            disabled={isMerging || selectedFiles.length === 0}
+                            className={styles.mergeBtn}
+                        >
+                            {isMerging ? (
+                                <>
+                                    <span className={styles.spinner}></span>
+                                    合并中...
+                                </>
+                            ) : (
+                                '生成合并预览'
+                            )}
+                        </button>
                     </div>
+                </div>
 
-
-
-                    {/* 合并后的 PDF 预览 */}
-                    {mergedPdfUrl && (
-                        <div className={styles.mergedPreview}>
-                            <h3>合并后的 PDF</h3>
+                {/* 右侧：PDF 预览 */}
+                <div className={`${styles.previewPanel} ${isSidebarCollapsed ? styles.fullWidth : ''}`}>
+                    <div className={styles.previewHeader}>
+                        <h2>PDF 预览</h2>
+                    </div>
+                    
+                    {mergedPdfUrl ? (
+                        <div className={styles.pdfContainer}>
                             <iframe
                                 src={mergedPdfUrl}
                                 title="Merged PDF"
-                                className={styles.mergedPdfFrame}
+                                className={styles.pdfFrame}
                             />
+                        </div>
+                    ) : (
+                        <div className={styles.previewPlaceholder}>
+                            <div className={styles.placeholderIcon}>👁️</div>
+                            <p>生成合并预览后，PDF将显示在这里</p>
+                            <p className={styles.placeholderHint}>
+                                点击"生成合并预览"按钮查看合并后的PDF
+                            </p>
                         </div>
                     )}
                 </div>
