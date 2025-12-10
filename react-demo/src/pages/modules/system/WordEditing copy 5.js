@@ -128,7 +128,8 @@ const WordEditing = ({
   onSave = null
 }) => {
   // 使用共享上下文替代 initialData
-  const { state: excelState } = useShareExcelWordData();
+  const { formData: sharedFormData, setFormData: setSharedFormData } = useShareExcelWordData();
+
   const [formData, setFormData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [placeholders, setPlaceholders] = useState([]);
@@ -296,23 +297,99 @@ const WordEditing = ({
     return `${year}年${month}月${day}日`;
   };
 
-  const getInitialValueFromExcel = useCallback((placeholderKey) => {
-    // 优先从用户自定义单元格取值
-    for (const [addrKey, cell] of Object.entries(excelState.customCellValues || {})) {
-      const namedRangeName = excelState.addressToNamedRangeMap?.[addrKey];
-      if (namedRangeName === placeholderKey) {
-        return cell.displayValue != null ? cell.displayValue : cell.value || '';
-      }
+  const processInitialData = (data) => {
+    if (!data) return {};
+
+    const allData = {
+      documentNo: data.entrustment?.documentNo || '',
+      entrustDate: formatChineseDateFirstType(data.entrustment?.entrustDate),
+      entrustingParty: data.entrustment?.entrustingParty || '',
+      assessmentCommissionDocument: data.entrustment?.assessmentCommissionDocument || '',
+      valueDateRequirements: data.entrustment?.valueDateRequirements || '',
+      location: data.property?.location || '',
+      buildingArea: data.property?.buildingArea || '',
+      interiorArea: data.property?.interiorArea || '',
+      propertyCertificateNo: data.property?.propertyCertificateNo || '',
+      housePurpose: data.property?.housePurpose || '',
+      propertyUnitNo: data.property?.propertyUnitNo || '',
+      rightsHolder: data.property?.rightsHolder || '',
+      landPurpose: data.property?.landPurpose || '',
+      sharedLandArea: data.property?.sharedLandArea || '',
+      landUseRightEndDate: formatChineseDateSecondType(data.property?.landUseRightEndDate),
+      houseStructure: data.property?.houseStructure || '',
+      coOwnershipStatus: data.property?.coOwnershipStatus || '',
+      rightsNature: data.property?.rightsNature || '',
+      communityName: data.physicalCondition?.communityName || '',
+      totalFloors: data.physicalCondition?.totalFloors || '',
+      floorNumber: data.physicalCondition?.floorNumber || '',
+      elevator: data.physicalCondition?.elevator ? '有' : '无',
+      decorationStatus: data.physicalCondition?.decorationStatus || '',
+      ventilationStatus: data.physicalCondition?.ventilationStatus ? '' : '未',
+      spaceLayout: data.physicalCondition?.spaceLayout || '',
+      exteriorWallMaterial: data.physicalCondition?.exteriorWallMaterial || '',
+      yearBuilt: data.physicalCondition?.yearBuilt || '',
+      boundaries: data.physicalCondition?.boundaries || '',
+      bank: data.physicalCondition?.bank || '',
+      supermarket: data.physicalCondition?.supermarket || '',
+      hospital: data.physicalCondition?.hospital || '',
+      school: data.physicalCondition?.school || '',
+      nearbyCommunity: data.physicalCondition?.nearbyCommunity || '',
+      busStopName: data.physicalCondition?.busStopName || '',
+      busRoutes: data.physicalCondition?.busRoutes || '',
+      areaRoad: data.physicalCondition?.areaRoad || '',
+      landShape: data.physicalCondition?.landShape || '',
+      direction: data.physicalCondition?.direction || '',
+      distance: data.physicalCondition?.distance || '',
+      orientation: data.physicalCondition?.orientation || '',
+      streetStatus: data.physicalCondition?.streetStatus || '',
+      parkingStatus: data.physicalCondition?.parkingStatus || '',
+      valueDate: formatChineseDateSecondType(data.result?.valueDate),
+      reportDate: formatChineseDateFirstType(data.result?.reportDate),
+      valuationMethod: data.result?.valuationMethod || '',
+      projectID: data.result?.projectID || '',
+      reportID: data.result?.reportID || '',
+      valuationPrice: data.result?.valuationPrice || '',
+      hasFurnitureElectronics: data.result?.hasFurnitureElectronics || false,
+      furnitureElectronicsEstimatedPrice: data.result?.furnitureElectronicsEstimatedPrice || '',
+      appraiserA_name: data.result?.appraiserA?.name || '',
+      appraiserA_licenseNo: data.result?.appraiserA?.licenseNo || '',
+      appraiserB_name: data.result?.appraiserB?.name || '',
+      appraiserB_licenseNo: data.result?.appraiserB?.licenseNo || '',
+      rent: data.result?.rent || '',
+      mortgageStatus: data.equityStatus?.mortgageStatus || false,
+      mortgageBasis: data.equityStatus?.mortgageBasis || '',
+      seizureStatus: data.equityStatus?.seizureStatus || false,
+      seizureBasis: data.equityStatus?.seizureBasis || '',
+      utilizationStatus: data.equityStatus?.utilizationStatus || '',
+      isLeaseConsidered: data.equityStatus?.isLeaseConsidered || false,
+    };
+
+    const buildingArea = parseFloat(data.property?.buildingArea) || 0;
+    const valuationPrice = parseFloat(data.result?.valuationPrice) || 0;
+    const furniturePrice = parseFloat(data.result?.furnitureElectronicsEstimatedPrice) || 0;
+
+    allData.totalValuationPrice = buildingArea > 0 && valuationPrice > 0
+      ? Math.round((buildingArea * valuationPrice) / 10000 * 100) / 100
+      : 0;
+
+    allData.totalValuationPriceChinese = buildingArea > 0 && valuationPrice > 0
+      ? convertCurrency(Math.round((buildingArea * valuationPrice) / 100) * 100)
+      : '零';
+
+    if (data.result?.hasFurnitureElectronics) {
+      allData.furnitureElectronicsEstimatedPriceChinese = convertCurrency(
+        Math.round(furniturePrice / 100) * 100
+      );
+
+      const totalWithFurniture = buildingArea * valuationPrice + furniturePrice;
+      allData.totalValuationPriceWithFurniture = Math.round((totalWithFurniture / 10000) * 100) / 100;
+      allData.totalValuationPriceWithFurnitureChinese = convertCurrency(
+        Math.round(totalWithFurniture / 100) * 100
+      );
     }
-    // 回退到完整工作簿数据
-    for (const [addrKey, cell] of Object.entries(excelState.fullWorkbookData || {})) {
-      const namedRangeName = excelState.addressToNamedRangeMap?.[addrKey];
-      if (namedRangeName === placeholderKey) {
-        return cell.displayValue != null ? cell.displayValue : cell.value || '';
-      }
-    }
-    return '';
-  }, [excelState]);
+
+    return allData;
+  };
 
   const attachPlaceholderListeners = useCallback(() => {
     if (!previewRef.current) return;
@@ -396,28 +473,32 @@ const WordEditing = ({
     const loadAndParseTemplate = async () => {
       try {
         setIsLoading(true);
-  
+
         const templatePath = getTemplatePath();
         const response = await fetch(templatePath);
         if (!response.ok) throw new Error(`模板加载失败: ${response.statusText}`);
-  
+
         const arrayBuffer = await response.arrayBuffer();
         originalTemplateRef.current = arrayBuffer;
-  
+
         const text = (await mammoth.extractRawText({ arrayBuffer })).value;
         const placeholderRegex = /\{(\w+)\}/g;
         const foundPlaceholders = [...new Set(Array.from(text.matchAll(placeholderRegex), match => match[1]))];
-  
-        setPlaceholders(foundPlaceholders);
-  
-        // ✅ 直接从 Excel 命名区域取值，不再处理嵌套结构
-        const initialFormData = {};
-        foundPlaceholders.forEach(key => {
-          initialFormData[key] = getInitialValueFromExcel(key);
-        });
-  
-        setFormData(initialFormData);
-        await renderPreview(initialFormData);
+
+        // 使用共享上下文中的数据
+        const processedData = processInitialData(sharedFormData);
+
+        if (foundPlaceholders.length > 0) {
+          setPlaceholders(foundPlaceholders);
+          const initialFormData = foundPlaceholders.reduce((acc, key) => {
+            acc[key] = processedData[key] || '';
+            return acc;
+          }, {});
+          setFormData(initialFormData);
+        } else {
+          setFormData(processedData);
+          await renderPreview(processedData);
+        }
       } catch (err) {
         console.error('加载或解析模板失败:', err);
         alert(`模板加载失败: ${err.message}`);
@@ -425,9 +506,10 @@ const WordEditing = ({
         setIsLoading(false);
       }
     };
-  
+
     loadAndParseTemplate();
-  }, [templateType, hasFurnitureElectronics, getInitialValueFromExcel]); // 注意依赖项
+  }, [templateType, hasFurnitureElectronics, sharedFormData]); // 注意依赖项包含 sharedFormData
+
   useEffect(() => {
     if (!isLoading) {
       renderPreview(formData);
@@ -511,16 +593,6 @@ const WordEditing = ({
           <button onClick={handleExport} className={styles.exportBtn} disabled={isLoading}>
             📥 导出 Word
           </button>
-          <button
-              className={styles.collapseButton}
-              onClick={() => setIsFormCollapsed(!isFormCollapsed)}
-              title={isFormCollapsed ? '展开' : '折叠'}
-            >
-              <svg viewBox="0 0 1024 1024" width="16" height="16">
-                <path d="M840.4 300H183.6c-19.7 0-30.7 20.8-18.5 35l328.4 380.8c9.4 10.9 27.5 10.9 37 0L858.9 335c12.2-14.2 1.2-35-18.5-35z" fill="currentColor"></path>
-              </svg>
-            </button>
-            
           {isPreviewMode && onSave && (
             <button onClick={handleSave} className={styles.saveBtn}>
               💾 保存
@@ -533,7 +605,15 @@ const WordEditing = ({
         <div className={`${styles.formPanel} ${isFormCollapsed ? styles.collapsed : ''}`}>
           <div className={styles.formHeader}>
             <h3>字段</h3>
-            
+            <button
+              className={styles.collapseButton}
+              onClick={() => setIsFormCollapsed(!isFormCollapsed)}
+              title={isFormCollapsed ? '展开' : '折叠'}
+            >
+              <svg viewBox="0 0 1024 1024" width="16" height="16">
+                <path d="M840.4 300H183.6c-19.7 0-30.7 20.8-18.5 35l328.4 380.8c9.4 10.9 27.5 10.9 37 0L858.9 335c12.2-14.2 1.2-35-18.5-35z" fill="currentColor"></path>
+              </svg>
+            </button>
           </div>
           <div className={styles.formBody}>
             {placeholders.length > 0 ? (
