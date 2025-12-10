@@ -877,7 +877,7 @@ const handleSavePreviewData = (updatedData) => {
         // 根据估价方法选择模板
         if (reportgeneratorReportData.result.valuationMethod === '收益法') {
             templateFile = '/backend/public/webreports/结果报告-单套商业-无家具家电.docx';
-        } else if (reportgeneratorReportData.result.valuationMethod === '市场法') {
+        } else if (reportgeneratorReportData.result.valuationMethod === '比较法') {
             templateFile = reportgeneratorReportData.result.hasFurnitureElectronics
                 ? '/backend/public/webreports/结果报告-单套住宅-有家具家电.docx'
                 : '/backend/public/webreports/结果报告-单套住宅-无家具家电.docx';

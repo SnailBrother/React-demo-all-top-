@@ -4,7 +4,7 @@ const sql = require('mssql');
 const xlsx = require('xlsx');
 const app = express();
 const port = 5202;
-
+const { PDFDocument } = require('pdf-lib');
 
 // SQL Server 配置
 const config = {
@@ -12186,10 +12186,146 @@ app.get('/api/GetBuildingsPriceInfo', async (req, res) => {
 
 }
 
-// 启动服务器
-// app.listen(port, () => {
-//     console.log(`Server is running on http://localhost:${port}`);
-// });
+
+
+{//查看合并的pdf  👇  
+    //后期如果有多个合并的pdf没有删除的话，
+    //可以增加在打开合并的时候检查一下，
+    //如果数量超过20个，就按照时间把以前的10个删了
+
+    app.use(express.static(path.join(__dirname, 'public')));
+    app.use('/backend/mergedpdf', express.static(path.join(__dirname, 'mergedpdf')));
+    
+    // ===== 核心状态管理 =====
+    const userFileMap = {};        // socket.id → filename
+    const fileRefCount = {};       // filename → 引用计数（支持多 tab）
+    const pendingCleanup = new Set(); // 未被 use 的文件，需兜底删除
+    
+    // 安全删除函数（同步）
+    function deleteFile(filename) {
+      const filePath = path.join(__dirname, './mergedpdf', filename);
+      try {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log(`🗑️ 已删除文件: ${filename}`);
+        }
+      } catch (err) {
+        console.warn(`❌ 删除失败 ${filename}:`, err.message);
+      }
+    }
+    
+    // ===== Socket.IO 事件 =====
+    io.on('connection', (socket) => {
+      console.log('✅ 用户连接:', socket.id);
+    
+      socket.on('useFile', ({ filename }) => {
+        // 如果之前是 pending 状态，取消兜底删除
+        if (pendingCleanup.has(filename)) {
+          pendingCleanup.delete(filename);
+        }
+    
+        // 引用计数 +1
+        fileRefCount[filename] = (fileRefCount[filename] || 0) + 1;
+        userFileMap[socket.id] = filename;
+        console.log(`📱 ${socket.id} 使用文件: ${filename} (引用: ${fileRefCount[filename]})`);
+      });
+    
+      socket.on('releaseFile', ({ filename }) => {
+        const current = userFileMap[socket.id];
+        if (current === filename) {
+          delete userFileMap[socket.id];
+          fileRefCount[filename]--;
+          if (fileRefCount[filename] <= 0) {
+            delete fileRefCount[filename];
+            deleteFile(filename);
+          }
+        }
+      });
+    
+      socket.on('disconnect', () => {
+        const filename = userFileMap[socket.id];
+        if (filename) {
+          fileRefCount[filename]--;
+          if (fileRefCount[filename] <= 0) {
+            delete fileRefCount[filename];
+            deleteFile(filename);
+          }
+          delete userFileMap[socket.id];
+        }
+        console.log('🔌 用户断开:', socket.id);
+      });
+    });
+    
+    // ===== 合并接口：所有逻辑在此 =====
+    app.post('/api/mergePdfs', async (req, res) => {
+      try {
+        const { files, oldFilename } = req.body; // 👈 新增 oldFilename 字段！
+    
+        // 如果有旧文件，尝试立即删除（无论是否被使用）
+        if (oldFilename && typeof oldFilename === 'string') {
+          // 如果还有引用，只是标记 release（由 socket 处理）
+          // 如果无引用，直接删
+          if (fileRefCount[oldFilename] > 0) {
+            // 模拟前端已 release（因为用户点了新合并）
+            fileRefCount[oldFilename]--;
+            if (fileRefCount[oldFilename] <= 0) {
+              delete fileRefCount[oldFilename];
+              deleteFile(oldFilename);
+            }
+          } else {
+            deleteFile(oldFilename);
+          }
+        }
+    
+        if (!Array.isArray(files) || files.length === 0) {
+          return res.status(400).json({ error: '文件列表为空' });
+        }
+    
+        const mergedPdf = await PDFDocument.create();
+    
+        for (const file of files) {
+          if (!file.category || !file.filename) continue;
+          const filePath = path.join(__dirname, './public/', file.category, file.filename);
+          if (!fs.existsSync(filePath)) {
+            throw new Error(`文件不存在: ${filePath}`);
+          }
+          const bytes = fs.readFileSync(filePath);
+          const pdf = await PDFDocument.load(bytes);
+          const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+          pages.forEach(page => mergedPdf.addPage(page));
+        }
+    
+        const pdfBytes = await mergedPdf.save();
+        const filename = `merged_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.pdf`;
+        const outputPath = path.join(__dirname, './mergedpdf', filename);
+    
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+        fs.writeFileSync(outputPath, pdfBytes);
+    
+        // 👇 关键：设置 60 秒兜底（防止前端没连 socket）
+        pendingCleanup.add(filename);
+        setTimeout(() => {
+          if (pendingCleanup.has(filename)) {
+            pendingCleanup.delete(filename);
+            if (!fileRefCount[filename]) {
+              deleteFile(filename);
+            }
+          }
+        }, 60 * 1000); // 60 秒
+    
+        const url = `http://www.cyywork.top/backend/mergedpdf/${filename}`;
+        res.json({ url, filename }); // 👈 返回 filename 给前端
+    
+      } catch (err) {
+        console.error('[MERGE ERROR]', err);
+        res.status(500).json({ error: '合并失败' });
+      }
+    });
+    //查看合并的pdf   👆
+}
+
+ 
+ 
 // 启动服务器
 http.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

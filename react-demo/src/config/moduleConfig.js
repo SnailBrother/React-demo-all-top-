@@ -41,6 +41,7 @@ const OfficeTemplateManagement = lazy(() => import('../pages/modules/office/Temp
 const OfficeSpecialtips = lazy(() => import('../pages/modules/office/Specialtips'));
 const OfficeSiteLinks = lazy(() => import('../pages/modules/office/SiteLinks'));
 const OfficeWordReportGenerator = lazy(() => import('../pages/modules/office/WordReportGenerator'));
+const OfficeMergePrintPdf = lazy(() => import('../pages/modules/office/MergePrintPdf'));
 //const OfficePriceConsultationDialog = lazy(() => import('../pages/modules/office/PriceConsultationDialog'));
 //const OfficeNeighborhoodFinder = lazy(() => import('../pages/modules/office/NeighborhoodFinder'));
 
@@ -130,7 +131,7 @@ export const moduleConfig = {
       { key: 'LookHousePricePicture', label: '查看图片', icon: '#icon-chakantupian4', component: OfficeLookHousePricePicture, showInNavigation: false, showInTabs: false  },
       { key: 'LookBuildingsPricePicture', label: '查看图片', icon: '#icon-chakantupian4', component: OfficeLookBuildingsPricePicture, showInNavigation: false, showInTabs: false  },
       { key: 'UploadHousePricePicture', label: '上传图片', icon: '#icon-chakantupian4', component: OfficeUploadHousePricePicture, showInNavigation: false, showInTabs: false  },
-      
+      { key: 'OfficeMergePrintPdf', label: '资料打印', icon: '#icon-pdf2', component: OfficeMergePrintPdf, showInNavigation: true, showInTabs: false  },
 
       { key: 'TemplateManagement', label: '模板下载', icon: '#icon-a-bianzu10', component: OfficeTemplateManagement, showInNavigation: true, showInTabs: false },
       { key: 'Specialtips', label: '特别提示', icon: '#icon-tishi', component: OfficeSpecialtips, showInNavigation: true, showInTabs: false },
