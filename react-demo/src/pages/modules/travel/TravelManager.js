@@ -33,7 +33,7 @@ const TravelManager = () => {
   // 处理卡片点击
   const handleCardClick = (travel) => {
     // 使用 travel.route 作为路由路径
-    navigate(`/app/travelmanager/${travel.route}`);
+    navigate(`/app/travel/${travel.route}`);
   };
 
  

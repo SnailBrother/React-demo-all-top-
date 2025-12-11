@@ -16,13 +16,13 @@ function App() {
     // 检查阿里图标是否已加载
     const checkIconFontLoaded = () => {
       if (window.iconfont) {
-        console.log('阿里图标已加载');
+      //  console.log('阿里图标已加载');
       } else {
         // 如果未加载，重新加载图标JS
         const script = document.createElement('script');
         script.src = '/icons/iconfont.js';
         script.onload = () => {
-          console.log('阿里图标重新加载成功');
+         // console.log('阿里图标重新加载成功');
         };
         document.body.appendChild(script);
       }
