@@ -32,7 +32,7 @@ const OutfitCombos = lazy(() => import('../pages/modules/outfit/Combos'));
 const OfficePublicNews = lazy(() => import('../pages/modules/office/PublicNews'));
 //const OfficeMessageDetail = lazy(() => import('../pages/modules/office/MessageDetail'));
 const OfficeFeeCalculation = lazy(() => import('../pages/modules/office/FeeCalculation'));
-const OfficeEvaluationFilePreview = lazy(() => import('../pages/modules/office/EvaluationFilePreview'));
+//const OfficeEvaluationFilePreview = lazy(() => import('../pages/modules/office/EvaluationFilePreview'));
 const OfficeSearchPrice = lazy(() => import('../pages/modules/office/SearchPrice'));
 const OfficeLookHousePricePicture = lazy(() => import('../pages/modules/office/SearchPrice/LookHousePricePicture'));
 const OfficeLookBuildingsPricePicture = lazy(() => import('../pages/modules/office/SearchPrice/LookBuildingsPricePicture'));
@@ -41,10 +41,10 @@ const OfficeTemplateManagement = lazy(() => import('../pages/modules/office/Temp
 const OfficeSpecialtips = lazy(() => import('../pages/modules/office/Specialtips'));
 const OfficeSiteLinks = lazy(() => import('../pages/modules/office/SiteLinks'));
 const OfficeWordReportGenerator = lazy(() => import('../pages/modules/office/WordReportGenerator'));
-const OfficeMergePrintPdf = lazy(() => import('../pages/modules/office/MergePrintPdf'));
+//const OfficeMergePrintPdf = lazy(() => import('../pages/modules/office/MergePrintPdf'));
 //const OfficePriceConsultationDialog = lazy(() => import('../pages/modules/office/PriceConsultationDialog'));
 //const OfficeNeighborhoodFinder = lazy(() => import('../pages/modules/office/NeighborhoodFinder'));
-
+const OfficeSearchPdfFileView = lazy(() => import('../pages/modules/office/SearchPdfFileView'));
 //------------------------------聊天------------------------------
 const ChatDressingGuidelines = lazy(() => import('../pages/modules/chat/DressingGuidelines'));
 const ChatUpdateWear = lazy(() => import('../pages/modules/chat/UpdateWear'));
@@ -131,13 +131,13 @@ export const moduleConfig = {
       { key: 'LookHousePricePicture', label: '查看图片', icon: '#icon-chakantupian4', component: OfficeLookHousePricePicture, showInNavigation: false, showInTabs: false  },
       { key: 'LookBuildingsPricePicture', label: '查看图片', icon: '#icon-chakantupian4', component: OfficeLookBuildingsPricePicture, showInNavigation: false, showInTabs: false  },
       { key: 'UploadHousePricePicture', label: '上传图片', icon: '#icon-chakantupian4', component: OfficeUploadHousePricePicture, showInNavigation: false, showInTabs: false  },
-      { key: 'OfficeMergePrintPdf', label: '资料打印', icon: '#icon-pdf2', component: OfficeMergePrintPdf, showInNavigation: true, showInTabs: false  },
-
+      //{ key: 'OfficeMergePrintPdf', label: '资料打印', icon: '#icon-pdf2', component: OfficeMergePrintPdf, showInNavigation: true, showInTabs: false  },
+      { key: 'OfficeSearchPdfFileView', label: '资料查找', icon: '#icon-pdf2', component: OfficeSearchPdfFileView, showInNavigation: true, showInTabs: false  },
       { key: 'TemplateManagement', label: '模板下载', icon: '#icon-a-bianzu10', component: OfficeTemplateManagement, showInNavigation: true, showInTabs: false },
       { key: 'Specialtips', label: '特别提示', icon: '#icon-tishi', component: OfficeSpecialtips, showInNavigation: true, showInTabs: false },
       { key: 'SiteLinks', label: '常用网站', icon: '#icon-web', component: OfficeSiteLinks, showInNavigation: true, showInTabs: false },
       { key: 'FeeCalculation', label: '收费计算', icon: '#icon-jisuanji', component: OfficeFeeCalculation, showInNavigation: true, showInTabs: false },
-      { key: 'EvaluationFilePreview', label: '参考文献', icon: '#icon-bendiwenjianziyuan', component: OfficeEvaluationFilePreview, showInNavigation: true, showInTabs: false },
+     // { key: 'EvaluationFilePreview', label: '参考文献', icon: '#icon-bendiwenjianziyuan', component: OfficeEvaluationFilePreview, showInNavigation: true, showInTabs: false },
       { key: 'WordReportGenerator', label: '撰写报告', icon: '#icon-xiti', component: OfficeWordReportGenerator, showInNavigation: true, showInTabs: false },
     ]
   },

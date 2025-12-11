@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './EvaluationFilePreview.css';
-import { Loading } from '../../../components/UI';
+import { Loading } from '../../../../components/UI';
 const EvaluationFilePreview = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -13,7 +13,7 @@ const EvaluationFilePreview = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('http://121.4.22.55:5202/api/getEvaluationFilePreview');
+                const response = await axios.get('/api/getEvaluationFilePreview');
 
                 const formattedData = response.data.map(category => ({
                     id: Math.random().toString(36).substr(2, 9),

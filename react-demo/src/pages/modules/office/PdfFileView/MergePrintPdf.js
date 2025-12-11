@@ -157,7 +157,7 @@ const MergePrintPdf = () => {
             <div className={styles.header}>
                 <h1 className={styles.headerTitle}> </h1>
                 <div className={styles.headerActions}>
-                    <button 
+                    <button
                         className={styles.refreshBtn}
                         onClick={fetchPdfFiles}
                     >
@@ -181,7 +181,7 @@ const MergePrintPdf = () => {
                         <h2>PDF 文件库</h2>
                         <span className={styles.countBadge}>{categories.reduce((acc, cat) => acc + cat.files.length, 0)}</span>
                     </div>
-                    
+
                     {categories.map((category) => (
                         <div key={category.name} className={styles.category}>
                             <div
@@ -223,13 +223,31 @@ const MergePrintPdf = () => {
                     <div className={styles.centerHeader}>
                         <h2>合并预览 ({selectedFiles.length} 个文件)</h2>
                         {selectedFiles.length > 0 && (
-                            <button 
+                            <button
                                 className={styles.clearBtn}
                                 onClick={clearAll}
                             >
-                                清空列表
+                                清空
                             </button>
                         )}
+
+                        <div className={styles.mergeActions}>
+                            <button
+                                onClick={handleMergePreview}
+                                disabled={isMerging || selectedFiles.length === 0}
+                                className={styles.mergeBtn}
+                            >
+                                {isMerging ? (
+                                    <>
+                                        <span className={styles.spinner}></span>
+                                        合并中...
+                                    </>
+                                ) : (
+                                    '合并'
+                                )}
+                            </button>
+                        </div>
+
                     </div>
 
                     {selectedFiles.length === 0 ? (
@@ -250,27 +268,27 @@ const MergePrintPdf = () => {
                                             <span className={styles.paperSizeTag}>{item.paperSize}</span>
                                         </div>
                                         <div className={styles.itemActions}>
-                                            <button 
-                                                onClick={() => moveUp(index)} 
+                                            <button
+                                                onClick={() => moveUp(index)}
                                                 disabled={index === 0}
                                                 title="上移"
                                             >
                                                 ↑
                                             </button>
-                                            <button 
-                                                onClick={() => moveDown(index)} 
+                                            <button
+                                                onClick={() => moveDown(index)}
                                                 disabled={index === selectedFiles.length - 1}
                                                 title="下移"
                                             >
                                                 ↓
                                             </button>
-                                            <button 
-                                                onClick={() => removeFile(index)} 
+                                            {/* <button
+                                                onClick={() => removeFile(index)}
                                                 title="移除"
                                                 className={styles.removeBtn}
                                             >
                                                 ×
-                                            </button>
+                                            </button> */}
                                         </div>
                                     </li>
                                 ))}
@@ -278,22 +296,7 @@ const MergePrintPdf = () => {
                         </div>
                     )}
 
-                    <div className={styles.mergeActions}>
-                        <button
-                            onClick={handleMergePreview}
-                            disabled={isMerging || selectedFiles.length === 0}
-                            className={styles.mergeBtn}
-                        >
-                            {isMerging ? (
-                                <>
-                                    <span className={styles.spinner}></span>
-                                    合并中...
-                                </>
-                            ) : (
-                                '生成合并预览'
-                            )}
-                        </button>
-                    </div>
+
                 </div>
 
                 {/* 右侧：PDF 预览 */}
@@ -301,7 +304,7 @@ const MergePrintPdf = () => {
                     <div className={styles.previewHeader}>
                         <h2>PDF 预览</h2>
                     </div>
-                    
+
                     {mergedPdfUrl ? (
                         <div className={styles.pdfContainer}>
                             <iframe

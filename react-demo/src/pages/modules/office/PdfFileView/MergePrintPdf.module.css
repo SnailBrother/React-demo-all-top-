@@ -2,12 +2,12 @@
 .container {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - 70px);
+  height: calc(100dvh - 125px);
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ 
 }
 
-/* 头部样式 */
+/* 头部样式 - 修复浮动问题 */
 .header {
   display: flex;
   justify-content: space-between;
@@ -16,7 +16,8 @@
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid #e9ecef;
-  z-index: 10;
+  /* z-index: 10; */
+  flex-shrink: 0; /* 防止被压缩 */
 }
 
 .headerTitle {
@@ -27,6 +28,7 @@
   background: linear-gradient(135deg, #0984e3 0%, #00b894 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
 .headerActions {
@@ -48,6 +50,7 @@
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .refreshBtn:hover {
@@ -66,9 +69,10 @@
 .mainContent {
   display: flex;
   flex: 1;
-  padding: 20px;
+  padding: 5px;
   gap: 5px;
   overflow: hidden;
+  min-height: 0; /* 重要：允许内部元素滚动 */
 }
 
 /* 侧边栏样式 */
@@ -82,6 +86,7 @@
   border: 1px solid #e9ecef;
   overflow: hidden;
   transition: all 0.3s ease;
+  min-height: 0; /* 重要：允许内部滚动 */
 }
 
 .sidebar.collapsed {
@@ -89,6 +94,7 @@
   opacity: 0;
   visibility: hidden;
   margin-right: 0;
+  padding: 0;
 }
 
 .sidebarHeader {
@@ -98,6 +104,7 @@
   padding: 20px;
   border-bottom: 2px solid #0984e3;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  flex-shrink: 0; /* 防止被压缩 */
 }
 
 .sidebarHeader h2 {
@@ -105,6 +112,7 @@
   font-size: 1.3rem;
   color: #2d3436;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .countBadge {
@@ -114,9 +122,18 @@
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
-/* 分类样式 */
+/* 分类容器 - 添加独立滚动 */
+.categoryContainer {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding: 0;
+}
+
 .category {
   border-bottom: 1px solid #f1f2f6;
 }
@@ -133,6 +150,7 @@
   background: #f8f9fa;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  flex-shrink: 0;
 }
 
 .categoryHeader:hover {
@@ -147,11 +165,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .categoryHeader h3::before {
   content: "📁";
   font-size: 1.1em;
+  flex-shrink: 0;
 }
 
 .toggleIcon {
@@ -164,6 +186,7 @@
   justify-content: center;
   border-radius: 4px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .categoryHeader:hover .toggleIcon {
@@ -189,6 +212,7 @@
 .categoryItem {
   padding: 12px 20px;
   border-top: 1px solid #f8f9fa;
+  flex-shrink: 0;
 }
 
 .categoryItem label {
@@ -199,6 +223,7 @@
   color: #2d3436;
   width: 100%;
   gap: 10px;
+  min-width: 0;
 }
 
 .categoryItem input[type="checkbox"] {
@@ -216,6 +241,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .paperSizeBadge {
@@ -238,6 +264,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #e9ecef;
   overflow: hidden;
+  min-height: 0;
 }
 
 .centerPanel.fullWidth {
@@ -251,6 +278,8 @@
   padding: 20px;
   border-bottom: 2px solid #00b894;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  flex-shrink: 0;
+  gap: 5px;
 }
 
 .centerHeader h2 {
@@ -258,6 +287,7 @@
   font-size: 1.3rem;
   color: #2d3436;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .clearBtn {
@@ -270,6 +300,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .clearBtn:hover {
@@ -300,32 +331,29 @@
   color: #b2bec3;
 }
 
-/* 已选文件列表 */
+/* 已选文件列表 - 修改为独立滚动 */
 .selectedContainer {
   flex: 1;
-  /* overflow: hidden; */
   overflow: auto;
-  /* width: 350px; */
-font-size: 10px;
+  min-height: 0;
+  padding: 0;
 }
 
 .selectedList {
   list-style: none;
   padding: 0;
   margin: 0;
-  height: 100%;
-  overflow-y: auto;
-  color: #000;
-  font-size: 10px;
+  min-width: min-content; /* 允许横向滚动 */
 }
 
 .selectedItem {
   display: flex;
   align-items: center;
-  padding: 14px 20px;
+  padding: 10px 0px;
   border-bottom: 1px solid #f1f2f6;
-  gap: 12px;
+  gap: 2px;
   transition: background-color 0.2s ease;
+  min-width: min-content; /* 允许横向滚动 */
 }
 
 .selectedItem:hover {
@@ -333,15 +361,15 @@ font-size: 10px;
 }
 
 .itemIndex {
-  width: 8px;
+  width: 10px;
   height: 10px;
-  /* background: #0984e3; */
-  color: rgb(0, 0, 0);
+  background: #0984e3;
+  color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 0.50rem; 
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -350,50 +378,55 @@ font-size: 10px;
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 5px;
   min-width: 0;
+  overflow: hidden;
+  color: #000;
 }
 
 .categoryBadge {
   background: #dfe6e9;
   color: #636e72;
-  padding: 2px 5px;
+  padding: 2px 0px;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: 0.55rem;
   font-weight: 500;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.fileName {
+.selectedFileName {
   flex: 1;
-  /* overflow: hidden; */
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.95rem;
+  min-width: 0;
+  font-size: 0.5rem;
 }
- 
+
 .paperSizeTag {
   background: #a29bfe;
   color: white;
-  padding: 2px 2px;
+  padding: 5px 5px;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .itemActions {
   display: flex;
-  gap: 1px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
 .itemActions button {
-  width: 15px;
-  height: 15px;
+  width: 20px;
+  height: 20px;
   font-size: 12px;
   border: none;
   background: white;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -421,28 +454,23 @@ font-size: 10px;
 
 /* 合并操作区域 */
 .mergeActions {
-  padding: 20px;
+  padding: 0px;
   border-top: 1px solid #e9ecef;
   background: #f8f9fa;
+  flex-shrink: 0;
 }
 
 .mergeBtn {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+  padding: 6px 12px;
+  background: #4fe73b;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .mergeBtn:hover:not(:disabled) {
@@ -481,6 +509,7 @@ font-size: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #e9ecef;
   overflow: hidden;
+  min-height: 0;
 }
 
 .previewPanel.fullWidth {
@@ -491,6 +520,7 @@ font-size: 10px;
   padding: 20px;
   border-bottom: 2px solid #fd79a8;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  flex-shrink: 0;
 }
 
 .previewHeader h2 {
@@ -498,6 +528,7 @@ font-size: 10px;
   font-size: 1.3rem;
   color: #2d3436;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* PDF 预览区域 */
@@ -505,6 +536,8 @@ font-size: 10px;
   flex: 1;
   padding: 20px;
   background: #f8f9fa;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .pdfFrame {
@@ -539,25 +572,37 @@ font-size: 10px;
   color: #b2bec3;
 }
 
-/* 滚动条样式 */
-.categoryList.expanded::-webkit-scrollbar,
-.selectedList::-webkit-scrollbar {
-  width: 6px;
+/* 滚动条样式优化 */
+.categoryContainer::-webkit-scrollbar,
+.selectedContainer::-webkit-scrollbar,
+.categoryList.expanded::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.categoryList.expanded::-webkit-scrollbar-track,
-.selectedList::-webkit-scrollbar-track {
+.categoryContainer::-webkit-scrollbar-track,
+.selectedContainer::-webkit-scrollbar-track,
+.categoryList.expanded::-webkit-scrollbar-track {
   background: #f1f2f6;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
-.categoryList.expanded::-webkit-scrollbar-thumb,
-.selectedList::-webkit-scrollbar-thumb {
+.categoryContainer::-webkit-scrollbar-thumb,
+.selectedContainer::-webkit-scrollbar-thumb,
+.categoryList.expanded::-webkit-scrollbar-thumb {
   background: #b2bec3;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
-.categoryList.expanded::-webkit-scrollbar-thumb:hover,
-.selectedList::-webkit-scrollbar-thumb:hover {
+.categoryContainer::-webkit-scrollbar-thumb:hover,
+.selectedContainer::-webkit-scrollbar-thumb:hover,
+.categoryList.expanded::-webkit-scrollbar-thumb:hover {
   background: #636e72;
 }
+
+/* 横向滚动支持 */
+.selectedList {
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
