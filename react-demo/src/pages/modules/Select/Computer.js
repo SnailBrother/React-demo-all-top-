@@ -157,9 +157,9 @@ const HomeOptions = () => {
             </div>
           </nav>
           <div className={`${styles.pageContent} ${styles.page1}`}>
-           
+            <ProfilePage/>
             {/* 在这里添加音乐页面内容 */}
-            <Music/>
+         
           </div>
         </div>
         
@@ -174,16 +174,16 @@ const HomeOptions = () => {
         {/* 第3页 - 办公 */}
         <div className={styles.page}>
           <div className={`${styles.pageContent} ${styles.page3}`}>
-            <h2>办公</h2>
-            <GalleryPage/>
+            {/* <h2>办公</h2> */}
+           <Music/>  
           </div>
         </div>
         
         {/* 第4页 - 聊天 */}
         <div className={styles.page}>
           <div className={`${styles.pageContent} ${styles.page4}`}>
-            <h2>聊天</h2>
-            <ProfilePage/>
+            {/* <h2>聊天</h2> */}
+             <GalleryPage/>
           </div>
         </div>
         

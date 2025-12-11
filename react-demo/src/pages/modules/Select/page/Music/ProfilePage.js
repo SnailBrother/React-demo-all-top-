@@ -8,76 +8,70 @@ const ProfilePage = () => {
   const pageContents = [
     {
       id: 0,
-      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/音乐欣赏.jpg',
+      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/动态图.jpg',
       texts: [
         '💘',
-        '姓名：卢大天才',
-        '性别：男',
-        '生日：1999/03/19',
-        '爱好：羽毛球，唱歌，王者',
-        '星座：双鱼',
-        '落叶🍂知湫意',
-        '爱意💕随风起',
+        '记录',
+        '生活',
+        '美好',
+        '瞬间',
         '💓'
       ]
     },
     {
       id: 1,
-      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/音乐欣赏.jpg',
+      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/文本互动.jpg',
       texts: [
         '💘',
-        '《起风了》',
+        '文本',
+          '快速替换',
         '💓'
       ]
     },
     {
       id: 2,
-      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/音乐欣赏.jpg',
+      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/图片压缩.jpg',
       texts: [
         '💘',
-        '这一路上走走停停',
-        '顺着少年漂流的痕迹',
-        '迈出车站的前一刻',
-        '竟有些犹豫',
-        '不禁笑这近乡情怯',
-        '仍无可避免，而长野的天',
-        '依旧那么暖，风吹起了从前💕',
+        '图片',
+        '压缩',
+        '减少内存',
         '💓'
       ]
     },
     {
       id: 3,
-      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/音乐欣赏.jpg',
+      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/记账.jpg',
       texts: [
         '💘',
-        'QQ大号：5201314',
-        'QQ小号：58814169',
+        '生活',
+        '消费',
         '💓'
       ]
     },
     {
       id: 4,
-      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/音乐欣赏.jpg',
+      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/百度数据获取.jpg',
       texts: [
         '💘',
-        '落叶🍂知湫意',
-        '微信：哇哈哈',
-        '爱意💕随风起',
+        '定位',
+        '拾取',
+        '周边数据',
         '💓'
       ]
     },
     {
       id: 5,
-      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/音乐欣赏.jpg',
+      img: 'http://121.4.22.55:80/backend/images/WebsiteHomepageImage/Music/音乐统计.jpg',
       texts: [
         '💘',
-        '太杂了，不知道说什么好！！！',
+        '自动分析用户爱好！！！',
         '💓'
       ]
     }
   ];
 
-  const navItems = ['个人资料', '个人图片', '个人技能', '个人QQ', '个人微信', '杂七杂八'];
+  const navItems = ['动态', '互动', '压缩', '记账', '抓取', '学习'];
 
   return (
     <>
