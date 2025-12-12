@@ -311,7 +311,7 @@ const MergePrintPdf = () => {
                         <h2>PDF 文件库</h2>
                         <span className={styles.countBadge}>{categories.reduce((acc, cat) => acc + cat.files.length, 0)}</span>
                     </div>
-
+                    <div className={styles.categoryContainer}>
                     {categories.map((category) => (
                         <div key={category.name} className={styles.category}>
                             <div
@@ -346,6 +346,7 @@ const MergePrintPdf = () => {
                             </ul>
                         </div>
                     ))}
+                    </div>
                 </div>
 
                 {/* 中间：已选文件列表 */}

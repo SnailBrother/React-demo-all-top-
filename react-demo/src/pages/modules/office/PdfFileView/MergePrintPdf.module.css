@@ -623,3 +623,10 @@
     transform: rotate(360deg);
   }
 }
+.categoryContainer {
+  flex: 1;               /* 占据 sidebar 剩余空间 */
+  overflow-y: auto;      /* 启用垂直滚动 */
+  overflow-x: hidden;    /* 防止横向滚动 */
+  min-height: 0;         /* 关键！允许 flex 子项收缩 */
+  padding: 0;
+}
