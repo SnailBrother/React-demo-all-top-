@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './MergePrintPdf.module.css';
 import io from 'socket.io-client';
-
+import { useAuth } from '../../../../context/AuthContext';
 // 创建全局 socket 实例
 const socket = io('http://121.4.22.55:5202');
 
@@ -15,9 +15,91 @@ const MergePrintPdf = () => {
     const [expandedCategories, setExpandedCategories] = useState({});
     const [currentFilename, setCurrentFilename] = useState(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const { user, isAuthenticated } = useAuth(); //获取用户名
+    const [companyName, setCompanyName] = useState(null); // 新增：存储公司名称 
+    // <p><strong>用户名:</strong> {user.username}</p>
+    // <p><strong>邮箱:</strong> {user.email}</p>
+    // 获取用户公司信息
+    useEffect(() => {
+        const fetchCompanyInfo = async () => {
+            if (!user) return;
 
+            try {
+                const params = new URLSearchParams();
+                if (user.username) params.append('username', user.username);
+                if (user.email) params.append('email', user.email);
+
+                const response = await fetch(`/api/user/company?${params.toString()}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setCompanyName(data.companyName); // 这里设置公司名称
+                    console.log(`用户属于公司: ${data.companyName}`);
+                } else {
+                    console.warn('获取公司信息失败，使用默认公司');
+                    setCompanyName('zhonghe'); // 只有失败时才设置默认值
+                }
+            } catch (err) {
+                console.error('获取公司信息错误:', err);
+                setCompanyName('zhonghe'); // 只有出错时才设置默认值
+            }
+        };
+
+        fetchCompanyInfo();
+    }, [user]);
     // 获取 PDF 文件列表
     const fetchPdfFiles = async () => {
+        try {
+            // 在 fetchPdfFiles 开头加更强校验
+            if (!companyName || companyName === 'null' || companyName === 'wu') {
+                console.log('公司名称无效，跳过请求');
+                return;
+            }
+            setLoading(true);
+            // 确保 companyName 有值
+            if (!companyName) {
+                console.error('companyName 为空，无法获取文件列表');
+                alert('无法确定公司信息，请刷新页面重试');
+                setLoading(false);
+                return;
+            }
+
+            // 传递公司名称参数到后端
+            // console.log(`请求公司 ${companyName} 的PDF文件列表`);
+            // 传递公司名称参数到后端
+            const response = await fetch(`/api/ReportPdfPrintFile?company=${companyName}`);
+            if (!response.ok) throw new Error('Failed to fetch PDF files');
+            const data = await response.json();
+
+            // 按 fileType 分组
+            const grouped = data.reduce((acc, item) => {
+                const { fileType, pdfPrintFileName, paperSize } = item;
+                if (!acc[fileType]) {
+                    acc[fileType] = {
+                        name: fileType,
+                        files: []
+                    };
+                }
+                if (!acc[fileType].files.some(f => f.name === pdfPrintFileName)) {
+                    acc[fileType].files.push({
+                        name: pdfPrintFileName,
+                        paperSize: paperSize || 'A4'
+                    });
+                }
+                return acc;
+            }, {});
+
+            const categoriesArray = Object.values(grouped);
+            setCategories(categoriesArray);
+        } catch (err) {
+            console.error('Error fetching PDF files:', err);
+            alert('无法加载PDF文件列表，请检查网络或后端服务');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 获取 PDF 文件列表
+    const fetchPdfFilesold = async () => {
         try {
             setLoading(true);
             const response = await fetch('/api/ReportPdfPrintFile');
@@ -51,10 +133,12 @@ const MergePrintPdf = () => {
             setLoading(false);
         }
     };
-
+    // 当 companyName 变化时重新获取文件列表
     useEffect(() => {
-        fetchPdfFiles();
-    }, []);
+        if (companyName) {
+            fetchPdfFiles();
+        }
+    }, [companyName]);
 
     const toggleCategory = (categoryName) => {
         setExpandedCategories(prev => ({
@@ -96,8 +180,36 @@ const MergePrintPdf = () => {
         setSelectedFiles(newSelected);
         setMergedPdfUrl(null);
     };
-
     const handleMergePreview = async () => {
+        if (selectedFiles.length === 0) return;
+        setIsMerging(true);
+        try {
+            const response = await fetch('/api/mergePdfs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    files: selectedFiles,
+                    oldFilename: currentFilename,
+                    companyName: companyName // 新增：传递公司名称
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setMergedPdfUrl(data.url);
+                setCurrentFilename(data.filename);
+                socket.emit('useFile', { filename: data.filename });
+            } else {
+                alert('合并失败');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('网络错误');
+        } finally {
+            setIsMerging(false);
+        }
+    };
+    const handleMergePreviewold = async () => {
         if (selectedFiles.length === 0) return;
         setIsMerging(true);
         try {
@@ -170,6 +282,11 @@ const MergePrintPdf = () => {
                     </svg>
                 </h1>
                 <div className={styles.headerActions}>
+
+                    {/* <div className={styles.companyInfo}>
+                        当前公司: <span className={styles.companyBadge}>  {companyName || '获取中...'}</span>
+                    </div>
+                    <strong>用户名:</strong> {user.username} */}
                     <button
                         className={styles.refreshBtn}
                         onClick={fetchPdfFiles}

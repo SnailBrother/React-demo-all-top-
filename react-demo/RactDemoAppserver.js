@@ -10636,6 +10636,32 @@ app.post('/api/auth/register', async (req, res) => {
         });
     }
 });
+//顺便在老的里面注册一个
+app.post('/api/ChatRegister', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        let firstpool = await sql.connect(config);
+        // 再次在后端检查账号是否已存在
+        const checkResult = await firstpool.request()
+            .input('username', sql.NVarChar(50), username)
+            .query('SELECT COUNT(*) as count FROM AccountLogin WHERE username = @username');
+        if (checkResult.recordset[0].count > 0) {
+            res.status(400).json({ message: '该账号已存在，请选择其他用户名' });
+            firstpool.close();
+            return;
+        }
+
+        const result = await firstpool.request()
+            .input('username', sql.NVarChar(50), username)
+            .input('password', sql.NVarChar(255), password)
+            .query('INSERT INTO AccountLogin (username, password) VALUES (@username, @password)');
+        res.status(201).json({ message: '注册成功' });
+        firstpool.close();
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: '注册失败' });
+    }
+});
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -12190,26 +12216,88 @@ app.get('/api/react-demo/background-image/:email/:themeId', (req, res) => {
 
 {//查看合并的pdf  👇  
 
+// 后端新增 API：获取用户所属公司
+app.get('/api/user/company', async (req, res) => {
+    try {
+        const { username, email } = req.query;
+        
+        if (!username && !email) {
+            return res.status(400).json({ error: '请提供用户名或邮箱' });
+        }
 
-    app.get('/api/ReportPdfPrintFile', async (req, res) => {
+        let pool = await sql.connect(config);
+        let query;
+        let request = pool.request();
 
-        // 连接到数据库
+        if (username) {
+            query = 'SELECT companyName FROM PdfFileData.dbo.PdfPrintFileCompanyPersonnel WHERE username = @username';
+            request.input('username', sql.NVarChar(50), username);
+        } else {
+            query = 'SELECT companyName FROM PdfFileData.dbo.PdfPrintFileCompanyPersonnel WHERE email = @email';
+            request.input('email', sql.NVarChar(100), email);
+        }
+
+        const result = await request.query(query);
+        
+        if (result.recordset.length > 0) {
+            res.json({ 
+                companyName: result.recordset[0].companyName,
+                found: true 
+            });
+        } else {
+            // 如果没有记录，返回默认公司
+            res.json({ 
+                companyName: 'wu', // 默认公司
+                found: false 
+            });
+        }
+        
+        pool.close();
+    } catch (err) {
+        console.error('获取用户公司信息错误:', err);
+        res.status(500).json({ error: '获取公司信息失败' });
+    }
+});
+
+app.get('/api/ReportPdfPrintFile', async (req, res) => {
+    const { company } = req.query; // 只接收参数，不设置默认值
+    
+    try {
+        // 检查是否有传入公司参数
+        if (!company) {
+            return res.status(400).json({ 
+                error: '缺少公司参数',
+                message: '请在请求中提供 company 参数'
+            });
+        }
+        
+        console.log('获取PDF文件列表，公司:', company);
+        
         const pool = await sql.connect(config);
-        const request = new sql.Request(pool);
-
-        try {
-            // 假设你用 mssql 或其他 SQL 库
-            const result = await sql.query`
-            SELECT *
+        const request = pool.request();
+        
+        // 根据公司名称查询对应的文件
+        const query = `
+            SELECT fileType, pdfPrintFileName, paperSize, companyName
             FROM PdfFileData.dbo.ReportPdfPrintFile
+            WHERE companyName = @companyName
             ORDER BY fileType, pdfPrintFileName
         `;
-            res.json(result.recordset); // 返回 [{ fileType, pdfPrintFileName }, ...]
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Database query failed' });
-        }
-    });
+        
+        request.input('companyName', sql.NVarChar(100), company);
+        
+        const result = await request.query(query);
+        
+        console.log(`公司 ${company} 查询到 ${result.recordset.length} 个文件`);
+        
+        // 返回查询结果
+        res.json(result.recordset);
+        pool.close();
+    } catch (err) {
+        console.error('Database query failed:', err);
+        res.status(500).json({ error: 'Database query failed' });
+    }
+});
 
 
     //后期如果有多个合并的pdf没有删除的话，
@@ -12292,7 +12380,12 @@ app.get('/api/react-demo/background-image/:email/:themeId', (req, res) => {
 
     app.post('/api/mergePdfs', async (req, res) => {
         try {
-            const { files, oldFilename } = req.body;
+            const { files, oldFilename, companyName } = req.body; // 新增 companyName 参数
+
+             // 验证 companyName
+        if (!companyName) {
+            return res.status(400).json({ error: '缺少公司名称参数' });
+        }
 
             // 🔒 第一重保险：清理超量旧文件（比如超过10个就删最旧的）
             cleanupOldMergedFiles(10);
@@ -12337,10 +12430,36 @@ app.get('/api/react-demo/background-image/:email/:themeId', (req, res) => {
             for (const file of files) {
                 if (!file.category || !file.filename || !file.paperSize) continue;
 
-                const filePath = path.join(__dirname, './public/', file.category, file.filename);
-                if (!fs.existsSync(filePath)) {
-                    throw new Error(`文件不存在: ${filePath}`);
-                }
+ // 修改文件路径：使用传入的 companyName
+ const filePath = path.join(
+    __dirname, 
+    './public/PDFFilePrint', 
+    companyName,  // 使用动态的公司名称
+    file.category, 
+    file.filename
+);
+if (!fs.existsSync(filePath)) {
+    console.warn(`文件不存在: ${filePath}，尝试使用默认路径`);
+    
+    // 如果指定公司的文件不存在，尝试使用默认 zhonghe 路径
+    const defaultFilePath = path.join(
+        __dirname, 
+        './public/PDFFilePrint/zhonghe', 
+        file.category, 
+        file.filename
+    );
+    
+    if (fs.existsSync(defaultFilePath)) {
+        console.log(`使用默认文件: ${defaultFilePath}`);
+        // 继续使用 defaultFilePath...
+    } else {
+        throw new Error(`文件不存在: ${filePath} 和 ${defaultFilePath}`);
+    }
+}
+               // const filePath = path.join(__dirname, './public/PDFFilePrint/ruida', file.category, file.filename);
+                // if (!fs.existsSync(filePath)) {
+                //     throw new Error(`文件不存在: ${filePath}`);
+                // }
 
                 const bytes = fs.readFileSync(filePath);
                 const srcPdf = await PDFDocument.load(bytes);
@@ -12375,7 +12494,7 @@ app.get('/api/react-demo/background-image/:email/:themeId', (req, res) => {
 
             // ... [cleanup logic unchanged] ...
 
-            const url = `http://www.cyywork.top/backend/mergedpdf/${filename}`;
+            const url = `http://121.4.22.55:80/backend/mergedpdf/${filename}`;
             res.json({ url, filename });
 
         } catch (err) {

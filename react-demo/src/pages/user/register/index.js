@@ -61,7 +61,7 @@ const Register = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmitold = async (e) => {
         e.preventDefault();
 
         if (validateForm()) {
@@ -103,7 +103,88 @@ const Register = () => {
             }
         }
     };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
+        if (validateForm()) {
+            setLoading(true);
+            try {
+                // 并行调用两个注册接口
+                const [authResponse, chatResponse] = await Promise.all([
+                    // 调用现有的注册接口
+                    axios.post('/api/auth/register', {
+                        username: formData.username,
+                        email: formData.email,
+                        password: formData.password
+                    }),
+                    // 调用新的Chat注册接口（只传用户名和密码）
+                    axios.post('/api/ChatRegister', {
+                        username: formData.username,
+                        password: formData.password
+                    })
+                ]);
+
+                console.log('主注册响应:', authResponse.data);
+                console.log('Chat注册响应:', chatResponse.data);
+
+                // 检查两个接口是否都成功
+                const authSuccess = authResponse.data && authResponse.data.success;
+                const chatSuccess = chatResponse.data && chatResponse.data.message === '注册成功';
+
+                if (authSuccess && chatSuccess) {
+                    // 两个注册都成功后跳转到登录页面
+                    navigate('/login', { 
+                        state: { 
+                            message: '注册成功！请使用您的账户登录。',
+                            email: formData.email
+                        } 
+                    });
+                } else {
+                    // 如果有任何一个失败，尝试回滚已成功的注册
+                    let errorMessages = [];
+                    
+                    if (!authSuccess) {
+                        errorMessages.push(authResponse.data?.message || '主注册失败');
+                    }
+                    
+                    if (!chatSuccess) {
+                        errorMessages.push(chatResponse.data?.message || '聊天系统注册失败');
+                    }
+                    
+                    // 尝试删除已经注册成功的账号（如果有的话）
+                    if (chatSuccess && !authSuccess) {
+                        try {
+                            await axios.delete('/api/ChatRegister', {
+                                data: { username: formData.username }
+                            });
+                        } catch (deleteError) {
+                            console.error('回滚Chat注册失败:', deleteError);
+                        }
+                    }
+                    
+                    throw new Error(errorMessages.join('，'));
+                }
+            } catch (error) {
+                console.error('注册错误:', error);
+                let errorMessage = '注册失败，请稍后重试';
+                
+                if (error.response?.data?.message) {
+                    errorMessage = error.response.data.message;
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                // 处理特定的错误消息
+                if (errorMessage.includes('该账号已存在')) {
+                    setErrors({ submit: '用户名已存在，请选择其他用户名' });
+                } else {
+                    setErrors({ submit: errorMessage });
+                }
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
     const goToLogin = () => {
         navigate('/login');
     };
