@@ -606,3 +606,20 @@
   overflow-y: auto;
 }
 
+.titleicon {
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+  animation: spin 2s linear infinite; /* 旋转起来 */
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

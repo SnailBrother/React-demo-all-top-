@@ -155,7 +155,20 @@ const MergePrintPdf = () => {
         <div className={styles.container}>
             {/* 头部功能区 */}
             <div className={styles.header}>
-                <h1 className={styles.headerTitle}> </h1>
+                <h1 className={styles.headerTitle}>
+                    <svg className={styles.titleicon} aria-hidden="true">
+                        <use xlinkHref="#icon-a-fengcheertongleyuanyoulechang"></use>
+                    </svg>
+                    <svg className={styles.titleicon} aria-hidden="true">
+                        <use xlinkHref="#icon-fengche"></use>
+                    </svg>
+                    <svg className={styles.titleicon} aria-hidden="true">
+                        <use xlinkHref="#icon-a-fengcheertongleyuanyoulechang"></use>
+                    </svg>
+                    <svg className={styles.titleicon} aria-hidden="true">
+                        <use xlinkHref="#icon-fengche_windmill-two"></use>
+                    </svg>
+                </h1>
                 <div className={styles.headerActions}>
                     <button
                         className={styles.refreshBtn}

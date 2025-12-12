@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4797853 */
-  src: url('iconfont.woff2?t=1765252380611') format('woff2'),
-       url('iconfont.woff?t=1765252380611') format('woff'),
-       url('iconfont.ttf?t=1765252380611') format('truetype');
+  src: url('iconfont.woff2?t=1765500356342') format('woff2'),
+       url('iconfont.woff?t=1765500356342') format('woff'),
+       url('iconfont.ttf?t=1765500356342') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,34 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-icon-test9:before {
+  content: "\eb39";
+}
+
+.icon-831:before {
+  content: "\eb33";
+}
+
+.icon-fengche:before {
+  content: "\eb34";
+}
+
+.icon-a-fengcheertongleyuanyoulechang:before {
+  content: "\eb35";
+}
+
+.icon-fengche_windmill-two:before {
+  content: "\eb36";
+}
+
+.icon-a-Windmillfengchefengli:before {
+  content: "\eb37";
+}
+
+.icon-xiaofengche:before {
+  content: "\eb38";
 }
 
 .icon-wenben:before {
