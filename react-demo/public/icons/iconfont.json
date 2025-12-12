@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "3901119",
+      "name": "路标",
+      "font_class": "lubiao",
+      "unicode": "eb3a",
+      "unicode_decimal": 60218
+    },
+    {
+      "icon_id": "12223326",
+      "name": "路标",
+      "font_class": "lubiao1",
+      "unicode": "eb3b",
+      "unicode_decimal": 60219
+    },
+    {
       "icon_id": "1505843",
       "name": "房子",
       "font_class": "icon-test9",

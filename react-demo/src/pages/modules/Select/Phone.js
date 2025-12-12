@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { moduleConfig } from '../../../config/moduleConfig';
 import styles from './Phone.module.css';
-
+import { useAuth } from '../../../context/AuthContext';
 const Phone = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState({
@@ -10,7 +10,7 @@ const Phone = () => {
     weekday: '',
     hourMin: ''
   });
-
+  const { user } = useAuth(); //获取用户名 
   // 生成模块数据
   const modules = Object.entries(moduleConfig).map(([key, config]) => ({
     key,
@@ -18,7 +18,7 @@ const Phone = () => {
     routes: config.routes,
     defaultPath: `/app/${key}/${config.defaultRoute}`,
     emoji: getModuleEmoji(key),
-    color: getModuleColor(key)
+
   }));
 
   function getModuleEmoji(key) {
@@ -36,20 +36,7 @@ const Phone = () => {
     return emojiMap[key] || '📱';
   }
 
-  function getModuleColor(key) {
-    const colorMap = {
-      accounting: '#10b981',
-      music: '#8b5cf6',
-      outfit: '#f59e0b',
-      office: '#3b82f6',
-      chat: '#ec4899',
-      travelmanager: '#06b6d4',
-      system: '#6b7280',
-      tool: '#84cc16',
-      travel: '#f97316'
-    };
-    return colorMap[key] || '#6b7280';
-  }
+
 
   // 更新当前时间（仅用于显示，指针由 updateClockPointers 控制）
   const updateCurrentTime = () => {
@@ -105,7 +92,7 @@ const Phone = () => {
     <div className={styles.container}>
       {/* 顶部栏 */}
       <div className={styles.header}>
-        <div className={styles.headercolumnone}>
+        <div className={styles.avatarcontainer}>
           <div className={styles.headerrowtavatar}>
             <img
               src="http://121.4.22.55:80/logo192.png"
@@ -116,6 +103,17 @@ const Phone = () => {
         </div>
 
         <div className={styles.headercolumntwo}>
+
+
+          <div className={styles.usercontainer} >
+            <h2 className={styles.username}>{user.username}</h2>
+            <h2 className={styles.useremail}>{user.email}</h2>
+          </div>
+
+
+
+
+
           <div className={styles.Card}>
             <div className={styles.clockWrap}>
               <div className={styles.clockFace}>
@@ -129,7 +127,7 @@ const Phone = () => {
             </div>
           </div>
 
-          <div className={styles.Card}>
+          <div className={styles.Windmill}>
             <svg className={styles.titleicon} aria-hidden="true">
               <use xlinkHref="#icon-a-fengcheertongleyuanyoulechang"></use>
             </svg>
@@ -151,7 +149,21 @@ const Phone = () => {
       {/* 名下作品区域 - 可滚动 */}
       <div className={styles.maincontent}>
         <div className={styles.worksCard}>
-          <div className={styles.worksTitle}>名下作品</div>
+
+
+          <div className={styles.worksTitle}>
+
+            <div>
+              <svg className={styles.lubiaoicon} aria-hidden="true">
+                <use xlinkHref="#icon-lubiao"></use>
+              </svg>
+
+            </div>
+
+            <h2 className={styles.lubiaoTitle} >作品</h2>
+          </div>
+
+
           <div className={styles.worksTitlecontent}>
             {modules.map((module) => (
               <div
@@ -159,19 +171,18 @@ const Phone = () => {
                 className={styles.moduleItem}
                 onClick={() => goToModule(module.defaultPath)}
               >
+                {/* 图标 */}
                 <div className={styles.moduleIcon}>
-                  <div
-                    className={styles.moduleIconCircle}
-                    style={{ backgroundColor: module.color }}
-                  >
-                    <span className={styles.moduleEmoji}>{module.emoji}</span>
-                  </div>
+                  <span className={styles.moduleEmoji}>{module.emoji}</span>
                 </div>
-
                 <div className={styles.moduleInfo}>
-                  <div className={styles.moduleName}>{module.title}</div>
+                  {/* 标题 */}
+                  <div className={styles.moduleName}>
+                    <span className={styles.moduleNametitle}>{module.title}</span>
+                  </div>
+
                   <div className={styles.moduleTags}>
-                    {module.routes.slice(0, 5).map((route) => (
+                    {module.routes.slice(0, 3).map((route) => (
                       <span
                         key={route.key}
                         className={styles.moduleTag}
@@ -184,21 +195,19 @@ const Phone = () => {
                         {route.label}
                       </span>
                     ))}
-                    {module.routes.length > 5 && (
+                    {module.routes.length > 3 && (
                       <span className={styles.moduleMoreTag}>
-                        +{module.routes.length - 5}更多
+                        +{module.routes.length - 3}更多
                       </span>
                     )}
                   </div>
                 </div>
-
-                <div className={styles.moduleMeta}>
-                  <div className={styles.moduleAction}>
-                    <svg className={styles.moduleArrowIcon} aria-hidden="true">
-                      <use xlinkHref="#icon-jiantou_xiangyouliangci"></use>
-                    </svg>
-                  </div>
+                <div className={styles.moduleAction}>
+                  <svg className={styles.moduleArrowIcon} aria-hidden="true">
+                    <use xlinkHref="#icon-jiantou_xiangyouliangci"></use>
+                  </svg>
                 </div>
+
               </div>
             ))}
           </div>
