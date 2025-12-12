@@ -1,200 +1,293 @@
-/* src/pages/modules/Select/select.module.css */
-
-.wrapper {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #f6f6f7 100%);
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: var(--font-family);
-}
-
 .container {
-  width: 100%;
-  max-width: 800px;
+  height: 100dvh;
+  width: 100dvw;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  padding: 0;
 }
 
-.cardWrapper {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.5s ease forwards;
- 
+.header {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: #f8f9fa;
 }
 
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.headercolumnone {
+  width: 80px;
+  margin-right: 16px;
 }
 
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.headercolumntwo {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  box-sizing: border-box;
+  justify-content: space-around;
+  
+}
+
+.headerrowtavatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  animation: floatAnimation 4s ease-in-out infinite;
   position: relative;
-  overflow: hidden;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-  border-color: #d1d5db;
+@keyframes floatAnimation {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
-.cardHeader {
+.avatarimg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+/* 时间卡片 */
+.Card {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  gap: 2px;
+  background: #f0f2f5;
+  border-radius: 16px;
+  box-shadow:
+    8px 8px 16px rgba(165, 170, 180, 0.2),
+    -8px -8px 16px rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  height: 60px;
 }
 
-.moduleInfo {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.iconCircle {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
+.clockWrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #f0f2f5;
+  box-shadow:
+    4px 4px 8px rgba(165, 170, 180, 0.2),
+    -4px -4px 8px rgba(255, 255, 255, 0.8),
+    inset 4px 4px 8px rgba(165, 170, 180, 0.1),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
 }
 
-.card:hover .iconCircle {
-  transform: scale(1.05) rotate(5deg);
+.clockFace {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #f0f2f5;
 }
 
-.emoji {
-  font-size: 20px;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+.clockHour,
+.clockMinute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: #666;
+  transform-origin: bottom center;
 }
 
-.moduleText {
+.clockHour {
+  width: 2px;
+  height: 15px;
+  margin-left: -1px;
+  margin-top: -15px;
+}
+
+.clockMinute {
+  width: 2px;
+  height: 22px;
+  margin-left: -1px;
+  margin-top: -22px;
+  background: #333;
+}
+
+.timeText {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.cardTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0;
+.date {
+  font-size: 14px;
+  color: #666;
 }
 
-.enterButton {
+.hourMin {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 主内容区 */
+.maincontent {
+  flex: 1;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.worksCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.worksTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.worksTitlecontent {
+  flex: 1;
+  overflow-y: auto; /* 关键：允许垂直滚动 */
+  padding-right: 8px; /* 防止滚动条遮挡内容 */
+}
+
+/* 模块项 */
+.moduleItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #64748b;
-  font-weight: 500;
-  font-size: 0.875rem;
+  padding: 20px;
+  background: linear-gradient(145deg, #f0f0f0, #ffffff);
+  border-radius: 12px;
+  margin-bottom: 15px;
+  cursor: pointer;
   transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.card:hover .enterButton {
-  color: #374151;
-  transform: translateX(2px);
+.moduleItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 8px 12px rgba(0, 0, 0, 0.15);
 }
 
-.arrowIcon {
-  width: 14px;
-  height: 14px;
-  transition: transform 0.3s ease;
+.moduleIconCircle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  box-shadow: 
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
-.card:hover .arrowIcon {
-  transform: translateX(2px);
+.moduleEmoji {
+  font-size: 24px;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
 }
 
-.tagsContainer {
+.moduleInfo {
+  flex: 1;
+}
+
+.moduleName {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.moduleTags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
 }
 
-.tag {
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 500;
+.moduleTag {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
   border: 1px solid;
-  transition: all 0.2s ease;
-}
-
-.tag:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.moreTag {
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 0.8rem;
   font-weight: 500;
-  color: #6b7280;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .wrapper {
-    padding: 20px 16px;
-  }
-
-  .cardHeader {
-    gap: 12px;
-  }
-
-  .enterButton {
-    align-self: flex-end;
-  }
-
-  .moduleInfo {
-    width: 100%;
-  }
+.moduleMoreTag {
+  padding: 4px 10px;
+  background: linear-gradient(145deg, #e0e0e0, #f0f0f0);
+  border-radius: 20px;
+  font-size: 12px;
+  color: #666;
+  border: 1px solid #ddd;
+  font-weight: 500;
 }
 
-@media (max-width: 480px) {
-  .card {
-    padding: 12px;
-  }
+.moduleMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
 
-  .iconCircle {
-    width: 44px;
-    height: 44px;
-  }
+.moduleAction {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border-radius: 50%;
+  /* box-shadow: 
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.1); */
+  border: 0px solid #d0d0d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .emoji {
-    font-size: 18px;
-  }
+.moduleArrowIcon {
+  width: 20px;
+  height: 20px;
+  fill: #666;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
 
-  .cardTitle {
-    font-size: 1.125rem;
-  }
+.moduleItem:hover .moduleAction {
+  background: linear-gradient(145deg, #e0e0e070, #f0f0f041);
+  box-shadow: 
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+}
 
-  .tagsContainer {
-    gap: 6px;
-  }
+.moduleItem:hover .moduleArrowIcon {
+  fill: #33333348;
+}
+.titleicon {
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+  animation: spin 2s linear infinite; /* 旋转起来 */
+}
 
-  .tag {
-    font-size: 0.75rem;
-    padding: 5px 10px;
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
