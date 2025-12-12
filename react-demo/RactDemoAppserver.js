@@ -12278,10 +12278,26 @@ app.get('/api/ReportPdfPrintFile', async (req, res) => {
         
         // 根据公司名称查询对应的文件
         const query = `
-            SELECT fileType, pdfPrintFileName, paperSize, companyName
-            FROM PdfFileData.dbo.ReportPdfPrintFile
-            WHERE companyName = @companyName
-            ORDER BY fileType, pdfPrintFileName
+            SELECT 
+    fileType, 
+    pdfPrintFileName, 
+    paperSize, 
+    companyName
+FROM 
+    PdfFileData.dbo.ReportPdfPrintFile
+WHERE 
+    companyName = @companyName
+ORDER BY 
+    CASE 
+        WHEN pdfPrintFileName LIKE '%公司%' THEN 0
+        WHEN pdfPrintFileName LIKE '%营业执照%' THEN 1
+        WHEN pdfPrintFileName LIKE '%资质%' THEN 2
+        WHEN pdfPrintFileName LIKE '%备案%' THEN 3
+        WHEN pdfPrintFileName LIKE '%变更%' THEN 3
+        ELSE 5
+    END,
+    fileType, 
+    pdfPrintFileName;
         `;
         
         request.input('companyName', sql.NVarChar(100), company);
