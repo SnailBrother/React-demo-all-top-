@@ -24,7 +24,7 @@ const Buildings = () => {
     const calculateTotalPrice = (area, unitPrice, unit) => {
         if (!area || !unitPrice) return '-';
         let total = 0;
-        
+
         if (unit === '元/㎡') {
             total = (area * unitPrice) / 10000; // 转换为万元
         } else if (unit === '元/m³') {
@@ -36,7 +36,7 @@ const Buildings = () => {
         } else if (unit === '元/个') {
             total = unitPrice / 10000; // 转换为万元
         }
-        
+
         return new Intl.NumberFormat('zh-CN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
@@ -51,9 +51,17 @@ const Buildings = () => {
     };
 
     // 格式化单价（带单位）
+    // 修改格式化单价函数
     const formatUnitPrice = (price, unit) => {
         if (!price) return '-';
-        return new Intl.NumberFormat('zh-CN').format(price) + ` ${unit || ''}`;
+
+        // 如果单位不包含"元/"，则添加
+        let formattedUnit = unit || '';
+        if (formattedUnit && !formattedUnit.includes('元/')) {
+            formattedUnit = '元/' + formattedUnit;
+        }
+
+        return new Intl.NumberFormat('zh-CN').format(price) + ` ${formattedUnit}`;
     };
 
     // 格式化面积/数量
@@ -198,7 +206,7 @@ const Buildings = () => {
         // const uploadPageUrl = `${window.location.origin}/app/office/LookBuildingsPricePicture?${queryParams}`;
         // navigate(uploadPageUrl);
         const uploadPageUrl = `${window.location.origin}/app/office/LookBuildingsPricePicture?${queryParams}`;
-    
+
         window.open(uploadPageUrl, '_blank');
     };
 
@@ -332,10 +340,10 @@ const Buildings = () => {
                                 <span className={styles.infoLabel}>备注：</span>
                                 <span className={styles.infoValue}>{record.notes || '无'}</span>
                             </div>
-                            <div className={styles.infoItem}>
+                            {/* <div className={styles.infoItem}>
                                 <span className={styles.infoLabel}>创建日期：</span>
                                 <span className={styles.infoValue}>{formatDate(record.createdDate)}</span>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
@@ -353,6 +361,10 @@ const Buildings = () => {
                         <div className={styles.priceSection}>
                             {/* <div className={styles.priceLabel}>单价：</div> */}
                             <span className={styles.priceValue}>{formatUnitPrice(record.price, record.unit)}</span>
+                        </div>
+
+                        <div className={styles.priceSection}>
+                            <span className={styles.infoValue}>{formatDate(record.createdDate)}</span>
                         </div>
 
                         {/* 操作按钮 */}

@@ -25,15 +25,15 @@ const LookBuildingsPricePicture = () => {
   // 计算总价
   const calculateTotalPrice = () => {
     if (!buildingInfo || !buildingInfo.price || !buildingInfo.area) return null;
-    
+
     const price = parseFloat(buildingInfo.price);
     const area = parseFloat(buildingInfo.area);
-    
+
     if (isNaN(price) || isNaN(area)) return null;
 
     let total = 0;
     const unit = buildingInfo.unit || '';
-    
+
     if (unit === '元/㎡') {
       total = (area * price) / 10000; // 转换为万元
     } else if (unit === '元/m³') {
@@ -46,7 +46,7 @@ const LookBuildingsPricePicture = () => {
       // 默认按单价计算
       total = (area * price) / 10000;
     }
-    
+
     return total.toFixed(2);
   };
 
@@ -64,7 +64,7 @@ const LookBuildingsPricePicture = () => {
   // 格式化面积/数量
   const formatArea = (area, unit) => {
     if (!area) return '-';
-    
+
     if (unit === '元/㎡' || unit === '元/m²') {
       return `${parseFloat(area).toFixed(2)} ㎡`;
     } else if (unit === '元/m³') {
@@ -80,9 +80,17 @@ const LookBuildingsPricePicture = () => {
   };
 
   // 获取单价显示
+  // 获取单价显示
   const formatUnitPrice = (price, unit) => {
     if (!price) return '-';
-    return `${parseFloat(price).toLocaleString('zh-CN')} ${unit || ''}`;
+
+    // 如果单位不包含"元/"，则添加
+    let formattedUnit = unit || '';
+    if (formattedUnit && !formattedUnit.includes('元/')) {
+      formattedUnit = '元/' + formattedUnit;
+    }
+
+    return `${parseFloat(price).toLocaleString('zh-CN')} ${formattedUnit}`;
   };
 
   useEffect(() => {
@@ -261,6 +269,7 @@ const LookBuildingsPricePicture = () => {
                         {/* <div className={styles.priceLabel}>单价</div> */}
                         <div className={styles.priceValue}>
                           {formatUnitPrice(buildingInfo.price, buildingInfo.unit)}
+
                         </div>
                       </div>
                     </div>
@@ -411,7 +420,7 @@ const LookBuildingsPricePicture = () => {
               <div className={styles.detailGrid}>
                 <div className={styles.detailColumn}>
                   <div className={styles.detailItem}>
-                    <span className={styles.detailLabel}>建筑物ID</span>
+                    <span className={styles.detailLabel}>ID</span>
                     <span className={styles.detailValue}>{buildingsPriceid || '-'}</span>
                   </div>
                   <div className={styles.detailItem}>
@@ -432,13 +441,13 @@ const LookBuildingsPricePicture = () => {
                     </span>
                   </div>
                   <div className={styles.detailItem}>
-                    <span className={styles.detailLabel}>数量/面积</span>
+                    <span className={styles.detailLabel}>区域</span>
                     <span className={styles.detailValue}>
-                      {formatArea(buildingInfo?.area, buildingInfo?.unit)}
+                      {formatArea(buildingInfo?.area)}
                     </span>
                   </div>
                   <div className={styles.detailItem}>
-                    <span className={styles.detailLabel}>估算总价</span>
+                    <span className={styles.detailLabel}>总价</span>
                     <span className={styles.detailValue}>
                       {totalPrice ? `${totalPrice} 万元` : '-'}
                     </span>
@@ -465,6 +474,26 @@ const LookBuildingsPricePicture = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className={styles.secondRow}>
+            <div className={styles.detailSection}>
+              <h4 className={styles.sectionTitle}>备注</h4>
+              {/* 备注信息 */}
+             
+                 
+                <div className={styles.notesContent}>
+                  {buildingInfo.notes ? (
+                    <div className={styles.notesText}>
+                      {buildingInfo.notes}
+                    </div>
+                  ) : (
+                    <div className={styles.noNotes}>暂无备注信息</div>
+                  )}
+                </div>
+               
+            </div>
+
           </div>
 
           {/* 第三行：图片管理 */}
