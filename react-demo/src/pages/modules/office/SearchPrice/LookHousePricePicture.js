@@ -27,8 +27,8 @@ const LookHousePricePicture = () => {
     // 校验必要参数是否存在，不存在则返回 null
     if (!reportInfo || !reportInfo.valuationPrice || !reportInfo.buildingArea) return null;
 
-    // 1. 转成浮点数 → 2. 相乘 → 3. 除以 1000 → 4. 保留两位小数
-    const total = (parseFloat(reportInfo.valuationPrice) * parseFloat(reportInfo.buildingArea)) / 1000;
+    // 1. 转成浮点数 → 2. 相乘 → 3. 除以 10000 → 4. 保留两位小数
+    const total = (parseFloat(reportInfo.valuationPrice) * parseFloat(reportInfo.buildingArea)) / 10000;
     return total.toFixed(2);
   };
   // 获取电梯状态文字

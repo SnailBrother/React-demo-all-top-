@@ -330,7 +330,8 @@
 
 /* 单价和租金样式 */
 .priceValue {
-    color: #2e2d2d;
+    /* color: #2e2d2d; */
+    color: var(--font-color);
     font-size: 12px;
     font-weight: 600;
     margin-top: 2px;
