@@ -8999,7 +8999,7 @@ app.get('/api/getallmusics', async (req, res) => {
             SELECT * 
             FROM ChatApp.dbo.Music 
             ${whereClause}
-            ORDER BY id ASC  -- 或者 title, created_at 等，必须有排序
+            ORDER BY id DESC  -- 或者 title, created_at 等，必须有排序  ASC
             OFFSET ${offset} ROWS
             FETCH NEXT ${pageSize} ROWS ONLY;
         `);
@@ -10662,6 +10662,8 @@ app.post('/api/ChatRegister', async (req, res) => {
         res.status(500).json({ message: '注册失败' });
     }
 });
+
+
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 

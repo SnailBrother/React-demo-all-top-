@@ -40,32 +40,64 @@ const Header = ({ title = "ChenBaby" }) => {
   const handlethemset = () => {
     navigate('/app/system/theme', { replace: true });
   };
+  //聊天
   const handlechat = () => {
     navigate('/app/chat/ChatChat', { replace: true });
+  };
+  //记账
+  const handleAccounting = () => {
+    navigate('/app/accounting', { replace: true });
+  };
+  //听歌
+  const handleMusic = () => {
+    navigate('/app/music', { replace: true });
+  };
+  //听歌
+  const handleOffice = () => {
+    navigate('/app/office', { replace: true });
   };
 
   return (
     <header className={styles.header}>
       <div className={styles.headerlog}>
-      <svg className={styles.titleicon} aria-hidden="true">
+        <svg className={styles.titleicon} aria-hidden="true">
           <use xlinkHref="#icon-ertongleyuan"></use>
         </svg>
         <h1 className={styles.title}>{title}</h1>
-        
+
       </div>
 
       <div className={styles.headerActions}>
+
         <IconButton
           icon="#icon-shouye3"
           onClick={handleBackToHome}
-          title="返回首页"
+          title={user.username || user.email || '用户'}
           variant="ghost"
           size="medium"
         />
+
+        {user?.permission_level === 'Administrator' && (
+          <IconButton
+            icon="#icon-icon-zhangben"
+            onClick={handleAccounting}
+            title="记账"
+            variant="ghost"
+            size="medium"
+          />
+        )}
         <IconButton
-          icon="#icon-user-01"
-          onClick={handleBackToHome}
-          title={user.username || user.email || '用户'}
+          icon="#icon-kefu"
+          onClick={handleMusic}
+          title="听歌"
+          variant="ghost"
+          size="medium"
+        />
+
+        <IconButton
+          icon="#icon-zdxmzs"
+          onClick={handleOffice}
+          title="办公"
           variant="ghost"
           size="medium"
 
@@ -78,21 +110,12 @@ const Header = ({ title = "ChenBaby" }) => {
         )} */}
 
         <IconButton
-          icon="#icon-tongzhi7"
+          icon="#icon-duihuaxinxi"
           onClick={handlechat}
           title="聊天"
           variant="ghost"
           size="medium"
         />
-        {/* 点击时直接调用从 context 来的 logout 函数 */}
-        <IconButton
-          icon="#icon-shezhi2"
-          onClick={handleLogout}
-          title="退出"
-          variant="ghost"
-          size="medium"
-        />
-
         <IconButton
           icon="#icon-zhuti1"
           onClick={handlethemset}
@@ -100,6 +123,16 @@ const Header = ({ title = "ChenBaby" }) => {
           variant="ghost"
           size="medium"
         />
+        {/* 点击时直接调用从 context 来的 logout 函数 */}
+        <IconButton
+          icon="#icon-bianzu"
+          onClick={handleLogout}
+          title="退出"
+          variant="ghost"
+          size="medium"
+        />
+
+
 
       </div>
     </header>

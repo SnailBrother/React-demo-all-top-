@@ -14,6 +14,7 @@ const SystemProfile = () => {
           <p><strong>邮箱:</strong> {user.email}</p>
           <p><strong>用户ID:</strong> {user.id}</p>
           <p><strong>登录时间:</strong> {new Date(user.loginTime).toLocaleString()}</p>
+          <p><strong>权限:</strong> {user.permission_level}</p>
         </div>
       ) : (
         <p>未登录</p>

@@ -25,7 +25,7 @@ const Login = () => {
                 email: location.state.email
             }));
         }
-        
+
         // 如果有注册成功的消息，可以显示给用户
         if (location.state?.message) {
             // 这里可以添加一个提示消息显示
@@ -82,20 +82,29 @@ const Login = () => {
 
                 if (response.data.success) {
                     // 创建用户数据
+                    // const userData = {
+                    //     id: response.data.user?.id || Date.now(),
+                    //     username: response.data.user?.username || formData.email.split('@')[0],
+                    //     email: response.data.user?.email || formData.email,
+
+                    //     permission_level: response.data.user.permission_level,
+                    //     profile_picture: response.data.user.profile_picture,
+                    //     registration_date: response.data.user.registration_date,
+                    //     last_login_time: response.data.user.last_login_time,
+                    //     loginTime: new Date().toISOString()
+                    // };
                     const userData = {
-                        id: response.data.user?.id || Date.now(),
-                        username: response.data.user?.username || formData.email.split('@')[0],
-                        email: response.data.user?.email || formData.email,
+                        ...response.data.user,  // 展开后端返回的所有用户信息
                         loginTime: new Date().toISOString()
                     };
-
                     // 获取token
-                    const token = response.data.token || 
-                                 response.data.accessToken || 
-                                 response.data.access_token ||
-                                 response.data.authToken ||
-                                 response.data.user?.token;
-
+                    // const token = response.data.token ||
+                    //     response.data.accessToken ||
+                    //     response.data.access_token ||
+                    //     response.data.authToken ||
+                    //     response.data.user?.token;
+                    // 获取token
+                    const token = response.data.token;
                     // 使用 AuthContext 设置用户信息
                     setUserInfo(userData, token);
 
@@ -108,13 +117,13 @@ const Login = () => {
             } catch (error) {
                 console.error('登录错误:', error);
                 let errorMessage = '登录失败，请检查邮箱和密码';
-                
+
                 if (error.response?.data?.message) {
                     errorMessage = error.response.data.message;
                 } else if (error.message) {
                     errorMessage = error.message;
                 }
-                
+
                 setErrors({ submit: errorMessage });
             } finally {
                 setLoading(false);
