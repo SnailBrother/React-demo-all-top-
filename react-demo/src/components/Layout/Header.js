@@ -46,15 +46,15 @@ const Header = ({ title = "ChenBaby" }) => {
   };
   //记账
   const handleAccounting = () => {
-    navigate('/app/accounting', { replace: true });
+    navigate('/app/accounting/AccountingAdd', { replace: true });
   };
   //听歌
   const handleMusic = () => {
-    navigate('/app/music', { replace: true });
+    navigate('/app/music/home', { replace: true });
   };
-  //听歌
+  //办公
   const handleOffice = () => {
-    navigate('/app/office', { replace: true });
+    navigate('/app/office/SearchPrice', { replace: true });
   };
 
   return (
