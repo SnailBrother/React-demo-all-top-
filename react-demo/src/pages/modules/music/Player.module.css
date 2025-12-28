@@ -204,6 +204,68 @@
 .timeDisplay { font-size: 12px; color: var(--secondary-font-color, #6c757d); min-width: 40px; text-align: center; }
 .progressBar { flex-grow: 1; }
 
+.progressBar {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  
+  /* 移除默认轨道 */
+  background: transparent;
+}
+
+/* 为不同浏览器设置轨道 */
+.progressBar::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    rgb(10, 219, 132) 0%,
+    rgb(10, 219, 132) var(--progress-percent, 0%),
+    #e5e7eb var(--progress-percent, 0%),
+    #e5e7eb 100%
+  );
+}
+
+.progressBar::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    rgb(46, 46, 46) 0%,
+    rgb(46, 46, 46) var(--progress-percent, 0%),
+    #e5e7eb var(--progress-percent, 0%),
+    #e5e7eb 100%
+  );
+}
+
+ 
+.progressBar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgb(46, 46, 46);
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+  margin-top: -4px; /* 垂直居中 */
+}
+
+.progressBar::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgb(46, 46, 46);
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+}
 /* --- 音量控制 --- */
 .volumeControl { display: flex; align-items: center; gap: 8px; }
 .volumeIcon { font-size: 18px; color: var(--secondary-font-color, #6c757d); }

@@ -3,8 +3,8 @@
 
 /* 页面布局样式 */
 .lyricsPage {
-    height: calc(100dvh - 225px);
-     background-color: rgba(0, 0, 0, 0.096);
+    height: calc(100dvh - 150px);
+     background-color: rgba(0, 0, 0, 0.062);
     display: flex;
     flex-direction: column;
     color: rgb(94, 92, 92);
@@ -20,10 +20,11 @@
     align-items: center;
     justify-content: space-between;
     padding: 5px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.034);
     backdrop-filter: blur(10px);
     flex-shrink: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 20px;
 }
 
 .headerLeft {
@@ -184,7 +185,7 @@
 /* 响应式设计 */
 @media (max-width: 1024px) {
     .lyricsPage {
-     height: calc(100dvh - 195px);   
+     height: calc(100dvh - 140px);   
     }
     
 }

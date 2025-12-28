@@ -291,7 +291,7 @@ const Player = ({ className = '' }) => {
     if (currentSong && progress > duration * 0.5) { // 播放超过50%才计数
       increasePlayCount(currentSong);
     }
-    
+
     // 根据播放模式处理下一首歌曲
     if (playMode === 'singleLoop') {
       // 单曲循环：重新播放当前歌曲
@@ -449,9 +449,9 @@ const Player = ({ className = '' }) => {
           <div className={styles.topControls}>
             {/* 播放模式控制 */}
             <div className={styles.playModeControlWrapper} ref={playModeControlRef}>
-              <button 
-                className={`${styles.controlButton} ${styles.playModeButton} ${showPlayModeControl ? styles.active : ''}`} 
-                onClick={togglePlayModeControl} 
+              <button
+                className={`${styles.controlButton} ${styles.playModeButton} ${showPlayModeControl ? styles.active : ''}`}
+                onClick={togglePlayModeControl}
                 title={`播放模式: ${PLAY_MODES[playMode]?.name || playMode}`}
               >
                 <svg className={styles.playModeIcon} aria-hidden="true">
@@ -493,41 +493,50 @@ const Player = ({ className = '' }) => {
             </button>
 
             <button className={styles.controlButton} onClick={playNext} title="下一首" disabled={queue.length === 0}>⏭</button>
-<div className={styles.volumeControlWrapper} ref={volumeSliderRef}>
-            <button
-              className={styles.controlButton}
-              onClick={toggleVolumeSlider}
-              title="音量"
-            >
-              {volume === 0 ? '🔇' : volume < 0.5 ? '🔈' : '🔊'}
-            </button>
+            <div className={styles.volumeControlWrapper} ref={volumeSliderRef}>
+              <button
+                className={styles.controlButton}
+                onClick={toggleVolumeSlider}
+                title="音量"
+              >
+                {volume === 0 ? '🔇' : volume < 0.5 ? '🔈' : '🔊'}
+              </button>
 
-            {showVolumeSlider && (
-              <div className={styles.verticalVolumeSlider}>
-                <div
-                  className={styles.volumeTrack}
-                  ref={volumeTrackRef} // 关键：绑定 ref
-                >
+              {showVolumeSlider && (
+                <div className={styles.verticalVolumeSlider}>
                   <div
-                    className={styles.volumeProgress}
-                    style={{ height: `${volume * 100}%` }}
+                    className={styles.volumeTrack}
+                    ref={volumeTrackRef} // 关键：绑定 ref
                   >
                     <div
-                      className={styles.volumeThumb}
-                      onMouseDown={handleThumbMouseDown}
-                      style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-                    />
+                      className={styles.volumeProgress}
+                      style={{ height: `${volume * 100}%` }}
+                    >
+                      <div
+                        className={styles.volumeThumb}
+                        onMouseDown={handleThumbMouseDown}
+                        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
           </div>
           <div className={styles.bottomControls}>
             <span className={styles.timeDisplay}>{formatTime(progress)}</span>
             <input
-              type="range" min="0" max={duration || 1} value={progress}
-              onChange={handleProgressChange} className={styles.progressBar}
+              type="range"
+              min="0"
+              max={duration || 1}
+              value={progress}
+              onChange={handleProgressChange}
+              className={styles.progressBar}
+              style={{
+                '--progress-percent': `${(progress / (duration || 1)) * 100}%`,
+                '--progress-color': 'rgb(46, 46, 46)',  // 已播放颜色
+                '--track-color': '#e5e7eb'              // 未播放颜色
+              }}
             />
             <span className={styles.timeDisplay}>{formatTime(duration)}</span>
           </div>
@@ -535,8 +544,8 @@ const Player = ({ className = '' }) => {
 
         {/* --- 第四列：附加控件 --- */}
         <div className={styles.column4}>
-           <button className={styles.controlButton} onClick={showLyrics} title="歌词">詞</button>
-          
+          <button className={styles.controlButton} onClick={showLyrics} title="歌词">詞</button>
+
           <button className={styles.controlButton} onClick={showPlaylist} title="播放列表">☰</button>
         </div>
       </div>
