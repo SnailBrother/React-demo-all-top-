@@ -226,7 +226,7 @@ const Home = () => {
                 const response = await axios.get('/api/getallmusics', {
                     params: {
                         page: page,
-                        pageSize: 20,
+                        pageSize: 100,
                         search: searchTerm
                     },
                     headers: {

@@ -96,9 +96,9 @@ export const moduleConfig = {
     routes: [
       { key: 'home', label: '首页', icon: '#icon-biaoqianA01_shouye-51', component: MusicHome, showInTabs: false, showInNavigation: true },
       { key: 'recommend', label: '推荐', icon: '#icon-tuijian1', component: MusicRecommend, showInTabs: false, showInNavigation: true },
-      { key: 'recent', label: '最近播放', icon: '#icon-zuijinbofang', component: MusicRecent, showInTabs: false, showInNavigation: true },
-      { key: 'favorites', label: '我的喜欢', icon: '#icon-xihuan11', component: MusicFavorites, showInTabs: false, showInNavigation: true },
-      { key: 'musictogetherroommanager', label: '一起听歌', icon: '#icon-kefu', component: MusicTogetherRoomManager, showInTabs: false, showInNavigation: true },
+      { key: 'recent', label: '最近', icon: '#icon-zuijinbofang', component: MusicRecent, showInTabs: false, showInNavigation: true },
+      { key: 'favorites', label: '喜欢', icon: '#icon-xihuan11', component: MusicFavorites, showInTabs: false, showInNavigation: true },
+      { key: 'musictogetherroommanager', label: '一起听', icon: '#icon-kefu', component: MusicTogetherRoomManager, showInTabs: false, showInNavigation: true },
       // 隐藏的路由 - 不显示在导航中
       { key: 'musicplayerlyrics', label: '歌词', component: MusicplayerLyrics, showInTabs: false, showInNavigation: false },
       { key: 'musicplayer', label: '播放器', component: Musicplayer, showInTabs: false, showInNavigation: false },
@@ -122,7 +122,9 @@ export const moduleConfig = {
     defaultRoute: 'SearchPrice',
     routes: [
         { key: 'SearchPrice', label: '价格查询', icon: '#icon-chakantupian4', component: OfficeSearchPrice, showInNavigation: true, showInTabs: false },
-      { key: 'PublicNews', label: '消息通知', icon: '#icon-tongzhi4', component: OfficePublicNews, showInNavigation: true, showInTabs: false },
+        { key: 'OfficeSearchPdfFileView', label: '资料查找', icon: '#icon-pdf2', component: OfficeSearchPdfFileView, showInNavigation: true, showInTabs: false  },
+        { key: 'TemplateManagement', label: '模板下载', icon: '#icon-a-bianzu10', component: OfficeTemplateManagement, showInNavigation: true, showInTabs: false },
+        { key: 'PublicNews', label: '消息通知', icon: '#icon-tongzhi4', component: OfficePublicNews, showInNavigation: true, showInTabs: false },
      // { key: 'PriceConsultationDialog', label: '价格咨询', icon: '#icon-dingwei-xiaoquzuola', component: OfficePriceConsultationDialog, showInNavigation: true, showInTabs: false  },
       //{ key: 'NeighborhoodFinder', label: '小区查询', icon: '#icon-stock', component: OfficeNeighborhoodFinder, showInNavigation: true, showInTabs: false  },
       // { key: 'MessageDetail/:messageId', label: '消息详情', icon: '#icon-yinliang2',  component: OfficeMessageDetail, showInNavigation: false, showInTabs: false },
@@ -132,8 +134,7 @@ export const moduleConfig = {
       { key: 'LookBuildingsPricePicture', label: '查看图片', icon: '#icon-chakantupian4', component: OfficeLookBuildingsPricePicture, showInNavigation: false, showInTabs: false  },
       { key: 'UploadHousePricePicture', label: '上传图片', icon: '#icon-chakantupian4', component: OfficeUploadHousePricePicture, showInNavigation: false, showInTabs: false  },
       //{ key: 'OfficeMergePrintPdf', label: '资料打印', icon: '#icon-pdf2', component: OfficeMergePrintPdf, showInNavigation: true, showInTabs: false  },
-      { key: 'OfficeSearchPdfFileView', label: '资料查找', icon: '#icon-pdf2', component: OfficeSearchPdfFileView, showInNavigation: true, showInTabs: false  },
-      { key: 'TemplateManagement', label: '模板下载', icon: '#icon-a-bianzu10', component: OfficeTemplateManagement, showInNavigation: true, showInTabs: false },
+     
       { key: 'Specialtips', label: '特别提示', icon: '#icon-tishi', component: OfficeSpecialtips, showInNavigation: true, showInTabs: false },
       { key: 'SiteLinks', label: '常用网站', icon: '#icon-web', component: OfficeSiteLinks, showInNavigation: true, showInTabs: false },
       { key: 'FeeCalculation', label: '收费计算', icon: '#icon-jisuanji', component: OfficeFeeCalculation, showInNavigation: true, showInTabs: false },

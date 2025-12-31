@@ -128,6 +128,7 @@ app.get('/api/getAccountLoginData', async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
 //增加检查账号是否存在的 API
 app.post('/api/checkUsernameExists', async (req, res) => {
     const { username } = req.body;
@@ -215,386 +216,387 @@ app.put('/api/changePassword', async (req, res) => {
     }
 });
 
-// 获取 TravelExpenseReimbursement 报销表数据
-app.get('/api/getTravelExpenseReimbursementData', async (req, res) => {
-    try {
-        let firstpool = await sql.connect(config);
-        let travelExpenseReimbursementResult = await firstpool.request().query('SELECT * FROM TravelExpenseReimbursement');
-        res.json({ TravelExpenseReimbursement: travelExpenseReimbursementResult.recordset });
-        firstpool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-// 添加差旅报销记录
-// 添加差旅报销记录
-app.post('/api/addTravelExpense', async (req, res) => {
-    const { ProjectCode, ProjectName, Location, Amount, BusinessTripDate, ReimbursementDate, Remarks, ReimbursedBy, Whetherover } = req.body;
-    try {
-        let pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('ProjectCode', sql.NVarChar, ProjectCode)
-            .input('ProjectName', sql.NVarChar, ProjectName)
-            .input('Location', sql.NVarChar, Location)
-            .input('Amount', sql.Decimal(18, 2), Amount)
-            .input('BusinessTripDate', sql.Date, BusinessTripDate)
-            .input('ReimbursementDate', sql.Date, ReimbursementDate)
-            .input('Remarks', sql.NVarChar, Remarks)
-            .input('ReimbursedBy', sql.NVarChar, ReimbursedBy)
-            .input('Whetherover', sql.Bit, Whetherover) // 新增
-            .query('INSERT INTO TravelExpenseReimbursement (ProjectCode, ProjectName, Location, Amount, BusinessTripDate, ReimbursementDate, Remarks, ReimbursedBy, Whetherover) OUTPUT INSERTED.ID VALUES (@ProjectCode, @ProjectName, @Location, @Amount, @BusinessTripDate, @ReimbursementDate, @Remarks, @ReimbursedBy, @Whetherover)');
-
-        res.json({ ID: result.recordset[0].ID });
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 更新差旅报销记录
-app.put('/api/updateTravelExpense/:id', async (req, res) => {
-    const { id } = req.params;
-    const { ProjectCode, ProjectName, Location, Amount, BusinessTripDate, ReimbursementDate, Remarks, ReimbursedBy, Whetherover } = req.body;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('ID', sql.Int, id)
-            .input('ProjectCode', sql.NVarChar, ProjectCode)
-            .input('ProjectName', sql.NVarChar, ProjectName)
-            .input('Location', sql.NVarChar, Location)
-            .input('Amount', sql.Decimal(18, 2), Amount)
-            .input('BusinessTripDate', sql.Date, BusinessTripDate)
-            .input('ReimbursementDate', sql.Date, ReimbursementDate)
-            .input('Remarks', sql.NVarChar, Remarks)
-            .input('ReimbursedBy', sql.NVarChar, ReimbursedBy)
-            .input('Whetherover', sql.Bit, Whetherover) // 新增
-            .query('UPDATE TravelExpenseReimbursement SET ProjectCode = @ProjectCode, ProjectName = @ProjectName, Location = @Location, Amount = @Amount, BusinessTripDate = @BusinessTripDate, ReimbursementDate = @ReimbursementDate, Remarks = @Remarks, ReimbursedBy = @ReimbursedBy, Whetherover = @Whetherover WHERE ID = @ID');
-
-        res.sendStatus(204); // No content
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+{ //绩效报销 已经作废，仅做参考
 
 
-// 更新差旅报销记录
-app.put('/api/updateTravelExpense/:id', async (req, res) => {
-    const { id } = req.params;
-    const { ProjectCode, ProjectName, Location, Amount, BusinessTripDate, ReimbursementDate, Remarks, ReimbursedBy, Whetherover } = req.body;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('ID', sql.Int, id)
-            .input('ProjectCode', sql.NVarChar, ProjectCode)
-            .input('ProjectName', sql.NVarChar, ProjectName)
-            .input('Location', sql.NVarChar, Location)
-            .input('Amount', sql.Decimal(18, 2), Amount)
-            .input('BusinessTripDate', sql.Date, BusinessTripDate)
-            .input('ReimbursementDate', sql.Date, ReimbursementDate)
-            .input('Remarks', sql.NVarChar, Remarks)
-            .input('ReimbursedBy', sql.NVarChar, ReimbursedBy)
-            .input('Whetherover', sql.Bit, Whetherover) // 新增
-            .query('UPDATE TravelExpenseReimbursement SET ProjectCode = @ProjectCode, ProjectName = @ProjectName, Location = @Location, Amount = @Amount, BusinessTripDate = @BusinessTripDate, ReimbursementDate = @ReimbursementDate, Remarks = @Remarks, ReimbursedBy = @ReimbursedBy, Whetherover = @Whetherover WHERE ID = @ID');
-
-        res.sendStatus(204); // No content
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 删除差旅报销记录
-app.delete('/api/deleteTravelExpense/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('ID', sql.Int, id)
-            .query('DELETE FROM TravelExpenseReimbursement WHERE ID = @ID');
-
-        res.sendStatus(204); // No content
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-
-
-
-
-
-
-// 获取  绩效表表数据
-app.get('/api/getAchievementsData', async (req, res) => {
-    try {
-        let firstpool = await sql.connect(config);
-        let achievementsResult = await firstpool.request().query('SELECT * FROM Achievements');
-        res.json({ Achievements: achievementsResult.recordset });
-        firstpool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 添加绩效记录
-app.post('/api/addAchievement', async (req, res) => {
-    const { ProjectCode, ReportNumber, ProjectName, ChargeAmount, ChargeDate, AchievementAmount, SignedAmount, CommissionDate, Notes, PerformancePerson, Whetherticheng } = req.body;
-    try {
-        let pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('ProjectCode', sql.VarChar, ProjectCode)
-            .input('ReportNumber', sql.VarChar, ReportNumber)
-            .input('ProjectName', sql.VarChar, ProjectName)
-            .input('ChargeAmount', sql.Decimal(18, 2), ChargeAmount)
-            .input('ChargeDate', sql.Date, ChargeDate)
-            .input('AchievementAmount', sql.Decimal(18, 2), AchievementAmount)
-            .input('SignedAmount', sql.Decimal(18, 2), SignedAmount)
-            .input('CommissionDate', sql.Date, CommissionDate)
-            .input('Notes', sql.Text, Notes)
-            .input('PerformancePerson', sql.VarChar, PerformancePerson) // 添加 PerformancePerson
-            .input('Whetherticheng', sql.Bit, Whetherticheng) // 新增
-            .query('INSERT INTO Achievements (ProjectCode, ReportNumber, ProjectName, ChargeAmount, ChargeDate, AchievementAmount, SignedAmount, CommissionDate, Notes, PerformancePerson, Whetherticheng) OUTPUT INSERTED.ID VALUES (@ProjectCode, @ReportNumber, @ProjectName, @ChargeAmount, @ChargeDate, @AchievementAmount, @SignedAmount, @CommissionDate, @Notes, @PerformancePerson, @Whetherticheng)');
-
-        res.json({ ID: result.recordset[0].ID });
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 更新绩效记录
-app.put('/api/updateAchievement/:id', async (req, res) => {
-    const { id } = req.params;
-    const { ProjectCode, ReportNumber, ProjectName, ChargeAmount, ChargeDate, AchievementAmount, SignedAmount, CommissionDate, Notes, PerformancePerson, Whetherticheng } = req.body;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('ID', sql.Int, id)
-            .input('ProjectCode', sql.VarChar, ProjectCode)
-            .input('ReportNumber', sql.VarChar, ReportNumber)
-            .input('ProjectName', sql.VarChar, ProjectName)
-            .input('ChargeAmount', sql.Decimal(18, 2), ChargeAmount)
-            .input('ChargeDate', sql.Date, ChargeDate)
-            .input('AchievementAmount', sql.Decimal(18, 2), AchievementAmount)
-            .input('SignedAmount', sql.Decimal(18, 2), SignedAmount)
-            .input('CommissionDate', sql.Date, CommissionDate)
-            .input('Notes', sql.Text, Notes)
-            .input('PerformancePerson', sql.VarChar, PerformancePerson) // 添加 PerformancePerson
-            .input('Whetherticheng', sql.Bit, Whetherticheng) // 新增
-            .query('UPDATE Achievements SET ProjectCode = @ProjectCode, ReportNumber = @ReportNumber, ProjectName = @ProjectName, ChargeAmount = @ChargeAmount, ChargeDate = @ChargeDate, AchievementAmount = @AchievementAmount, SignedAmount = @SignedAmount, CommissionDate = @CommissionDate, Notes = @Notes, PerformancePerson = @PerformancePerson, Whetherticheng = @Whetherticheng WHERE ID = @ID');
-
-        res.sendStatus(204); // No content
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 删除绩效记录
-app.delete('/api/deleteAchievement/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('ID', sql.Int, id)
-            .query('DELETE FROM Achievements WHERE ID = @ID');
-
-        res.sendStatus(204); // No content
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-
-// 获取 Special_Tips 特别事项提醒表数据
-app.get('/api/getSpecial_TipsData', async (req, res) => {
-    let pool;
-    try {
-        // 1. 首先获取数据库数据
-        pool = await sql.connect(config);
-        const result = await pool.request().query('SELECT * FROM Special_Tips');
-
-        // 2. 立即向所有客户端广播更新
-        io.emit('tips-update', result.recordset);
-
-        // 3. 同时响应 HTTP 请求
-        res.json({ Special_Tips: result.recordset });
-    } catch (err) {
-        console.error('数据库查询错误:', err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) {
-            pool.close();
+    // 获取 TravelExpenseReimbursement 报销表数据
+    app.get('/api/getTravelExpenseReimbursementData', async (req, res) => {
+        try {
+            let firstpool = await sql.connect(config);
+            let travelExpenseReimbursementResult = await firstpool.request().query('SELECT * FROM TravelExpenseReimbursement');
+            res.json({ TravelExpenseReimbursement: travelExpenseReimbursementResult.recordset });
+            firstpool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
         }
-    }
-});
-// 添加新的特殊提示
-app.post('/api/addSpecialTip', async (req, res) => {
-    const { asset_type, tip_content, remark } = req.body;
+    });
 
-    // 验证输入
-    if (!asset_type || !tip_content) {
-        return res.status(400).json({ error: '缺少必要参数: asset_type, tip_content' });
-    }
+    // 添加差旅报销记录
+    app.post('/api/addTravelExpense', async (req, res) => {
+        const { ProjectCode, ProjectName, Location, Amount, BusinessTripDate, ReimbursementDate, Remarks, ReimbursedBy, Whetherover } = req.body;
+        try {
+            let pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('ProjectCode', sql.NVarChar, ProjectCode)
+                .input('ProjectName', sql.NVarChar, ProjectName)
+                .input('Location', sql.NVarChar, Location)
+                .input('Amount', sql.Decimal(18, 2), Amount)
+                .input('BusinessTripDate', sql.Date, BusinessTripDate)
+                .input('ReimbursementDate', sql.Date, ReimbursementDate)
+                .input('Remarks', sql.NVarChar, Remarks)
+                .input('ReimbursedBy', sql.NVarChar, ReimbursedBy)
+                .input('Whetherover', sql.Bit, Whetherover) // 新增
+                .query('INSERT INTO TravelExpenseReimbursement (ProjectCode, ProjectName, Location, Amount, BusinessTripDate, ReimbursementDate, Remarks, ReimbursedBy, Whetherover) OUTPUT INSERTED.ID VALUES (@ProjectCode, @ProjectName, @Location, @Amount, @BusinessTripDate, @ReimbursementDate, @Remarks, @ReimbursedBy, @Whetherover)');
 
-    let pool;
-    try {
-        pool = await sql.connect(config);
+            res.json({ ID: result.recordset[0].ID });
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
 
-        // 插入新记录
-        const insertResult = await pool.request()
-            .input('asset_type', sql.NVarChar(100), asset_type)
-            .input('tip_content', sql.NVarChar(1000), tip_content)
-            .input('remark', sql.NVarChar(500), remark || null)
-            .query(`
+    // 更新差旅报销记录
+    app.put('/api/updateTravelExpense/:id', async (req, res) => {
+        const { id } = req.params;
+        const { ProjectCode, ProjectName, Location, Amount, BusinessTripDate, ReimbursementDate, Remarks, ReimbursedBy, Whetherover } = req.body;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('ID', sql.Int, id)
+                .input('ProjectCode', sql.NVarChar, ProjectCode)
+                .input('ProjectName', sql.NVarChar, ProjectName)
+                .input('Location', sql.NVarChar, Location)
+                .input('Amount', sql.Decimal(18, 2), Amount)
+                .input('BusinessTripDate', sql.Date, BusinessTripDate)
+                .input('ReimbursementDate', sql.Date, ReimbursementDate)
+                .input('Remarks', sql.NVarChar, Remarks)
+                .input('ReimbursedBy', sql.NVarChar, ReimbursedBy)
+                .input('Whetherover', sql.Bit, Whetherover) // 新增
+                .query('UPDATE TravelExpenseReimbursement SET ProjectCode = @ProjectCode, ProjectName = @ProjectName, Location = @Location, Amount = @Amount, BusinessTripDate = @BusinessTripDate, ReimbursementDate = @ReimbursementDate, Remarks = @Remarks, ReimbursedBy = @ReimbursedBy, Whetherover = @Whetherover WHERE ID = @ID');
+
+            res.sendStatus(204); // No content
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+
+    // 更新差旅报销记录
+    app.put('/api/updateTravelExpense/:id', async (req, res) => {
+        const { id } = req.params;
+        const { ProjectCode, ProjectName, Location, Amount, BusinessTripDate, ReimbursementDate, Remarks, ReimbursedBy, Whetherover } = req.body;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('ID', sql.Int, id)
+                .input('ProjectCode', sql.NVarChar, ProjectCode)
+                .input('ProjectName', sql.NVarChar, ProjectName)
+                .input('Location', sql.NVarChar, Location)
+                .input('Amount', sql.Decimal(18, 2), Amount)
+                .input('BusinessTripDate', sql.Date, BusinessTripDate)
+                .input('ReimbursementDate', sql.Date, ReimbursementDate)
+                .input('Remarks', sql.NVarChar, Remarks)
+                .input('ReimbursedBy', sql.NVarChar, ReimbursedBy)
+                .input('Whetherover', sql.Bit, Whetherover) // 新增
+                .query('UPDATE TravelExpenseReimbursement SET ProjectCode = @ProjectCode, ProjectName = @ProjectName, Location = @Location, Amount = @Amount, BusinessTripDate = @BusinessTripDate, ReimbursementDate = @ReimbursementDate, Remarks = @Remarks, ReimbursedBy = @ReimbursedBy, Whetherover = @Whetherover WHERE ID = @ID');
+
+            res.sendStatus(204); // No content
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 删除差旅报销记录
+    app.delete('/api/deleteTravelExpense/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('ID', sql.Int, id)
+                .query('DELETE FROM TravelExpenseReimbursement WHERE ID = @ID');
+
+            res.sendStatus(204); // No content
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+
+    // 获取  绩效表表数据
+    app.get('/api/getAchievementsData', async (req, res) => {
+        try {
+            let firstpool = await sql.connect(config);
+            let achievementsResult = await firstpool.request().query('SELECT * FROM Achievements');
+            res.json({ Achievements: achievementsResult.recordset });
+            firstpool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 添加绩效记录
+    app.post('/api/addAchievement', async (req, res) => {
+        const { ProjectCode, ReportNumber, ProjectName, ChargeAmount, ChargeDate, AchievementAmount, SignedAmount, CommissionDate, Notes, PerformancePerson, Whetherticheng } = req.body;
+        try {
+            let pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('ProjectCode', sql.VarChar, ProjectCode)
+                .input('ReportNumber', sql.VarChar, ReportNumber)
+                .input('ProjectName', sql.VarChar, ProjectName)
+                .input('ChargeAmount', sql.Decimal(18, 2), ChargeAmount)
+                .input('ChargeDate', sql.Date, ChargeDate)
+                .input('AchievementAmount', sql.Decimal(18, 2), AchievementAmount)
+                .input('SignedAmount', sql.Decimal(18, 2), SignedAmount)
+                .input('CommissionDate', sql.Date, CommissionDate)
+                .input('Notes', sql.Text, Notes)
+                .input('PerformancePerson', sql.VarChar, PerformancePerson) // 添加 PerformancePerson
+                .input('Whetherticheng', sql.Bit, Whetherticheng) // 新增
+                .query('INSERT INTO Achievements (ProjectCode, ReportNumber, ProjectName, ChargeAmount, ChargeDate, AchievementAmount, SignedAmount, CommissionDate, Notes, PerformancePerson, Whetherticheng) OUTPUT INSERTED.ID VALUES (@ProjectCode, @ReportNumber, @ProjectName, @ChargeAmount, @ChargeDate, @AchievementAmount, @SignedAmount, @CommissionDate, @Notes, @PerformancePerson, @Whetherticheng)');
+
+            res.json({ ID: result.recordset[0].ID });
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 更新绩效记录
+    app.put('/api/updateAchievement/:id', async (req, res) => {
+        const { id } = req.params;
+        const { ProjectCode, ReportNumber, ProjectName, ChargeAmount, ChargeDate, AchievementAmount, SignedAmount, CommissionDate, Notes, PerformancePerson, Whetherticheng } = req.body;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('ID', sql.Int, id)
+                .input('ProjectCode', sql.VarChar, ProjectCode)
+                .input('ReportNumber', sql.VarChar, ReportNumber)
+                .input('ProjectName', sql.VarChar, ProjectName)
+                .input('ChargeAmount', sql.Decimal(18, 2), ChargeAmount)
+                .input('ChargeDate', sql.Date, ChargeDate)
+                .input('AchievementAmount', sql.Decimal(18, 2), AchievementAmount)
+                .input('SignedAmount', sql.Decimal(18, 2), SignedAmount)
+                .input('CommissionDate', sql.Date, CommissionDate)
+                .input('Notes', sql.Text, Notes)
+                .input('PerformancePerson', sql.VarChar, PerformancePerson) // 添加 PerformancePerson
+                .input('Whetherticheng', sql.Bit, Whetherticheng) // 新增
+                .query('UPDATE Achievements SET ProjectCode = @ProjectCode, ReportNumber = @ReportNumber, ProjectName = @ProjectName, ChargeAmount = @ChargeAmount, ChargeDate = @ChargeDate, AchievementAmount = @AchievementAmount, SignedAmount = @SignedAmount, CommissionDate = @CommissionDate, Notes = @Notes, PerformancePerson = @PerformancePerson, Whetherticheng = @Whetherticheng WHERE ID = @ID');
+
+            res.sendStatus(204); // No content
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 删除绩效记录
+    app.delete('/api/deleteAchievement/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('ID', sql.Int, id)
+                .query('DELETE FROM Achievements WHERE ID = @ID');
+
+            res.sendStatus(204); // No content
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+}
+
+{   //报告特别提示
+    // 获取 Special_Tips 特别事项提醒表数据
+    app.get('/api/getSpecial_TipsData', async (req, res) => {
+        let pool;
+        try {
+            // 1. 首先获取数据库数据
+            pool = await sql.connect(config);
+            const result = await pool.request().query('SELECT * FROM Special_Tips');
+
+            // 2. 立即向所有客户端广播更新
+            io.emit('tips-update', result.recordset);
+
+            // 3. 同时响应 HTTP 请求
+            res.json({ Special_Tips: result.recordset });
+        } catch (err) {
+            console.error('数据库查询错误:', err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) {
+                pool.close();
+            }
+        }
+    });
+    // 添加新的特殊提示
+    app.post('/api/addSpecialTip', async (req, res) => {
+        const { asset_type, tip_content, remark } = req.body;
+
+        // 验证输入
+        if (!asset_type || !tip_content) {
+            return res.status(400).json({ error: '缺少必要参数: asset_type, tip_content' });
+        }
+
+        let pool;
+        try {
+            pool = await sql.connect(config);
+
+            // 插入新记录
+            const insertResult = await pool.request()
+                .input('asset_type', sql.NVarChar(100), asset_type)
+                .input('tip_content', sql.NVarChar(1000), tip_content)
+                .input('remark', sql.NVarChar(500), remark || null)
+                .query(`
                 INSERT INTO BillingApp.dbo.Special_Tips 
                 (asset_type, tip_content, remark) 
                 VALUES (@asset_type, @tip_content, @remark)
             `);
 
-        // 获取更新后的完整列表
-        const result = await pool.request().query('SELECT * FROM Special_Tips');
+            // 获取更新后的完整列表
+            const result = await pool.request().query('SELECT * FROM Special_Tips');
 
-        // 广播给所有客户端
-        io.emit('tips-update', result.recordset);
+            // 广播给所有客户端
+            io.emit('tips-update', result.recordset);
 
-        res.status(200).json({ success: true });
-    } catch (err) {
-        console.error('添加特殊提示失败:', err);
-        res.status(500).json({ error: '添加特殊提示失败' });
-    } finally {
-        if (pool) {
-            pool.close();
+            res.status(200).json({ success: true });
+        } catch (err) {
+            console.error('添加特殊提示失败:', err);
+            res.status(500).json({ error: '添加特殊提示失败' });
+        } finally {
+            if (pool) {
+                pool.close();
+            }
         }
-    }
-});
+    });
 
+}
 
+{  //办公公告消息
+    // 获取 MessageDetail 表数据
+    // 获取消息数据并支持实时更新
+    app.get('/api/getMessageDetailData', async (req, res) => {
+        let pool;
+        try {
+            // 1. 首先获取数据库数据
+            pool = await sql.connect(config);
+            const result = await pool.request().query('SELECT * FROM MessageDetail ORDER BY time DESC'); // 添加ORDER BY time DESC
 
+            // 2. 立即向所有客户端广播更新
+            io.emit('message-update', result.recordset);
 
-// 获取 MessageDetail 表数据
-// 获取消息数据并支持实时更新
-app.get('/api/getMessageDetailData', async (req, res) => {
-    let pool;
-    try {
-        // 1. 首先获取数据库数据
-        pool = await sql.connect(config);
-        const result = await pool.request().query('SELECT * FROM MessageDetail ORDER BY time DESC'); // 添加ORDER BY time DESC
-
-        // 2. 立即向所有客户端广播更新
-        io.emit('message-update', result.recordset);
-
-        // 3. 同时响应HTTP请求
-        res.json({ MessageDetail: result.recordset });
-    } catch (err) {
-        console.error('数据库查询错误:', err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) {
-            pool.close();
+            // 3. 同时响应HTTP请求
+            res.json({ MessageDetail: result.recordset });
+        } catch (err) {
+            console.error('数据库查询错误:', err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) {
+                pool.close();
+            }
         }
-    }
-});
-// 添加新公告 并支持实时更新
-app.post('/api/addMessage', async (req, res) => {
-    const { title, content } = req.body;
+    });
+    // 添加新公告 并支持实时更新
+    app.post('/api/addMessage', async (req, res) => {
+        const { title, content } = req.body;
 
-    // 验证输入
-    if (!title || !content) {
-        return res.status(400).json({ error: '缺少必要参数: title, content' });
-    }
+        // 验证输入
+        if (!title || !content) {
+            return res.status(400).json({ error: '缺少必要参数: title, content' });
+        }
 
-    let pool;
-    try {
-        pool = await sql.connect(config);
+        let pool;
+        try {
+            pool = await sql.connect(config);
 
-        // 插入新记录
-        const insertResult = await pool.request()
-            .input('title', sql.NVarChar(255), title)
-            .input('content', sql.NVarChar(sql.MAX), content)
-            .query(`
+            // 插入新记录
+            const insertResult = await pool.request()
+                .input('title', sql.NVarChar(255), title)
+                .input('content', sql.NVarChar(sql.MAX), content)
+                .query(`
                 INSERT INTO MessageDetail 
                 (title, content, time) 
                 VALUES (@title, @content, GETDATE())
             `);
 
-        // 获取更新后的完整列表
-        const result = await pool.request().query('SELECT * FROM MessageDetail');
+            // 获取更新后的完整列表
+            const result = await pool.request().query('SELECT * FROM MessageDetail');
 
-        // 广播给所有客户端
-        io.emit('message-update', result.recordset);
+            // 广播给所有客户端
+            io.emit('message-update', result.recordset);
 
-        res.status(200).json({ success: true, newMessage: result.recordset[result.recordset.length - 1] });
-    } catch (err) {
-        console.error('添加公告失败:', err);
-        res.status(500).json({ error: '添加公告失败' });
-    } finally {
-        if (pool) {
-            pool.close();
+            res.status(200).json({ success: true, newMessage: result.recordset[result.recordset.length - 1] });
+        } catch (err) {
+            console.error('添加公告失败:', err);
+            res.status(500).json({ error: '添加公告失败' });
+        } finally {
+            if (pool) {
+                pool.close();
+            }
         }
-    }
-});
+    });
+
+}
+
+{  //构筑物价格查询 👇
 
 
-//构筑物价格查询 👇
+    // 新增构筑物
+    app.post('/api/addStructure', async (req, res) => {
+        const { name, structure, area, unit, price, notes } = req.body;
+        let pool;
 
-// 新增构筑物
-app.post('/api/addStructure', async (req, res) => {
-    const { name, structure, area, unit, price, notes } = req.body;
-    let pool;
-
-    try {
-        pool = await sql.connect(config);
-        const query = `
+        try {
+            pool = await sql.connect(config);
+            const query = `
             INSERT INTO Structures (name, structure, area, unit, price, notes) 
             OUTPUT INSERTED.*
             VALUES (@name, @structure, @area, @unit, @price, @notes)
         `;
 
-        const result = await pool.request()
-            .input('name', sql.NVarChar, name)
-            .input('structure', sql.NVarChar, structure)
-            .input('area', sql.NVarChar, area)
-            .input('unit', sql.NVarChar, unit)
-            .input('price', sql.NVarChar, price)
-            .input('notes', sql.NVarChar, notes || '')
-            .query(query);
+            const result = await pool.request()
+                .input('name', sql.NVarChar, name)
+                .input('structure', sql.NVarChar, structure)
+                .input('area', sql.NVarChar, area)
+                .input('unit', sql.NVarChar, unit)
+                .input('price', sql.NVarChar, price)
+                .input('notes', sql.NVarChar, notes || '')
+                .query(query);
 
-        const newBuilding = result.recordset[0];
+            const newBuilding = result.recordset[0];
 
-        // 发送Socket通知
-        io.emit('buildingUpdate', { action: 'add', building: newBuilding });
+            // 发送Socket通知
+            io.emit('buildingUpdate', { action: 'add', building: newBuilding });
 
-        res.status(201).json(newBuilding);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server Error' });
-    } finally {
-        if (pool) pool.close();
-    }
-});
+            res.status(201).json(newBuilding);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Server Error' });
+        } finally {
+            if (pool) pool.close();
+        }
+    });
 
-// 更新构筑物
-app.put('/api/updateStructure/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name, structure, area, unit, price, notes } = req.body;
-    let pool;
+    // 更新构筑物
+    app.put('/api/updateStructure/:id', async (req, res) => {
+        const { id } = req.params;
+        const { name, structure, area, unit, price, notes } = req.body;
+        let pool;
 
-    try {
-        pool = await sql.connect(config);
-        const query = `
+        try {
+            pool = await sql.connect(config);
+            const query = `
             UPDATE Structures 
             SET name = @name, structure = @structure, area = @area, 
                 unit = @unit, price = @price, notes = @notes
@@ -602,156 +604,158 @@ app.put('/api/updateStructure/:id', async (req, res) => {
             WHERE id = @id
         `;
 
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .input('name', sql.NVarChar, name)
-            .input('structure', sql.NVarChar, structure)
-            .input('area', sql.NVarChar, area)
-            .input('unit', sql.NVarChar, unit)
-            .input('price', sql.NVarChar, price)
-            .input('notes', sql.NVarChar, notes || '')
-            .query(query);
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .input('name', sql.NVarChar, name)
+                .input('structure', sql.NVarChar, structure)
+                .input('area', sql.NVarChar, area)
+                .input('unit', sql.NVarChar, unit)
+                .input('price', sql.NVarChar, price)
+                .input('notes', sql.NVarChar, notes || '')
+                .query(query);
 
-        if (result.rowsAffected[0] > 0) {
-            const updatedBuilding = result.recordset[0];
+            if (result.rowsAffected[0] > 0) {
+                const updatedBuilding = result.recordset[0];
 
-            // 发送Socket通知
-            io.emit('buildingUpdate', { action: 'update', building: updatedBuilding });
+                // 发送Socket通知
+                io.emit('buildingUpdate', { action: 'update', building: updatedBuilding });
 
-            res.status(200).json(updatedBuilding);
-        } else {
-            res.status(404).json({ message: '构筑物未找到' });
+                res.status(200).json(updatedBuilding);
+            } else {
+                res.status(404).json({ message: '构筑物未找到' });
+            }
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) pool.close();
         }
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) pool.close();
-    }
-});
+    });
 
-// 删除构筑物
-app.delete('/api/deleteStructure/:id', async (req, res) => {
-    const { id } = req.params;
-    let pool;
+    // 删除构筑物
+    app.delete('/api/deleteStructure/:id', async (req, res) => {
+        const { id } = req.params;
+        let pool;
 
-    try {
-        pool = await sql.connect(config);
-        const query = 'DELETE FROM Structures WHERE id = @id';
+        try {
+            pool = await sql.connect(config);
+            const query = 'DELETE FROM Structures WHERE id = @id';
 
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .query(query);
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .query(query);
 
-        if (result.rowsAffected[0] > 0) {
-            // 发送Socket通知
-            io.emit('buildingUpdate', { action: 'delete', id: parseInt(id) });
+            if (result.rowsAffected[0] > 0) {
+                // 发送Socket通知
+                io.emit('buildingUpdate', { action: 'delete', id: parseInt(id) });
 
-            res.status(200).json({ message: '构筑物删除成功' });
-        } else {
-            res.status(404).json({ message: '构筑物未找到' });
+                res.status(200).json({ message: '构筑物删除成功' });
+            } else {
+                res.status(404).json({ message: '构筑物未找到' });
+            }
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) pool.close();
         }
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) pool.close();
-    }
-});
+    });
 
-// 获取随机4条构筑物数据
-app.get('/api/getRandomStructures', async (req, res) => {
-    let pool;
+    // 获取随机4条构筑物数据
+    app.get('/api/getRandomStructures', async (req, res) => {
+        let pool;
 
-    try {
-        pool = await sql.connect(config);
-        let structuresResult = await pool.request().query('SELECT TOP 4 * FROM Structures ORDER BY NEWID()');
-        res.json({ Structures: structuresResult.recordset });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) pool.close();
-    }
-});
+        try {
+            pool = await sql.connect(config);
+            let structuresResult = await pool.request().query('SELECT TOP 4 * FROM Structures ORDER BY NEWID()');
+            res.json({ Structures: structuresResult.recordset });
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) pool.close();
+        }
+    });
 
-// 获取分页数据
-app.get('/api/getStructures', async (req, res) => {
-    const { page = 1, pageSize = 10 } = req.query;
-    const pageNum = parseInt(page);
-    const size = parseInt(pageSize);
-    let pool;
 
-    // 验证参数有效性
-    if (isNaN(pageNum)) {
-        return res.status(400).json({ error: '页码必须是数字' });
-    }
-    if (isNaN(size)) {
-        return res.status(400).json({ error: '每页条数必须是数字' });
-    }
-    if (pageNum < 1) {
-        return res.status(400).json({ error: '页码必须大于0' });
-    }
-    if (size < 1 || size > 100) {
-        return res.status(400).json({ error: '每页条数必须在1-100之间' });
-    }
 
-    try {
-        pool = await sql.connect(config);
+    // 获取分页数据
+    app.get('/api/getStructures', async (req, res) => {
+        const { page = 1, pageSize = 10 } = req.query;
+        const pageNum = parseInt(page);
+        const size = parseInt(pageSize);
+        let pool;
 
-        // 获取总数
-        const countResult = await pool.request()
-            .query('SELECT COUNT(*) as totalCount FROM Structures');
-        const totalCount = countResult.recordset[0].totalCount;
+        // 验证参数有效性
+        if (isNaN(pageNum)) {
+            return res.status(400).json({ error: '页码必须是数字' });
+        }
+        if (isNaN(size)) {
+            return res.status(400).json({ error: '每页条数必须是数字' });
+        }
+        if (pageNum < 1) {
+            return res.status(400).json({ error: '页码必须大于0' });
+        }
+        if (size < 1 || size > 100) {
+            return res.status(400).json({ error: '每页条数必须在1-100之间' });
+        }
 
-        // 获取分页数据
-        const offset = (pageNum - 1) * size;
-        const dataResult = await pool.request()
-            .query(`
+        try {
+            pool = await sql.connect(config);
+
+            // 获取总数
+            const countResult = await pool.request()
+                .query('SELECT COUNT(*) as totalCount FROM Structures');
+            const totalCount = countResult.recordset[0].totalCount;
+
+            // 获取分页数据
+            const offset = (pageNum - 1) * size;
+            const dataResult = await pool.request()
+                .query(`
                 SELECT * FROM Structures
                 ORDER BY id
                 OFFSET ${offset} ROWS
                 FETCH NEXT ${size} ROWS ONLY
             `);
 
-        res.json({
-            results: dataResult.recordset,
-            totalCount: totalCount
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) pool.close();
-    }
-});
+            res.json({
+                results: dataResult.recordset,
+                totalCount: totalCount
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) pool.close();
+        }
+    });
 
-// 搜索构筑物数据（带分页）
-app.get('/api/searchStructures', async (req, res) => {
-    const { term, page = 1, pageSize = 10 } = req.query;
-    const pageNum = parseInt(page);
-    const size = parseInt(pageSize);
-    let pool;
+    // 搜索构筑物数据（带分页）
+    app.get('/api/searchStructures', async (req, res) => {
+        const { term, page = 1, pageSize = 10 } = req.query;
+        const pageNum = parseInt(page);
+        const size = parseInt(pageSize);
+        let pool;
 
-    // 验证参数有效性
-    if (isNaN(pageNum)) {
-        return res.status(400).json({ error: '页码必须是数字' });
-    }
-    if (isNaN(size)) {
-        return res.status(400).json({ error: '每页条数必须是数字' });
-    }
-    if (pageNum < 1) {
-        return res.status(400).json({ error: '页码必须大于0' });
-    }
-    if (size < 1 || size > 100) {
-        return res.status(400).json({ error: '每页条数必须在1-100之间' });
-    }
+        // 验证参数有效性
+        if (isNaN(pageNum)) {
+            return res.status(400).json({ error: '页码必须是数字' });
+        }
+        if (isNaN(size)) {
+            return res.status(400).json({ error: '每页条数必须是数字' });
+        }
+        if (pageNum < 1) {
+            return res.status(400).json({ error: '页码必须大于0' });
+        }
+        if (size < 1 || size > 100) {
+            return res.status(400).json({ error: '每页条数必须在1-100之间' });
+        }
 
-    try {
-        pool = await sql.connect(config);
+        try {
+            pool = await sql.connect(config);
 
-        // 获取总数
-        const countQuery = `
+            // 获取总数
+            const countQuery = `
             SELECT COUNT(*) as totalCount 
             FROM Structures
             WHERE name LIKE @term OR 
@@ -761,15 +765,15 @@ app.get('/api/searchStructures', async (req, res) => {
                   price LIKE @term
         `;
 
-        const countResult = await pool.request()
-            .input('term', sql.NVarChar, `%${term}%`)
-            .query(countQuery);
+            const countResult = await pool.request()
+                .input('term', sql.NVarChar, `%${term}%`)
+                .query(countQuery);
 
-        const totalCount = countResult.recordset[0].totalCount;
+            const totalCount = countResult.recordset[0].totalCount;
 
-        // 获取分页数据
-        const offset = (pageNum - 1) * size;
-        const dataQuery = `
+            // 获取分页数据
+            const offset = (pageNum - 1) * size;
+            const dataQuery = `
             SELECT * FROM Structures
             WHERE name LIKE @term OR 
                   structure LIKE @term OR 
@@ -781,78 +785,79 @@ app.get('/api/searchStructures', async (req, res) => {
             FETCH NEXT ${size} ROWS ONLY
         `;
 
-        const dataResult = await pool.request()
-            .input('term', sql.NVarChar, `%${term}%`)
-            .query(dataQuery);
+            const dataResult = await pool.request()
+                .input('term', sql.NVarChar, `%${term}%`)
+                .query(dataQuery);
 
-        res.json({
-            results: dataResult.recordset,
-            totalCount: totalCount
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) pool.close();
-    }
-});
-
-
-
-//构筑物价格查询 👆
+            res.json({
+                results: dataResult.recordset,
+                totalCount: totalCount
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) pool.close();
+        }
+    });
 
 
 
-//苗木价格查询 👇
+    //构筑物价格查询 👆
 
-// 新增苗木
-app.post('/api/addTree', async (req, res) => {
-    const { name, diameter, height, crown_width, ground_diameter, price, region, species, notes } = req.body;
-    let pool;
+}
 
-    try {
-        pool = await sql.connect(config);
-        const query = `
+{  //苗木价格查询 👇
+
+
+    // 新增苗木
+    app.post('/api/addTree', async (req, res) => {
+        const { name, diameter, height, crown_width, ground_diameter, price, region, species, notes } = req.body;
+        let pool;
+
+        try {
+            pool = await sql.connect(config);
+            const query = `
             INSERT INTO ChatApp.dbo.TreeDB (name, diameter, height, crown_width, ground_diameter, price, region, species, notes) 
             OUTPUT INSERTED.*
             VALUES (@name, @diameter, @height, @crown_width, @ground_diameter, @price, @region, @species, @notes)
         `;
 
-        const result = await pool.request()
-            .input('name', sql.VarChar, name)
-            .input('diameter', sql.Decimal(5, 2), diameter)
-            .input('height', sql.Decimal(5, 2), height)
-            .input('crown_width', sql.Decimal(5, 2), crown_width)
-            .input('ground_diameter', sql.Decimal(5, 2), ground_diameter)
-            .input('price', sql.Decimal(10, 2), price)
-            .input('region', sql.VarChar, region)
-            .input('species', sql.VarChar, species)
-            .input('notes', sql.Text, notes)
-            .query(query);
+            const result = await pool.request()
+                .input('name', sql.VarChar, name)
+                .input('diameter', sql.Decimal(5, 2), diameter)
+                .input('height', sql.Decimal(5, 2), height)
+                .input('crown_width', sql.Decimal(5, 2), crown_width)
+                .input('ground_diameter', sql.Decimal(5, 2), ground_diameter)
+                .input('price', sql.Decimal(10, 2), price)
+                .input('region', sql.VarChar, region)
+                .input('species', sql.VarChar, species)
+                .input('notes', sql.Text, notes)
+                .query(query);
 
-        const newTree = result.recordset[0];
+            const newTree = result.recordset[0];
 
-        // 发送Socket通知
-        io.emit('treeUpdate', { action: 'add', tree: newTree });
+            // 发送Socket通知
+            io.emit('treeUpdate', { action: 'add', tree: newTree });
 
-        res.status(201).json(newTree);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server Error' });
-    } finally {
-        if (pool) pool.close();
-    }
-});
+            res.status(201).json(newTree);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Server Error' });
+        } finally {
+            if (pool) pool.close();
+        }
+    });
 
-// 更新苗木
-app.put('/api/updateTree/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name, diameter, height, crown_width, ground_diameter, price, region, species, notes } = req.body;
-    let pool;
+    // 更新苗木
+    app.put('/api/updateTree/:id', async (req, res) => {
+        const { id } = req.params;
+        const { name, diameter, height, crown_width, ground_diameter, price, region, species, notes } = req.body;
+        let pool;
 
-    try {
-        pool = await sql.connect(config);
-        const query = `
+        try {
+            pool = await sql.connect(config);
+            const query = `
             UPDATE ChatApp.dbo.TreeDB 
             SET name = @name, diameter = @diameter, height = @height, 
                 crown_width = @crown_width, ground_diameter = @ground_diameter, 
@@ -861,111 +866,111 @@ app.put('/api/updateTree/:id', async (req, res) => {
             WHERE id = @id
         `;
 
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .input('name', sql.VarChar, name)
-            .input('diameter', sql.Decimal(5, 2), diameter)
-            .input('height', sql.Decimal(5, 2), height)
-            .input('crown_width', sql.Decimal(5, 2), crown_width)
-            .input('ground_diameter', sql.Decimal(5, 2), ground_diameter)
-            .input('price', sql.Decimal(10, 2), price)
-            .input('region', sql.VarChar, region)
-            .input('species', sql.VarChar, species)
-            .input('notes', sql.Text, notes)
-            .query(query);
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .input('name', sql.VarChar, name)
+                .input('diameter', sql.Decimal(5, 2), diameter)
+                .input('height', sql.Decimal(5, 2), height)
+                .input('crown_width', sql.Decimal(5, 2), crown_width)
+                .input('ground_diameter', sql.Decimal(5, 2), ground_diameter)
+                .input('price', sql.Decimal(10, 2), price)
+                .input('region', sql.VarChar, region)
+                .input('species', sql.VarChar, species)
+                .input('notes', sql.Text, notes)
+                .query(query);
 
-        if (result.rowsAffected[0] > 0) {
-            const updatedTree = result.recordset[0];
+            if (result.rowsAffected[0] > 0) {
+                const updatedTree = result.recordset[0];
 
-            // 发送Socket通知
-            io.emit('treeUpdate', { action: 'update', tree: updatedTree });
+                // 发送Socket通知
+                io.emit('treeUpdate', { action: 'update', tree: updatedTree });
 
-            res.status(200).json({ message: '苗木更新成功', tree: updatedTree });
-        } else {
-            res.status(404).json({ message: '苗木未找到' });
+                res.status(200).json({ message: '苗木更新成功', tree: updatedTree });
+            } else {
+                res.status(404).json({ message: '苗木未找到' });
+            }
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) pool.close();
         }
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) pool.close();
-    }
-});
+    });
 
-// 删除苗木
-app.delete('/api/deleteTree/:id', async (req, res) => {
-    const { id } = req.params;
-    let pool;
+    // 删除苗木
+    app.delete('/api/deleteTree/:id', async (req, res) => {
+        const { id } = req.params;
+        let pool;
 
-    try {
-        pool = await sql.connect(config);
-        const query = 'DELETE FROM ChatApp.dbo.TreeDB WHERE id = @id';
+        try {
+            pool = await sql.connect(config);
+            const query = 'DELETE FROM ChatApp.dbo.TreeDB WHERE id = @id';
 
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .query(query);
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .query(query);
 
-        if (result.rowsAffected[0] > 0) {
-            // 发送Socket通知
-            io.emit('treeUpdate', { action: 'delete', id: parseInt(id) });
+            if (result.rowsAffected[0] > 0) {
+                // 发送Socket通知
+                io.emit('treeUpdate', { action: 'delete', id: parseInt(id) });
 
-            res.status(200).json({ message: '苗木删除成功' });
-        } else {
-            res.status(404).json({ message: '苗木未找到' });
+                res.status(200).json({ message: '苗木删除成功' });
+            } else {
+                res.status(404).json({ message: '苗木未找到' });
+            }
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) pool.close();
         }
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) pool.close();
-    }
-});
+    });
 
-// 获取随机4条苗木数据
-app.get('/api/getRandomTrees', async (req, res) => {
-    let pool;
+    // 获取随机4条苗木数据
+    app.get('/api/getRandomTrees', async (req, res) => {
+        let pool;
 
-    try {
-        pool = await sql.connect(config);
-        let treesResult = await pool.request().query('SELECT TOP 4 * FROM ChatApp.dbo.TreeDB ORDER BY NEWID()');
-        res.json({ Trees: treesResult.recordset });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) pool.close();
-    }
-});
+        try {
+            pool = await sql.connect(config);
+            let treesResult = await pool.request().query('SELECT TOP 4 * FROM ChatApp.dbo.TreeDB ORDER BY NEWID()');
+            res.json({ Trees: treesResult.recordset });
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) pool.close();
+        }
+    });
 
-// 获取分页数据
+    // 获取分页数据
 
 
-// 搜索苗木数据（带分页）
-app.get('/api/searchTrees', async (req, res) => {
-    const { term, page = 1, pageSize = 10 } = req.query;
-    const pageNum = parseInt(page);
-    const size = parseInt(pageSize);
-    let pool;
+    // 搜索苗木数据（带分页）
+    app.get('/api/searchTrees', async (req, res) => {
+        const { term, page = 1, pageSize = 10 } = req.query;
+        const pageNum = parseInt(page);
+        const size = parseInt(pageSize);
+        let pool;
 
-    // 验证参数有效性
-    if (isNaN(pageNum)) {
-        return res.status(400).json({ error: '页码必须是数字' });
-    }
-    if (isNaN(size)) {
-        return res.status(400).json({ error: '每页条数必须是数字' });
-    }
-    if (pageNum < 1) {
-        return res.status(400).json({ error: '页码必须大于0' });
-    }
-    if (size < 1 || size > 100) {
-        return res.status(400).json({ error: '每页条数必须在1-100之间' });
-    }
+        // 验证参数有效性
+        if (isNaN(pageNum)) {
+            return res.status(400).json({ error: '页码必须是数字' });
+        }
+        if (isNaN(size)) {
+            return res.status(400).json({ error: '每页条数必须是数字' });
+        }
+        if (pageNum < 1) {
+            return res.status(400).json({ error: '页码必须大于0' });
+        }
+        if (size < 1 || size > 100) {
+            return res.status(400).json({ error: '每页条数必须在1-100之间' });
+        }
 
-    try {
-        pool = await sql.connect(config);
+        try {
+            pool = await sql.connect(config);
 
-        // 获取总数
-        const countQuery = `
+            // 获取总数
+            const countQuery = `
             SELECT COUNT(*) as totalCount 
             FROM ChatApp.dbo.TreeDB
             WHERE name LIKE @term OR 
@@ -974,15 +979,15 @@ app.get('/api/searchTrees', async (req, res) => {
                   notes LIKE @term
         `;
 
-        const countResult = await pool.request()
-            .input('term', sql.VarChar, `%${term}%`)
-            .query(countQuery);
+            const countResult = await pool.request()
+                .input('term', sql.VarChar, `%${term}%`)
+                .query(countQuery);
 
-        const totalCount = countResult.recordset[0].totalCount;
+            const totalCount = countResult.recordset[0].totalCount;
 
-        // 获取分页数据
-        const offset = (pageNum - 1) * size;
-        const dataQuery = `
+            // 获取分页数据
+            const offset = (pageNum - 1) * size;
+            const dataQuery = `
             SELECT * FROM ChatApp.dbo.TreeDB
             WHERE name LIKE @term OR 
                   region LIKE @term OR 
@@ -993,193 +998,199 @@ app.get('/api/searchTrees', async (req, res) => {
             FETCH NEXT ${size} ROWS ONLY
         `;
 
-        const dataResult = await pool.request()
-            .input('term', sql.VarChar, `%${term}%`)
-            .query(dataQuery);
+            const dataResult = await pool.request()
+                .input('term', sql.VarChar, `%${term}%`)
+                .query(dataQuery);
 
-        res.json({
-            results: dataResult.recordset,
-            totalCount: totalCount
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) pool.close();
-    }
-});
+            res.json({
+                results: dataResult.recordset,
+                totalCount: totalCount
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) pool.close();
+        }
+    });
 
-// 批量上传
-app.post('/api/uploadTreesExcel', async (req, res) => {
-    const { data } = req.body;
-    let pool;
+    // 批量上传
+    app.post('/api/uploadTreesExcel', async (req, res) => {
+        const { data } = req.body;
+        let pool;
 
-    if (!data || !Array.isArray(data) || data.length === 0) {
-        return res.status(400).json({ success: false, message: '没有可导入的数据' });
-    }
-
-    try {
-        pool = await sql.connect(config);
-        let successCount = 0;
-        let errorCount = 0;
-        const errors = [];
-
-        // 开始事务
-        const transaction = new sql.Transaction(pool);
-        await transaction.begin();
+        if (!data || !Array.isArray(data) || data.length === 0) {
+            return res.status(400).json({ success: false, message: '没有可导入的数据' });
+        }
 
         try {
-            for (const row of data) {
-                try {
-                    const request = new sql.Request(transaction);
-                    await request
-                        .input('name', sql.VarChar, row.name || '')
-                        .input('diameter', sql.Decimal(5, 2), row.diameter || null)
-                        .input('height', sql.Decimal(5, 2), row.height || null)
-                        .input('crown_width', sql.Decimal(5, 2), row.crown_width || null)
-                        .input('ground_diameter', sql.Decimal(5, 2), row.ground_diameter || null)
-                        .input('price', sql.Decimal(10, 2), row.price || 0)
-                        .input('region', sql.VarChar, row.region || '')
-                        .input('species', sql.VarChar, row.species || '')
-                        .input('notes', sql.Text, row.notes || '')
-                        .query(`
+            pool = await sql.connect(config);
+            let successCount = 0;
+            let errorCount = 0;
+            const errors = [];
+
+            // 开始事务
+            const transaction = new sql.Transaction(pool);
+            await transaction.begin();
+
+            try {
+                for (const row of data) {
+                    try {
+                        const request = new sql.Request(transaction);
+                        await request
+                            .input('name', sql.VarChar, row.name || '')
+                            .input('diameter', sql.Decimal(5, 2), row.diameter || null)
+                            .input('height', sql.Decimal(5, 2), row.height || null)
+                            .input('crown_width', sql.Decimal(5, 2), row.crown_width || null)
+                            .input('ground_diameter', sql.Decimal(5, 2), row.ground_diameter || null)
+                            .input('price', sql.Decimal(10, 2), row.price || 0)
+                            .input('region', sql.VarChar, row.region || '')
+                            .input('species', sql.VarChar, row.species || '')
+                            .input('notes', sql.Text, row.notes || '')
+                            .query(`
                             INSERT INTO ChatApp.dbo.TreeDB 
                             (name, diameter, height, crown_width, ground_diameter, price, region, species, notes)
                             VALUES 
                             (@name, @diameter, @height, @crown_width, @ground_diameter, @price, @region, @species, @notes)
                         `);
-                    successCount++;
-                } catch (err) {
-                    errorCount++;
-                    errors.push(`行 ${successCount + errorCount}: ${err.message}`);
-                    console.error(`导入失败:`, err);
+                        successCount++;
+                    } catch (err) {
+                        errorCount++;
+                        errors.push(`行 ${successCount + errorCount}: ${err.message}`);
+                        console.error(`导入失败:`, err);
+                    }
                 }
-            }
 
-            // 提交事务
-            await transaction.commit();
+                // 提交事务
+                await transaction.commit();
 
-            // 发送Socket通知
-            io.emit('treeUpdate', { action: 'batchAdd' });
+                // 发送Socket通知
+                io.emit('treeUpdate', { action: 'batchAdd' });
 
-            if (errorCount > 0) {
-                return res.json({
+                if (errorCount > 0) {
+                    return res.json({
+                        success: true,
+                        message: `导入完成，成功 ${successCount} 条，失败 ${errorCount} 条`,
+                        details: errors
+                    });
+                }
+
+                res.json({
                     success: true,
-                    message: `导入完成，成功 ${successCount} 条，失败 ${errorCount} 条`,
-                    details: errors
+                    message: `成功导入 ${successCount} 条数据`
                 });
+            } catch (err) {
+                // 回滚事务
+                await transaction.rollback();
+                throw err;
             }
-
-            res.json({
-                success: true,
-                message: `成功导入 ${successCount} 条数据`
-            });
         } catch (err) {
-            // 回滚事务
-            await transaction.rollback();
-            throw err;
+            console.error('导入失败:', err);
+            res.status(500).json({
+                success: false,
+                message: '服务器处理数据时出错'
+            });
+        } finally {
+            if (pool) pool.close();
         }
-    } catch (err) {
-        console.error('导入失败:', err);
-        res.status(500).json({
-            success: false,
-            message: '服务器处理数据时出错'
-        });
-    } finally {
-        if (pool) pool.close();
-    }
-});
+    });
 
 
-//苗木价格查询 👆
+    //苗木价格查询 👆
+}
 
-// 添加新记录
-app.post('/api/addRecord', async (req, res) => {
-    const { category, subcategory, amount, date, person } = req.body;
-    try {
-        let firstpool = await sql.connect(config);
-        await firstpool.request()
-            .input('category', sql.NVarChar, category)
-            .input('subcategory', sql.NVarChar, subcategory)
-            .input('amount', sql.Float, amount)
-            .input('date', sql.Date, date)
-            .input('person', sql.NVarChar, person)
-            .query('INSERT INTO Records (Category, Subcategory, Amount, Date, Person) VALUES (@category, @subcategory, @amount, @date, @person)');
-        res.status(201).send('Record added successfully');
-        firstpool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
 
-// 更新记录
-app.put('/api/updateRecord/:id', async (req, res) => {
-    const { id } = req.params;
-    const { category, subcategory, amount, date, person } = req.body;
-    try {
-        let firstpool = await sql.connect(config);
-        await firstpool.request()
-            .input('id', sql.Int, id)
-            .input('category', sql.NVarChar, category)
-            .input('subcategory', sql.NVarChar, subcategory)
-            .input('amount', sql.Float, amount)
-            .input('date', sql.Date, date)
-            .input('person', sql.NVarChar, person)
-            .query('UPDATE Records SET Category = @category, Subcategory = @subcategory, Amount = @amount, Date = @date, Person = @person WHERE Id = @id');
-        res.send('Record updated successfully');
-        firstpool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+{ //记账
 
-// 删除记录
-app.delete('/api/deleteRecord/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        let firstpool = await sql.connect(config);
-        await firstpool.request()
-            .input('id', sql.Int, id)
-            .query('DELETE FROM Records WHERE Id = @id');
-        res.send('Record deleted successfully');
-        firstpool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
 
-// 添加新房产
-app.post('/api/addRealEstateData', async (req, res) => {
-    const { location, area, building_area, interior_area, community_name, property_usage, house_structure, market_price, market_rent, base_date, remarks, house_type, construction_year, floor } = req.body;
-    try {
-        let firstpool = await sql.connect(config);
-        let result = await firstpool.request()
-            .input('location', sql.NVarChar, location)
-            .input('area', sql.NVarChar, area)
-            .input('building_area', sql.Decimal(10, 2), building_area)
-            .input('interior_area', sql.Decimal(10, 2), interior_area)
-            .input('community_name', sql.NVarChar, community_name)
-            .input('property_usage', sql.NVarChar, property_usage)
-            .input('house_structure', sql.NVarChar, house_structure)
-            .input('market_price', sql.Decimal(10, 2), market_price)
-            .input('market_rent', sql.Decimal(10, 2), market_rent)
-            .input('base_date', sql.Date, base_date) // 新增
-            .input('remarks', sql.NVarChar, remarks) // 新增
-            .input('house_type', sql.NVarChar, house_type)
-            .input('construction_year', sql.Int, construction_year)
-            .input('floor', sql.NVarChar, floor)
-            .query('INSERT INTO RealEstate (location, area, building_area, interior_area, community_name, property_usage, house_structure, market_price, market_rent, base_date, remarks, house_type, construction_year, floor) OUTPUT INSERTED.* VALUES (@location, @area, @building_area, @interior_area, @community_name, @property_usage, @house_structure, @market_price, @market_rent, @base_date, @remarks, @house_type, @construction_year, @floor)');
+    // 添加新记录
+    app.post('/api/addRecord', async (req, res) => {
+        const { category, subcategory, amount, date, person } = req.body;
+        try {
+            let firstpool = await sql.connect(config);
+            await firstpool.request()
+                .input('category', sql.NVarChar, category)
+                .input('subcategory', sql.NVarChar, subcategory)
+                .input('amount', sql.Float, amount)
+                .input('date', sql.Date, date)
+                .input('person', sql.NVarChar, person)
+                .query('INSERT INTO Records (Category, Subcategory, Amount, Date, Person) VALUES (@category, @subcategory, @amount, @date, @person)');
+            res.status(201).send('Record added successfully');
+            firstpool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
 
-        res.json(result.recordset[0]);
-        firstpool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+    // 更新记录
+    app.put('/api/updateRecord/:id', async (req, res) => {
+        const { id } = req.params;
+        const { category, subcategory, amount, date, person } = req.body;
+        try {
+            let firstpool = await sql.connect(config);
+            await firstpool.request()
+                .input('id', sql.Int, id)
+                .input('category', sql.NVarChar, category)
+                .input('subcategory', sql.NVarChar, subcategory)
+                .input('amount', sql.Float, amount)
+                .input('date', sql.Date, date)
+                .input('person', sql.NVarChar, person)
+                .query('UPDATE Records SET Category = @category, Subcategory = @subcategory, Amount = @amount, Date = @date, Person = @person WHERE Id = @id');
+            res.send('Record updated successfully');
+            firstpool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 删除记录
+    app.delete('/api/deleteRecord/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            let firstpool = await sql.connect(config);
+            await firstpool.request()
+                .input('id', sql.Int, id)
+                .query('DELETE FROM Records WHERE Id = @id');
+            res.send('Record deleted successfully');
+            firstpool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 添加新房产
+    app.post('/api/addRealEstateData', async (req, res) => {
+        const { location, area, building_area, interior_area, community_name, property_usage, house_structure, market_price, market_rent, base_date, remarks, house_type, construction_year, floor } = req.body;
+        try {
+            let firstpool = await sql.connect(config);
+            let result = await firstpool.request()
+                .input('location', sql.NVarChar, location)
+                .input('area', sql.NVarChar, area)
+                .input('building_area', sql.Decimal(10, 2), building_area)
+                .input('interior_area', sql.Decimal(10, 2), interior_area)
+                .input('community_name', sql.NVarChar, community_name)
+                .input('property_usage', sql.NVarChar, property_usage)
+                .input('house_structure', sql.NVarChar, house_structure)
+                .input('market_price', sql.Decimal(10, 2), market_price)
+                .input('market_rent', sql.Decimal(10, 2), market_rent)
+                .input('base_date', sql.Date, base_date) // 新增
+                .input('remarks', sql.NVarChar, remarks) // 新增
+                .input('house_type', sql.NVarChar, house_type)
+                .input('construction_year', sql.Int, construction_year)
+                .input('floor', sql.NVarChar, floor)
+                .query('INSERT INTO RealEstate (location, area, building_area, interior_area, community_name, property_usage, house_structure, market_price, market_rent, base_date, remarks, house_type, construction_year, floor) OUTPUT INSERTED.* VALUES (@location, @area, @building_area, @interior_area, @community_name, @property_usage, @house_structure, @market_price, @market_rent, @base_date, @remarks, @house_type, @construction_year, @floor)');
+
+            res.json(result.recordset[0]);
+            firstpool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+}
 
 
 // 更新房产
@@ -1233,217 +1244,221 @@ app.delete('/api/deleteRealEstateData/:id', async (req, res) => {
 
 
 
-//下载报告
+{//下载报告
 
-//获取下载表数据
-// 获取 Template 表数据
-app.get('/api/getTemplateData', async (req, res) => {
-    try {
-        let firstpool = await sql.connect(config);
-        let templateResult = await firstpool.request().query('SELECT * FROM Report_Template');
-        res.json({ Template: templateResult.recordset });
-        firstpool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 下载文件的路由
-app.get('/download/:templateId/:file', (req, res) => {
-    const templateId = req.params.templateId;
-    const fileName = req.params.file; // 获取文件名
-    //注意这里的文件位置
-    const directoryPath = path.join(__dirname, './public/downloads/Templates', templateId);
-
-    // 确保目录存在
-    if (!fs.existsSync(directoryPath)) {
-        return res.status(404).send('Directory not found 未找到资源');
-    }
-
-    const filePath = path.join(directoryPath, fileName); // 组合文件路径
-
-    // 确保文件存在
-    if (!fs.existsSync(filePath)) {
-        return res.status(404).send('File not found 未找到文件');
-    }
-
-    res.download(filePath, fileName, (err) => {
-        if (err) {
-            console.error('Error downloading file:', err);
-            res.status(500).send('Error downloading file');
-        }
-    });
-});
-
-// 获取指定模板文件夹中的文件列表
-app.get('/api/getTemplateFiles/:number', (req, res) => {
-    const templateNumber = req.params.number;
-    //注意这里的文件位置
-    const directoryPath = path.join(__dirname, './public/downloads/Templates', templateNumber);
-
-    // 确保目录存在
-    if (!fs.existsSync(directoryPath)) {
-        return res.status(404).send('Directory not found 未找到资源');
-    }
-
-    // 读取目录中的文件
-    fs.readdir(directoryPath, (err, files) => {
-        if (err) {
+    //获取下载表数据
+    // 获取 Template 表数据
+    app.get('/api/getTemplateData', async (req, res) => {
+        try {
+            let firstpool = await sql.connect(config);
+            let templateResult = await firstpool.request().query('SELECT * FROM Report_Template');
+            res.json({ Template: templateResult.recordset });
+            firstpool.close();
+        } catch (err) {
             console.error(err);
-            return res.status(500).send('Error reading directory');
+            res.status(500).send('Server Error');
         }
-        // 返回文件名列表
-        res.json({ files });
     });
-});
+
+    // 下载文件的路由
+    app.get('/download/:templateId/:file', (req, res) => {
+        const templateId = req.params.templateId;
+        const fileName = req.params.file; // 获取文件名
+        //注意这里的文件位置
+        const directoryPath = path.join(__dirname, './public/downloads/Templates', templateId);
+
+        // 确保目录存在
+        if (!fs.existsSync(directoryPath)) {
+            return res.status(404).send('Directory not found 未找到资源');
+        }
+
+        const filePath = path.join(directoryPath, fileName); // 组合文件路径
+
+        // 确保文件存在
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).send('File not found 未找到文件');
+        }
+
+        res.download(filePath, fileName, (err) => {
+            if (err) {
+                console.error('Error downloading file:', err);
+                res.status(500).send('Error downloading file');
+            }
+        });
+    });
+
+    // 获取指定模板文件夹中的文件列表
+    app.get('/api/getTemplateFiles/:number', (req, res) => {
+        const templateNumber = req.params.number;
+        //注意这里的文件位置
+        const directoryPath = path.join(__dirname, './public/downloads/Templates', templateNumber);
+
+        // 确保目录存在
+        if (!fs.existsSync(directoryPath)) {
+            return res.status(404).send('Directory not found 未找到资源');
+        }
+
+        // 读取目录中的文件
+        fs.readdir(directoryPath, (err, files) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error reading directory');
+            }
+            // 返回文件名列表
+            res.json({ files });
+        });
+    });
 
 
 
-//根据文件名来获取链接
+    //根据文件名来获取链接
 
-app.get('/api/getReportTemplate_Link/:fileName', async (req, res) => {
-    const { fileName } = req.params;
-    console.log('Received fileName:', fileName); // 打印接收到的文件名
-    try {
-        let firstpool = await sql.connect(config);
-        const query = `
+    app.get('/api/getReportTemplate_Link/:fileName', async (req, res) => {
+        const { fileName } = req.params;
+        console.log('Received fileName:', fileName); // 打印接收到的文件名
+        try {
+            let firstpool = await sql.connect(config);
+            const query = `
             SELECT share_view_link, share_download_link, internal_edit_link 
             FROM ReportTemplate_Link 
             WHERE file_name = @fileName`; // 使用参数化查询以避免 SQL 注入
 
-        const request = firstpool.request()
-            .input('fileName', sql.NVarChar(255), fileName);
+            const request = firstpool.request()
+                .input('fileName', sql.NVarChar(255), fileName);
 
-        const result = await request.query(query);
-        if (result.recordset.length > 0) {
-            res.json(result.recordset); // 如果有多个结果，返回所有结果
-        } else {
-            res.status(404).send('Link not found');
+            const result = await request.query(query);
+            if (result.recordset.length > 0) {
+                res.json(result.recordset); // 如果有多个结果，返回所有结果
+            } else {
+                res.status(404).send('Link not found');
+            }
+            firstpool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
         }
-        firstpool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+    });
+}
 
-// 获取 UsedWebsites 常用网站数据
-app.get('/api/getUsedWebsitesData', async (req, res) => {
-    let pool;
-    try {
-        // 1. 首先获取数据库数据
-        pool = await sql.connect(config);
-        const result = await pool.request().query('SELECT * FROM UsedWebsites');
+{//常用网站数据
+    // 获取 UsedWebsites 常用网站数据
+    app.get('/api/getUsedWebsitesData', async (req, res) => {
+        let pool;
+        try {
+            // 1. 首先获取数据库数据
+            pool = await sql.connect(config);
+            const result = await pool.request().query('SELECT * FROM UsedWebsites');
 
-        // 2. 立即向所有客户端广播更新
-        io.emit('websites-update', result.recordset);
+            // 2. 立即向所有客户端广播更新
+            io.emit('websites-update', result.recordset);
 
-        // 3. 同时响应HTTP请求
-        res.json(result.recordset);
+            // 3. 同时响应HTTP请求
+            res.json(result.recordset);
 
-    } catch (err) {
-        console.error('数据库查询错误:', err);
-        res.status(500).send('Server Error');
-    } finally {
-        if (pool) {
-            pool.close();
+        } catch (err) {
+            console.error('数据库查询错误:', err);
+            res.status(500).send('Server Error');
+        } finally {
+            if (pool) {
+                pool.close();
+            }
         }
-    }
-});
-//添加新的网页链接
-app.post('/api/updateWebsites', async (req, res) => {
-    const { type, name, url } = req.body;
+    });
+    //添加新的网页链接
+    app.post('/api/updateWebsites', async (req, res) => {
+        const { type, name, url } = req.body;
 
-    // 验证输入
-    if (!type || !name || !url) {
-        return res.status(400).json({ error: '缺少必要参数: type, name, url' });
-    }
+        // 验证输入
+        if (!type || !name || !url) {
+            return res.status(400).json({ error: '缺少必要参数: type, name, url' });
+        }
 
-    let pool;
-    try {
-        pool = await sql.connect(config);
+        let pool;
+        try {
+            pool = await sql.connect(config);
 
-        // 插入新记录
-        const insertResult = await pool.request()
-            .input('type', sql.NVarChar(100), type)
-            .input('name', sql.NVarChar(255), name)
-            .input('url', sql.NVarChar(500), url)
-            .query(`
+            // 插入新记录
+            const insertResult = await pool.request()
+                .input('type', sql.NVarChar(100), type)
+                .input('name', sql.NVarChar(255), name)
+                .input('url', sql.NVarChar(500), url)
+                .query(`
                 INSERT INTO BillingApp.dbo.UsedWebsites 
                 (type, name, url) 
                 VALUES (@type, @name, @url)
             `);
 
-        // 获取更新后的完整列表
-        const result = await pool.request().query('SELECT * FROM UsedWebsites');
+            // 获取更新后的完整列表
+            const result = await pool.request().query('SELECT * FROM UsedWebsites');
 
-        // 广播给所有客户端
-        io.emit('websites-update', result.recordset);
+            // 广播给所有客户端
+            io.emit('websites-update', result.recordset);
 
-        res.status(200).json({ success: true });
-    } catch (err) {
-        console.error('添加网站链接失败:', err);
-        res.status(500).json({ error: '添加网站链接失败' });
-    } finally {
-        if (pool) {
-            pool.close();
+            res.status(200).json({ success: true });
+        } catch (err) {
+            console.error('添加网站链接失败:', err);
+            res.status(500).json({ error: '添加网站链接失败' });
+        } finally {
+            if (pool) {
+                pool.close();
+            }
         }
-    }
-});
+    });
+}
 
-//项目派单表
-// 获取所有派单记录
-app.get('/api/getProjectDispatchData', async (req, res) => {
-    try {
-        let pool = await sql.connect(config);
-        const result = await pool.request().query('SELECT * FROM ProjectDispatchForm');
-        res.status(200).json({ ProjectDispatchForm: result.recordset });
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+{ //办公派单
+    //项目派单表
+    // 获取所有派单记录
+    app.get('/api/getProjectDispatchData', async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+            const result = await pool.request().query('SELECT * FROM ProjectDispatchForm');
+            res.status(200).json({ ProjectDispatchForm: result.recordset });
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
 
-// 添加派单记录
-app.post('/api/addProjectDispatch', async (req, res) => {
-    const {
-        ProjectName, Branch, OrderNumber, ProjectSource,
-        ProjectSourceContact, ProjectSourcePhone, Client,
-        ClientContact, ClientPhone, Applicant, ApplicantContact,
-        ApplicantPhone, Defendant, DefendantContact, DefendantPhone,
-        ProjectType, EvaluationPurpose, PersonInCharge, EntrustDate, DispatchDate,
-        ProjectNumber, CompleteProgress, Principal // 新增 Principal 字段
-    } = req.body;
+    // 添加派单记录
+    app.post('/api/addProjectDispatch', async (req, res) => {
+        const {
+            ProjectName, Branch, OrderNumber, ProjectSource,
+            ProjectSourceContact, ProjectSourcePhone, Client,
+            ClientContact, ClientPhone, Applicant, ApplicantContact,
+            ApplicantPhone, Defendant, DefendantContact, DefendantPhone,
+            ProjectType, EvaluationPurpose, PersonInCharge, EntrustDate, DispatchDate,
+            ProjectNumber, CompleteProgress, Principal // 新增 Principal 字段
+        } = req.body;
 
-    try {
-        let pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('ProjectName', sql.NVarChar, ProjectName)
-            .input('Branch', sql.NVarChar, Branch)
-            .input('OrderNumber', sql.NVarChar, OrderNumber)
-            .input('ProjectSource', sql.NVarChar, ProjectSource)
-            .input('ProjectSourceContact', sql.NVarChar, ProjectSourceContact)
-            .input('ProjectSourcePhone', sql.NVarChar, ProjectSourcePhone)
-            .input('Client', sql.NVarChar, Client)
-            .input('ClientContact', sql.NVarChar, ClientContact)
-            .input('ClientPhone', sql.NVarChar, ClientPhone)
-            .input('Applicant', sql.NVarChar, Applicant)
-            .input('ApplicantContact', sql.NVarChar, ApplicantContact)
-            .input('ApplicantPhone', sql.NVarChar, ApplicantPhone)
-            .input('Defendant', sql.NVarChar, Defendant)
-            .input('DefendantContact', sql.NVarChar, DefendantContact)
-            .input('DefendantPhone', sql.NVarChar, DefendantPhone)
-            .input('ProjectType', sql.NVarChar, ProjectType)
-            .input('EvaluationPurpose', sql.NVarChar, EvaluationPurpose)
-            .input('PersonInCharge', sql.NVarChar, PersonInCharge)
-            .input('EntrustDate', sql.Date, EntrustDate)
-            .input('DispatchDate', sql.Date, DispatchDate)
-            .input('ProjectNumber', sql.NVarChar, ProjectNumber)
-            .input('CompleteProgress', sql.Bit, CompleteProgress)
-            .input('Principal', sql.NVarChar, Principal) // 新增 Principal 字段
-            .query(`
+        try {
+            let pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('ProjectName', sql.NVarChar, ProjectName)
+                .input('Branch', sql.NVarChar, Branch)
+                .input('OrderNumber', sql.NVarChar, OrderNumber)
+                .input('ProjectSource', sql.NVarChar, ProjectSource)
+                .input('ProjectSourceContact', sql.NVarChar, ProjectSourceContact)
+                .input('ProjectSourcePhone', sql.NVarChar, ProjectSourcePhone)
+                .input('Client', sql.NVarChar, Client)
+                .input('ClientContact', sql.NVarChar, ClientContact)
+                .input('ClientPhone', sql.NVarChar, ClientPhone)
+                .input('Applicant', sql.NVarChar, Applicant)
+                .input('ApplicantContact', sql.NVarChar, ApplicantContact)
+                .input('ApplicantPhone', sql.NVarChar, ApplicantPhone)
+                .input('Defendant', sql.NVarChar, Defendant)
+                .input('DefendantContact', sql.NVarChar, DefendantContact)
+                .input('DefendantPhone', sql.NVarChar, DefendantPhone)
+                .input('ProjectType', sql.NVarChar, ProjectType)
+                .input('EvaluationPurpose', sql.NVarChar, EvaluationPurpose)
+                .input('PersonInCharge', sql.NVarChar, PersonInCharge)
+                .input('EntrustDate', sql.Date, EntrustDate)
+                .input('DispatchDate', sql.Date, DispatchDate)
+                .input('ProjectNumber', sql.NVarChar, ProjectNumber)
+                .input('CompleteProgress', sql.Bit, CompleteProgress)
+                .input('Principal', sql.NVarChar, Principal) // 新增 Principal 字段
+                .query(`
                 INSERT INTO ProjectDispatchForm (
                     ProjectName, Branch, OrderNumber, ProjectSource,
                     ProjectSourceContact, ProjectSourcePhone, Client,
@@ -1462,54 +1477,54 @@ app.post('/api/addProjectDispatch', async (req, res) => {
                     @ProjectNumber, @CompleteProgress, @Principal
                 );
             `);
-        res.status(201).json({ ID: result.rowsAffected[0] });
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+            res.status(201).json({ ID: result.rowsAffected[0] });
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
 
-// 更新派单记录
-app.put('/api/updateProjectDispatch/:id', async (req, res) => {
-    const { id } = req.params;
-    const {
-        ProjectName, Branch, OrderNumber, ProjectSource,
-        ProjectSourceContact, ProjectSourcePhone, Client,
-        ClientContact, ClientPhone, Applicant, ApplicantContact,
-        ApplicantPhone, Defendant, DefendantContact, DefendantPhone,
-        ProjectType, EvaluationPurpose, PersonInCharge, EntrustDate, DispatchDate,
-        ProjectNumber, CompleteProgress, Principal // 新增 Principal 字段
-    } = req.body;
+    // 更新派单记录
+    app.put('/api/updateProjectDispatch/:id', async (req, res) => {
+        const { id } = req.params;
+        const {
+            ProjectName, Branch, OrderNumber, ProjectSource,
+            ProjectSourceContact, ProjectSourcePhone, Client,
+            ClientContact, ClientPhone, Applicant, ApplicantContact,
+            ApplicantPhone, Defendant, DefendantContact, DefendantPhone,
+            ProjectType, EvaluationPurpose, PersonInCharge, EntrustDate, DispatchDate,
+            ProjectNumber, CompleteProgress, Principal // 新增 Principal 字段
+        } = req.body;
 
-    try {
-        let pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .input('ProjectName', sql.NVarChar, ProjectName)
-            .input('Branch', sql.NVarChar, Branch)
-            .input('OrderNumber', sql.NVarChar, OrderNumber)
-            .input('ProjectSource', sql.NVarChar, ProjectSource)
-            .input('ProjectSourceContact', sql.NVarChar, ProjectSourceContact)
-            .input('ProjectSourcePhone', sql.NVarChar, ProjectSourcePhone)
-            .input('Client', sql.NVarChar, Client)
-            .input('ClientContact', sql.NVarChar, ClientContact)
-            .input('ClientPhone', sql.NVarChar, ClientPhone)
-            .input('Applicant', sql.NVarChar, Applicant)
-            .input('ApplicantContact', sql.NVarChar, ApplicantContact)
-            .input('ApplicantPhone', sql.NVarChar, ApplicantPhone)
-            .input('Defendant', sql.NVarChar, Defendant)
-            .input('DefendantContact', sql.NVarChar, DefendantContact)
-            .input('DefendantPhone', sql.NVarChar, DefendantPhone)
-            .input('ProjectType', sql.NVarChar, ProjectType)
-            .input('EvaluationPurpose', sql.NVarChar, EvaluationPurpose)
-            .input('PersonInCharge', sql.NVarChar, PersonInCharge)
-            .input('EntrustDate', sql.Date, EntrustDate)
-            .input('DispatchDate', sql.Date, DispatchDate)
-            .input('ProjectNumber', sql.NVarChar, ProjectNumber)
-            .input('CompleteProgress', sql.Bit, CompleteProgress)
-            .input('Principal', sql.NVarChar, Principal) // 新增 Principal 字段
-            .query(`
+        try {
+            let pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .input('ProjectName', sql.NVarChar, ProjectName)
+                .input('Branch', sql.NVarChar, Branch)
+                .input('OrderNumber', sql.NVarChar, OrderNumber)
+                .input('ProjectSource', sql.NVarChar, ProjectSource)
+                .input('ProjectSourceContact', sql.NVarChar, ProjectSourceContact)
+                .input('ProjectSourcePhone', sql.NVarChar, ProjectSourcePhone)
+                .input('Client', sql.NVarChar, Client)
+                .input('ClientContact', sql.NVarChar, ClientContact)
+                .input('ClientPhone', sql.NVarChar, ClientPhone)
+                .input('Applicant', sql.NVarChar, Applicant)
+                .input('ApplicantContact', sql.NVarChar, ApplicantContact)
+                .input('ApplicantPhone', sql.NVarChar, ApplicantPhone)
+                .input('Defendant', sql.NVarChar, Defendant)
+                .input('DefendantContact', sql.NVarChar, DefendantContact)
+                .input('DefendantPhone', sql.NVarChar, DefendantPhone)
+                .input('ProjectType', sql.NVarChar, ProjectType)
+                .input('EvaluationPurpose', sql.NVarChar, EvaluationPurpose)
+                .input('PersonInCharge', sql.NVarChar, PersonInCharge)
+                .input('EntrustDate', sql.Date, EntrustDate)
+                .input('DispatchDate', sql.Date, DispatchDate)
+                .input('ProjectNumber', sql.NVarChar, ProjectNumber)
+                .input('CompleteProgress', sql.Bit, CompleteProgress)
+                .input('Principal', sql.NVarChar, Principal) // 新增 Principal 字段
+                .query(`
                 UPDATE ProjectDispatchForm SET
                 ProjectName = @ProjectName,
                 Branch = @Branch,
@@ -1537,379 +1552,379 @@ app.put('/api/updateProjectDispatch/:id', async (req, res) => {
                 WHERE id = @id;
             `);
 
-        if (result.rowsAffected[0] === 0) {
-            return res.status(404).send('派单记录未找到');
+            if (result.rowsAffected[0] === 0) {
+                return res.status(404).send('派单记录未找到');
+            }
+
+            res.status(200).json({ message: '派单记录更新成功' });
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
         }
+    });
 
-        res.status(200).json({ message: '派单记录更新成功' });
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+    // 删除派单记录
+    app.delete('/api/deleteProjectDispatch/:id', async (req, res) => {
+        const { id } = req.params;
 
-// 删除派单记录
-app.delete('/api/deleteProjectDispatch/:id', async (req, res) => {
-    const { id } = req.params;
+        try {
+            let pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .query('DELETE FROM ProjectDispatchForm WHERE id = @id');
 
-    try {
-        let pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .query('DELETE FROM ProjectDispatchForm WHERE id = @id');
+            if (result.rowsAffected[0] === 0) {
+                return res.status(404).send('派单记录未找到');
+            }
 
-        if (result.rowsAffected[0] === 0) {
-            return res.status(404).send('派单记录未找到');
+            res.status(200).json({ message: '派单记录删除成功' });
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
         }
-
-        res.status(200).json({ message: '派单记录删除成功' });
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+    });
 
 
 
 
-//报告编号
-// 获取所有报告
-app.get('/api/getReportNumbers', async (req, res) => {
-    try {
-        let pool = await sql.connect(config);
-        let result = await pool.request().query('SELECT * FROM ReportNumberTable');
-        res.json(result.recordset);
-    } catch (error) {
-        console.error('获取报告失败:', error);
-        res.status(500).send('服务器错误');
-    }
-});
-
-// 添加新报告
-app.post('/api/addReportNumbers', async (req, res) => {
-    const { asset_region, report_type, total_assessment_value, asset_usage, unit_assessment_price, assessment_area, report_count, issue_date, report_number, remarks } = req.body;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('asset_region', sql.NVarChar, asset_region)
-            .input('report_type', sql.NVarChar, report_type)
-            .input('total_assessment_value', sql.Decimal(18, 2), total_assessment_value)
-            .input('asset_usage', sql.NVarChar, asset_usage)
-            .input('unit_assessment_price', sql.Decimal(18, 2), unit_assessment_price)
-            .input('assessment_area', sql.Decimal(18, 2), assessment_area)
-            .input('report_count', sql.Int, report_count)
-            .input('issue_date', sql.Date, issue_date)
-            .input('report_number', sql.NVarChar, report_number)
-            .input('remarks', sql.NVarChar, remarks)
-            .query('INSERT INTO ReportNumberTable (asset_region, report_type, total_assessment_value, asset_usage, unit_assessment_price, assessment_area, report_count, issue_date, report_number, remarks) VALUES (@asset_region, @report_type, @total_assessment_value, @asset_usage, @unit_assessment_price, @assessment_area, @report_count, @issue_date, @report_number, @remarks)');
-        res.status(201).send('报告添加成功');
-    } catch (error) {
-        console.error('添加报告失败:', error);
-        res.status(500).send('服务器错误');
-    }
-});
-
-// 更新报告
-// 更新报告
-app.put('/api/updateReportNumbers/:id', async (req, res) => {
-    const { id } = req.params;
-    const { asset_region, report_type, total_assessment_value, asset_usage, unit_assessment_price, assessment_area, report_count, issue_date, report_number, remarks } = req.body;
-    try {
-        //console.log('Issue Date:', issue_date); // 检查 issue_date 的值
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('id', sql.Int, id)
-            .input('asset_region', sql.NVarChar, asset_region)
-            .input('report_type', sql.NVarChar, report_type)
-            .input('total_assessment_value', sql.Decimal(18, 2), total_assessment_value)
-            .input('asset_usage', sql.NVarChar, asset_usage)
-            .input('unit_assessment_price', sql.Decimal(18, 2), unit_assessment_price)
-            .input('assessment_area', sql.Decimal(18, 2), assessment_area)
-            .input('report_count', sql.Int, report_count)
-            .input('issue_date', sql.Date, issue_date) // 确保传递的是有效的日期
-            .input('report_number', sql.NVarChar, report_number)
-            .input('remarks', sql.NVarChar, remarks)
-            .query('UPDATE ReportNumberTable SET asset_region = @asset_region, report_type = @report_type, total_assessment_value = @total_assessment_value, asset_usage = @asset_usage, unit_assessment_price = @unit_assessment_price, assessment_area = @assessment_area, report_count = @report_count, issue_date = @issue_date, report_number = @report_number, remarks = @remarks WHERE id = @id');
-        res.send('报告更新成功');
-    } catch (error) {
-        console.error('更新报告失败:', error);
-        res.status(500).send('服务器错误');
-    }
-});
-
-
-// 删除报告
-app.delete('/api/deleteReportNumbers/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('id', sql.Int, id)
-            .query('DELETE FROM ReportNumberTable WHERE id = @id');
-        res.send('报告删除成功');
-    } catch (error) {
-        console.error('删除报告失败:', error);
-        res.status(500).send('服务器错误');
-    }
-});
-
-
-
-//评估收费统计
-// 获取所有费用记录
-app.get('/api/getAssessProjectFees', async (req, res) => {
-    try {
-        let pool = await sql.connect(config);
-        const result = await pool.request().query('SELECT * FROM AssessprojectfeesTable');
-        res.json(result.recordset);
-    } catch (error) {
-        console.error('获取费用记录失败:', error);
-        res.status(500).send('服务器错误');
-    }
-});
-
-// 添加费用记录
-app.post('/api/addAssessProjectFees', async (req, res) => {
-    const { project_id, fee_amount, fee_date, fee_type, remarks } = req.body;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('project_id', sql.NVarChar, project_id)
-            .input('fee_amount', sql.Decimal(18, 2), fee_amount)
-            .input('fee_date', sql.DateTime, fee_date)
-            .input('fee_type', sql.NVarChar, fee_type)
-            .input('remarks', sql.NVarChar, remarks)
-            .query('INSERT INTO AssessprojectfeesTable (project_id, fee_amount, fee_date, fee_type, remarks) VALUES (@project_id, @fee_amount, @fee_date, @fee_type, @remarks)');
-        res.status(201).send('费用记录添加成功');
-    } catch (error) {
-        console.error('添加费用记录失败:', error);
-        res.status(500).send('服务器错误');
-    }
-});
-
-// 更新费用记录
-app.put('/api/updateAssessProjectFees/:id', async (req, res) => {
-    const { id } = req.params;
-    const { project_id, fee_amount, fee_date, fee_type, remarks } = req.body;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('id', sql.Int, id)
-            .input('project_id', sql.NVarChar, project_id)
-            .input('fee_amount', sql.Decimal(18, 2), fee_amount)
-            .input('fee_date', sql.DateTime, fee_date)
-            .input('fee_type', sql.NVarChar, fee_type)
-            .input('remarks', sql.NVarChar, remarks)
-            .query('UPDATE AssessprojectfeesTable SET project_id = @project_id, fee_amount = @fee_amount, fee_date = @fee_date, fee_type = @fee_type, remarks = @remarks WHERE id = @id');
-        res.send('费用记录更新成功');
-    } catch (error) {
-        console.error('更新费用记录失败:', error);
-        res.status(500).send('服务器错误');
-    }
-});
-
-// 删除费用记录
-app.delete('/api/deleteAssessProjectFees/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        let pool = await sql.connect(config);
-        await pool.request()
-            .input('id', sql.Int, id)
-            .query('DELETE FROM AssessprojectfeesTable WHERE id = @id');
-        res.send('费用记录删除成功');
-    } catch (error) {
-        console.error('删除费用记录失败:', error);
-        res.status(500).send('服务器错误');
-    }
-});
-
-
-//工作日志
-// 获取所有工作日志
-app.get('/api/getEvaluateworklogTable', async (req, res) => {
-    const { project_id } = req.query; // 从查询参数获取项目编号
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .query(`SELECT * FROM EvaluateworklogTable ${project_id ? `WHERE project_id = @project_id` : ''}`);
-
-        if (project_id) {
-            pool.request().input('project_id', sql.NVarChar, project_id);
+    //报告编号
+    // 获取所有报告
+    app.get('/api/getReportNumbers', async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+            let result = await pool.request().query('SELECT * FROM ReportNumberTable');
+            res.json(result.recordset);
+        } catch (error) {
+            console.error('获取报告失败:', error);
+            res.status(500).send('服务器错误');
         }
+    });
 
-        res.json(result.recordset);
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+    // 添加新报告
+    app.post('/api/addReportNumbers', async (req, res) => {
+        const { asset_region, report_type, total_assessment_value, asset_usage, unit_assessment_price, assessment_area, report_count, issue_date, report_number, remarks } = req.body;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('asset_region', sql.NVarChar, asset_region)
+                .input('report_type', sql.NVarChar, report_type)
+                .input('total_assessment_value', sql.Decimal(18, 2), total_assessment_value)
+                .input('asset_usage', sql.NVarChar, asset_usage)
+                .input('unit_assessment_price', sql.Decimal(18, 2), unit_assessment_price)
+                .input('assessment_area', sql.Decimal(18, 2), assessment_area)
+                .input('report_count', sql.Int, report_count)
+                .input('issue_date', sql.Date, issue_date)
+                .input('report_number', sql.NVarChar, report_number)
+                .input('remarks', sql.NVarChar, remarks)
+                .query('INSERT INTO ReportNumberTable (asset_region, report_type, total_assessment_value, asset_usage, unit_assessment_price, assessment_area, report_count, issue_date, report_number, remarks) VALUES (@asset_region, @report_type, @total_assessment_value, @asset_usage, @unit_assessment_price, @assessment_area, @report_count, @issue_date, @report_number, @remarks)');
+            res.status(201).send('报告添加成功');
+        } catch (error) {
+            console.error('添加报告失败:', error);
+            res.status(500).send('服务器错误');
+        }
+    });
 
-// 添加工作日志
-app.post('/api/addEvaluateworklogTable', async (req, res) => {
-    const { project_id, communication_record, contact_time } = req.body;
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('project_id', sql.NVarChar, project_id)
-            .input('communication_record', sql.NVarChar, communication_record)
-            .input('contact_time', sql.Date, contact_time)
-            .query('INSERT INTO EvaluateworklogTable (project_id, communication_record, contact_time) VALUES (@project_id, @communication_record, @contact_time)');
-
-        res.status(201).json({ ID: result.rowsAffected[0] });
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 更新工作日志
-app.put('/api/updateEvaluateworklogTable/:id', async (req, res) => {
-    const { id } = req.params;
-    const { project_id, communication_record, contact_time } = req.body;
-    try {
-        const pool = await sql.connect(config);
-        await pool.request()
-            .input('id', sql.Int, id)
-            .input('project_id', sql.NVarChar, project_id)
-            .input('communication_record', sql.NVarChar, communication_record)
-            .input('contact_time', sql.Date, contact_time)
-            .query('UPDATE EvaluateworklogTable SET project_id = @project_id, communication_record = @communication_record, contact_time = @contact_time WHERE id = @id');
-
-        res.send('工作日志更新成功');
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 删除工作日志
-app.delete('/api/deleteEvaluateworklogTable/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const pool = await sql.connect(config);
-        await pool.request()
-            .input('id', sql.Int, id)
-            .query('DELETE FROM EvaluateworklogTable WHERE id = @id');
-
-        res.status(204).send(); // No Content
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+    // 更新报告
+    // 更新报告
+    app.put('/api/updateReportNumbers/:id', async (req, res) => {
+        const { id } = req.params;
+        const { asset_region, report_type, total_assessment_value, asset_usage, unit_assessment_price, assessment_area, report_count, issue_date, report_number, remarks } = req.body;
+        try {
+            //console.log('Issue Date:', issue_date); // 检查 issue_date 的值
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('id', sql.Int, id)
+                .input('asset_region', sql.NVarChar, asset_region)
+                .input('report_type', sql.NVarChar, report_type)
+                .input('total_assessment_value', sql.Decimal(18, 2), total_assessment_value)
+                .input('asset_usage', sql.NVarChar, asset_usage)
+                .input('unit_assessment_price', sql.Decimal(18, 2), unit_assessment_price)
+                .input('assessment_area', sql.Decimal(18, 2), assessment_area)
+                .input('report_count', sql.Int, report_count)
+                .input('issue_date', sql.Date, issue_date) // 确保传递的是有效的日期
+                .input('report_number', sql.NVarChar, report_number)
+                .input('remarks', sql.NVarChar, remarks)
+                .query('UPDATE ReportNumberTable SET asset_region = @asset_region, report_type = @report_type, total_assessment_value = @total_assessment_value, asset_usage = @asset_usage, unit_assessment_price = @unit_assessment_price, assessment_area = @assessment_area, report_count = @report_count, issue_date = @issue_date, report_number = @report_number, remarks = @remarks WHERE id = @id');
+            res.send('报告更新成功');
+        } catch (error) {
+            console.error('更新报告失败:', error);
+            res.status(500).send('服务器错误');
+        }
+    });
 
 
-
-//机器设备
-// 获取所有设备
-app.get('/api/getMachineryEquipmentPricesTable', async (req, res) => {
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request().query('SELECT * FROM MachineryEquipmentPricesTable');
-        res.json(result.recordset);
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 添加设备
-app.post('/api/addMachineryEquipmentPricesTable', async (req, res) => {
-    const { name, model, manufacturer, unit, price } = req.body;
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('name', sql.NVarChar, name)
-            .input('model', sql.NVarChar, model)
-            .input('manufacturer', sql.NVarChar, manufacturer)
-            .input('unit', sql.NVarChar, unit)
-            .input('price', sql.Decimal(18, 2), price)
-            .query('INSERT INTO MachineryEquipmentPricesTable (name, model, manufacturer, unit, price) OUTPUT INSERTED.id VALUES (@name, @model, @manufacturer, @unit, @price)');
-
-        res.status(201).json({ ID: result.recordset[0].id });
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 更新设备
-app.put('/api/updateMachineryEquipmentPricesTable/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name, model, manufacturer, unit, price } = req.body;
-    try {
-        const pool = await sql.connect(config);
-        await pool.request()
-            .input('id', sql.Int, id)
-            .input('name', sql.NVarChar, name)
-            .input('model', sql.NVarChar, model)
-            .input('manufacturer', sql.NVarChar, manufacturer)
-            .input('unit', sql.NVarChar, unit)
-            .input('price', sql.Decimal(18, 2), price)
-            .query('UPDATE MachineryEquipmentPricesTable SET name = @name, model = @model, manufacturer = @manufacturer, unit = @unit, price = @price WHERE id = @id');
-
-        res.sendStatus(204); // No Content
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 删除设备
-app.delete('/api/deleteMachineryEquipmentPricesTable/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const pool = await sql.connect(config);
-        await pool.request()
-            .input('id', sql.Int, id)
-            .query('DELETE FROM MachineryEquipmentPricesTable WHERE id = @id');
-
-        res.sendStatus(204); // No Content
-        pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+    // 删除报告
+    app.delete('/api/deleteReportNumbers/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('id', sql.Int, id)
+                .query('DELETE FROM ReportNumberTable WHERE id = @id');
+            res.send('报告删除成功');
+        } catch (error) {
+            console.error('删除报告失败:', error);
+            res.status(500).send('服务器错误');
+        }
+    });
 
 
 
-//运动记录
-// 获取运动选项
-//  
-app.get('/api/getSportsOptions', async (req, res) => {
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .query('SELECT * FROM SportsApp.dbo.SportsOptions');
+    //评估收费统计
+    // 获取所有费用记录
+    app.get('/api/getAssessProjectFees', async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+            const result = await pool.request().query('SELECT * FROM AssessprojectfeesTable');
+            res.json(result.recordset);
+        } catch (error) {
+            console.error('获取费用记录失败:', error);
+            res.status(500).send('服务器错误');
+        }
+    });
 
-        res.json(result.recordset);
-    } catch (error) {
-        console.error('获取运动选项失败:', error);
-        res.status(500).json({
-            success: false,
-            message: '获取运动选项失败',
-            error: error.message
-        });
-    }
-});
-// 修正后的 API - 使用正确的列名 sport_type
-app.get('/api/getSportsCategories', async (req, res) => {
-    try {
-        const { username } = req.query;
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('username', sql.VarChar, username)
-            .query(`
+    // 添加费用记录
+    app.post('/api/addAssessProjectFees', async (req, res) => {
+        const { project_id, fee_amount, fee_date, fee_type, remarks } = req.body;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('project_id', sql.NVarChar, project_id)
+                .input('fee_amount', sql.Decimal(18, 2), fee_amount)
+                .input('fee_date', sql.DateTime, fee_date)
+                .input('fee_type', sql.NVarChar, fee_type)
+                .input('remarks', sql.NVarChar, remarks)
+                .query('INSERT INTO AssessprojectfeesTable (project_id, fee_amount, fee_date, fee_type, remarks) VALUES (@project_id, @fee_amount, @fee_date, @fee_type, @remarks)');
+            res.status(201).send('费用记录添加成功');
+        } catch (error) {
+            console.error('添加费用记录失败:', error);
+            res.status(500).send('服务器错误');
+        }
+    });
+
+    // 更新费用记录
+    app.put('/api/updateAssessProjectFees/:id', async (req, res) => {
+        const { id } = req.params;
+        const { project_id, fee_amount, fee_date, fee_type, remarks } = req.body;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('id', sql.Int, id)
+                .input('project_id', sql.NVarChar, project_id)
+                .input('fee_amount', sql.Decimal(18, 2), fee_amount)
+                .input('fee_date', sql.DateTime, fee_date)
+                .input('fee_type', sql.NVarChar, fee_type)
+                .input('remarks', sql.NVarChar, remarks)
+                .query('UPDATE AssessprojectfeesTable SET project_id = @project_id, fee_amount = @fee_amount, fee_date = @fee_date, fee_type = @fee_type, remarks = @remarks WHERE id = @id');
+            res.send('费用记录更新成功');
+        } catch (error) {
+            console.error('更新费用记录失败:', error);
+            res.status(500).send('服务器错误');
+        }
+    });
+
+    // 删除费用记录
+    app.delete('/api/deleteAssessProjectFees/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            let pool = await sql.connect(config);
+            await pool.request()
+                .input('id', sql.Int, id)
+                .query('DELETE FROM AssessprojectfeesTable WHERE id = @id');
+            res.send('费用记录删除成功');
+        } catch (error) {
+            console.error('删除费用记录失败:', error);
+            res.status(500).send('服务器错误');
+        }
+    });
+
+
+    //工作日志
+    // 获取所有工作日志
+    app.get('/api/getEvaluateworklogTable', async (req, res) => {
+        const { project_id } = req.query; // 从查询参数获取项目编号
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .query(`SELECT * FROM EvaluateworklogTable ${project_id ? `WHERE project_id = @project_id` : ''}`);
+
+            if (project_id) {
+                pool.request().input('project_id', sql.NVarChar, project_id);
+            }
+
+            res.json(result.recordset);
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 添加工作日志
+    app.post('/api/addEvaluateworklogTable', async (req, res) => {
+        const { project_id, communication_record, contact_time } = req.body;
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('project_id', sql.NVarChar, project_id)
+                .input('communication_record', sql.NVarChar, communication_record)
+                .input('contact_time', sql.Date, contact_time)
+                .query('INSERT INTO EvaluateworklogTable (project_id, communication_record, contact_time) VALUES (@project_id, @communication_record, @contact_time)');
+
+            res.status(201).json({ ID: result.rowsAffected[0] });
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 更新工作日志
+    app.put('/api/updateEvaluateworklogTable/:id', async (req, res) => {
+        const { id } = req.params;
+        const { project_id, communication_record, contact_time } = req.body;
+        try {
+            const pool = await sql.connect(config);
+            await pool.request()
+                .input('id', sql.Int, id)
+                .input('project_id', sql.NVarChar, project_id)
+                .input('communication_record', sql.NVarChar, communication_record)
+                .input('contact_time', sql.Date, contact_time)
+                .query('UPDATE EvaluateworklogTable SET project_id = @project_id, communication_record = @communication_record, contact_time = @contact_time WHERE id = @id');
+
+            res.send('工作日志更新成功');
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 删除工作日志
+    app.delete('/api/deleteEvaluateworklogTable/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            const pool = await sql.connect(config);
+            await pool.request()
+                .input('id', sql.Int, id)
+                .query('DELETE FROM EvaluateworklogTable WHERE id = @id');
+
+            res.status(204).send(); // No Content
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+}
+
+{//机器设备
+    // 获取所有设备
+    app.get('/api/getMachineryEquipmentPricesTable', async (req, res) => {
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request().query('SELECT * FROM MachineryEquipmentPricesTable');
+            res.json(result.recordset);
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 添加设备
+    app.post('/api/addMachineryEquipmentPricesTable', async (req, res) => {
+        const { name, model, manufacturer, unit, price } = req.body;
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('name', sql.NVarChar, name)
+                .input('model', sql.NVarChar, model)
+                .input('manufacturer', sql.NVarChar, manufacturer)
+                .input('unit', sql.NVarChar, unit)
+                .input('price', sql.Decimal(18, 2), price)
+                .query('INSERT INTO MachineryEquipmentPricesTable (name, model, manufacturer, unit, price) OUTPUT INSERTED.id VALUES (@name, @model, @manufacturer, @unit, @price)');
+
+            res.status(201).json({ ID: result.recordset[0].id });
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 更新设备
+    app.put('/api/updateMachineryEquipmentPricesTable/:id', async (req, res) => {
+        const { id } = req.params;
+        const { name, model, manufacturer, unit, price } = req.body;
+        try {
+            const pool = await sql.connect(config);
+            await pool.request()
+                .input('id', sql.Int, id)
+                .input('name', sql.NVarChar, name)
+                .input('model', sql.NVarChar, model)
+                .input('manufacturer', sql.NVarChar, manufacturer)
+                .input('unit', sql.NVarChar, unit)
+                .input('price', sql.Decimal(18, 2), price)
+                .query('UPDATE MachineryEquipmentPricesTable SET name = @name, model = @model, manufacturer = @manufacturer, unit = @unit, price = @price WHERE id = @id');
+
+            res.sendStatus(204); // No Content
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+
+    // 删除设备
+    app.delete('/api/deleteMachineryEquipmentPricesTable/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            const pool = await sql.connect(config);
+            await pool.request()
+                .input('id', sql.Int, id)
+                .query('DELETE FROM MachineryEquipmentPricesTable WHERE id = @id');
+
+            res.sendStatus(204); // No Content
+            pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+}
+
+
+{//运动记录
+    // 获取运动选项
+    //  
+    app.get('/api/getSportsOptions', async (req, res) => {
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .query('SELECT * FROM SportsApp.dbo.SportsOptions');
+
+            res.json(result.recordset);
+        } catch (error) {
+            console.error('获取运动选项失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '获取运动选项失败',
+                error: error.message
+            });
+        }
+    });
+    // 修正后的 API - 使用正确的列名 sport_type
+    app.get('/api/getSportsCategories', async (req, res) => {
+        try {
+            const { username } = req.query;
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('username', sql.VarChar, username)
+                .query(`
                 SELECT 
                     sport_type as sportType,
                     COUNT(*) as count,
@@ -1921,30 +1936,30 @@ app.get('/api/getSportsCategories', async (req, res) => {
                 GROUP BY sport_type
                 ORDER BY totalSeconds DESC
             `);
-        res.json(result.recordset);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+            res.json(result.recordset);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
 
-// 修正其他相关 API
-app.get('/api/getUserSportsStats', async (req, res) => {
-    try {
-        const { username, period = 'today' } = req.query;
-        const pool = await sql.connect(config);
+    // 修正其他相关 API
+    app.get('/api/getUserSportsStats', async (req, res) => {
+        try {
+            const { username, period = 'today' } = req.query;
+            const pool = await sql.connect(config);
 
-        let query = '';
-        if (period === 'today') {
-            query = `
+            let query = '';
+            if (period === 'today') {
+                query = `
                 SELECT COUNT(*) as count, 
                        SUM(DATEDIFF(SECOND, '00:00:00', duration)) as totalSeconds
                 FROM SportsApp.dbo.SportsRecordingTable 
                 WHERE participant = @username 
                 AND date = CONVERT(date, GETDATE())
             `;
-        } else if (period === 'month') {
-            query = `
+            } else if (period === 'month') {
+                query = `
                 SELECT COUNT(*) as count, 
                        SUM(DATEDIFF(SECOND, '00:00:00', duration)) as totalSeconds
                 FROM SportsApp.dbo.SportsRecordingTable 
@@ -1952,28 +1967,28 @@ app.get('/api/getUserSportsStats', async (req, res) => {
                 AND YEAR(date) = YEAR(GETDATE()) 
                 AND MONTH(date) = MONTH(GETDATE())
             `;
+            }
+
+            const result = await pool.request()
+                .input('username', sql.VarChar, username)
+                .query(query);
+
+            res.json(result.recordset[0]);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
         }
+    });
 
-        const result = await pool.request()
-            .input('username', sql.VarChar, username)
-            .query(query);
+    // 修正获取运动类型列表的 API
+    app.get('/api/getSportsTypeList', async (req, res) => {
+        try {
+            const { username } = req.query;
+            const pool = await sql.connect(config);
 
-        res.json(result.recordset[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-
-// 修正获取运动类型列表的 API
-app.get('/api/getSportsTypeList', async (req, res) => {
-    try {
-        const { username } = req.query;
-        const pool = await sql.connect(config);
-
-        const result = await pool.request()
-            .input('username', sql.VarChar, username)
-            .query(`
+            const result = await pool.request()
+                .input('username', sql.VarChar, username)
+                .query(`
                 SELECT DISTINCT sport_type as sportType
                 FROM SportsApp.dbo.SportsRecordingTable 
                 WHERE participant = @username
@@ -1982,210 +1997,210 @@ app.get('/api/getSportsTypeList', async (req, res) => {
                 ORDER BY sport_type
             `);
 
-        res.json(result.recordset);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
-// 获取运动记录
-app.get('/api/getSportsRecordingTable', async (req, res) => {
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request().query('SELECT * FROM SportsApp.dbo.SportsRecordingTable ORDER BY date DESC, id DESC');
-        res.json(result.recordset);
-        // pool.close();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-});
+            res.json(result.recordset);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
+    // 获取运动记录
+    app.get('/api/getSportsRecordingTable', async (req, res) => {
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request().query('SELECT * FROM SportsApp.dbo.SportsRecordingTable ORDER BY date DESC, id DESC');
+            res.json(result.recordset);
+            // pool.close();
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Server Error');
+        }
+    });
 
-// 添加运动记录 - 实时通知版本
-app.post('/api/addSportsRecordingTable', async (req, res) => {
-    const { sport_type, unit, quantity, date, duration, participant, remark } = req.body;
+    // 添加运动记录 - 实时通知版本
+    app.post('/api/addSportsRecordingTable', async (req, res) => {
+        const { sport_type, unit, quantity, date, duration, participant, remark } = req.body;
 
-    // 验证时间格式 (HH:mm:ss)
-    const isValidTime = (time) => /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(time);
-    if (duration && !isValidTime(duration)) {
-        return res.status(400).json({ error: 'Invalid time format for duration. Expected HH:mm:ss' });
-    }
+        // 验证时间格式 (HH:mm:ss)
+        const isValidTime = (time) => /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(time);
+        if (duration && !isValidTime(duration)) {
+            return res.status(400).json({ error: 'Invalid time format for duration. Expected HH:mm:ss' });
+        }
 
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('sport_type', sql.VarChar, sport_type)
-            .input('unit', sql.VarChar, unit)
-            .input('quantity', sql.Int, quantity)
-            .input('date', sql.Date, date)
-            .input('duration', sql.VarChar(8), duration || '00:00:00')
-            .input('participant', sql.VarChar, participant)
-            .input('remark', sql.NVarChar, remark)
-            .query(`INSERT INTO SportsApp.dbo.SportsRecordingTable 
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('sport_type', sql.VarChar, sport_type)
+                .input('unit', sql.VarChar, unit)
+                .input('quantity', sql.Int, quantity)
+                .input('date', sql.Date, date)
+                .input('duration', sql.VarChar(8), duration || '00:00:00')
+                .input('participant', sql.VarChar, participant)
+                .input('remark', sql.NVarChar, remark)
+                .query(`INSERT INTO SportsApp.dbo.SportsRecordingTable 
                    (sport_type, unit, quantity, date, duration, participant, remark) 
                    VALUES (@sport_type, @unit, @quantity, @date, @duration, @participant, @remark);
                    SELECT SCOPE_IDENTITY() as id`);
 
-        const newRecord = {
-            id: result.recordset[0].id,
-            sport_type,
-            unit,
-            quantity,
-            date,
-            duration: duration || '00:00:00',
-            participant,
-            remark
-        };
+            const newRecord = {
+                id: result.recordset[0].id,
+                sport_type,
+                unit,
+                quantity,
+                date,
+                duration: duration || '00:00:00',
+                participant,
+                remark
+            };
 
-        // 通知所有客户端有新的运动记录添加
-        io.emit('sports_record_added', newRecord);
+            // 通知所有客户端有新的运动记录添加
+            io.emit('sports_record_added', newRecord);
 
-        res.status(201).json({
-            success: true,
-            message: '记录添加成功',
-            id: newRecord.id,
-            record: newRecord
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server Error' });
-    }
-});
+            res.status(201).json({
+                success: true,
+                message: '记录添加成功',
+                id: newRecord.id,
+                record: newRecord
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Server Error' });
+        }
+    });
 
-// 更新运动记录 - 实时通知版本
-app.put('/api/updateSportsRecordingTable/:id', async (req, res) => {
-    const { id } = req.params;
-    const { sport_type, unit, quantity, date, duration, participant, remark } = req.body;
+    // 更新运动记录 - 实时通知版本
+    app.put('/api/updateSportsRecordingTable/:id', async (req, res) => {
+        const { id } = req.params;
+        const { sport_type, unit, quantity, date, duration, participant, remark } = req.body;
 
-    // 验证时间格式
-    const isValidTime = (time) => /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(time);
-    if (duration && !isValidTime(duration)) {
-        return res.status(400).json({ error: 'Invalid time format for duration. Expected HH:mm:ss' });
-    }
-
-    try {
-        const pool = await sql.connect(config);
-
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .input('sport_type', sql.VarChar, sport_type)
-            .input('unit', sql.VarChar, unit)
-            .input('quantity', sql.Int, quantity)
-            .input('date', sql.Date, date)
-            .input('duration', sql.VarChar(8), duration || '00:00:00')
-            .input('participant', sql.VarChar, participant)
-            .input('remark', sql.NVarChar, remark)
-            .query('UPDATE SportsApp.dbo.SportsRecordingTable SET sport_type = @sport_type, unit = @unit, quantity = @quantity, date = @date, duration = @duration, participant = @participant, remark = @remark WHERE id = @id');
-
-        if (result.rowsAffected[0] === 0) {
-            return res.status(404).json({ error: 'Record not found' });
+        // 验证时间格式
+        const isValidTime = (time) => /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(time);
+        if (duration && !isValidTime(duration)) {
+            return res.status(400).json({ error: 'Invalid time format for duration. Expected HH:mm:ss' });
         }
 
-        const updatedRecord = {
-            id: parseInt(id),
-            sport_type,
-            unit,
-            quantity,
-            date,
-            duration: duration || '00:00:00',
-            participant,
-            remark
-        };
+        try {
+            const pool = await sql.connect(config);
 
-        // 通知所有客户端有运动记录更新
-        io.emit('sports_record_updated', updatedRecord);
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .input('sport_type', sql.VarChar, sport_type)
+                .input('unit', sql.VarChar, unit)
+                .input('quantity', sql.Int, quantity)
+                .input('date', sql.Date, date)
+                .input('duration', sql.VarChar(8), duration || '00:00:00')
+                .input('participant', sql.VarChar, participant)
+                .input('remark', sql.NVarChar, remark)
+                .query('UPDATE SportsApp.dbo.SportsRecordingTable SET sport_type = @sport_type, unit = @unit, quantity = @quantity, date = @date, duration = @duration, participant = @participant, remark = @remark WHERE id = @id');
 
-        res.status(200).json({
-            success: true,
-            message: '记录更新成功',
-            record: updatedRecord
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server Error' });
-    }
-});
+            if (result.rowsAffected[0] === 0) {
+                return res.status(404).json({ error: 'Record not found' });
+            }
 
-// 删除运动记录 - 实时通知版本
-app.delete('/api/deleteSportsRecordingTable/:id', async (req, res) => {
-    const { id } = req.params;
+            const updatedRecord = {
+                id: parseInt(id),
+                sport_type,
+                unit,
+                quantity,
+                date,
+                duration: duration || '00:00:00',
+                participant,
+                remark
+            };
 
-    console.log('🗑️ 收到删除请求，ID:', id);
+            // 通知所有客户端有运动记录更新
+            io.emit('sports_record_updated', updatedRecord);
 
-    if (!id || isNaN(parseInt(id))) {
-        console.log('❌ 无效的ID:', id);
-        return res.status(400).json({
-            success: false,
-            message: '无效的记录ID'
-        });
-    }
+            res.status(200).json({
+                success: true,
+                message: '记录更新成功',
+                record: updatedRecord
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Server Error' });
+        }
+    });
 
-    const recordId = parseInt(id);
+    // 删除运动记录 - 实时通知版本
+    app.delete('/api/deleteSportsRecordingTable/:id', async (req, res) => {
+        const { id } = req.params;
 
-    try {
-        await poolConnect;
-        console.log('✅ 数据库连接成功，准备删除ID:', recordId);
+        console.log('🗑️ 收到删除请求，ID:', id);
 
-        // 先获取记录信息用于通知
-        const checkRequest = pool.request();
-        const checkResult = await checkRequest
-            .input('id', sql.Int, recordId)
-            .query('SELECT id, sport_type, participant FROM SportsApp.dbo.SportsRecordingTable WHERE id = @id');
-
-        console.log('🔍 查询结果记录数:', checkResult.recordset.length);
-
-        if (checkResult.recordset.length === 0) {
-            console.log('❌ 记录不存在，ID:', recordId);
-            return res.status(404).json({
+        if (!id || isNaN(parseInt(id))) {
+            console.log('❌ 无效的ID:', id);
+            return res.status(400).json({
                 success: false,
-                message: '记录不存在或已被删除'
+                message: '无效的记录ID'
             });
         }
 
-        const deletedRecord = checkResult.recordset[0];
-        console.log('✅ 记录存在:', deletedRecord);
+        const recordId = parseInt(id);
 
-        // 执行删除
-        const deleteRequest = pool.request();
-        const deleteResult = await deleteRequest
-            .input('id', sql.Int, recordId)
-            .query('DELETE FROM SportsApp.dbo.SportsRecordingTable WHERE id = @id');
+        try {
+            await poolConnect;
+            console.log('✅ 数据库连接成功，准备删除ID:', recordId);
 
-        const affectedRows = deleteResult.rowsAffected[0];
-        console.log('📊 删除影响行数:', affectedRows);
+            // 先获取记录信息用于通知
+            const checkRequest = pool.request();
+            const checkResult = await checkRequest
+                .input('id', sql.Int, recordId)
+                .query('SELECT id, sport_type, participant FROM SportsApp.dbo.SportsRecordingTable WHERE id = @id');
 
-        if (affectedRows === 0) {
-            console.log('❌ 删除操作未影响任何行，ID:', recordId);
-            return res.status(500).json({
+            console.log('🔍 查询结果记录数:', checkResult.recordset.length);
+
+            if (checkResult.recordset.length === 0) {
+                console.log('❌ 记录不存在，ID:', recordId);
+                return res.status(404).json({
+                    success: false,
+                    message: '记录不存在或已被删除'
+                });
+            }
+
+            const deletedRecord = checkResult.recordset[0];
+            console.log('✅ 记录存在:', deletedRecord);
+
+            // 执行删除
+            const deleteRequest = pool.request();
+            const deleteResult = await deleteRequest
+                .input('id', sql.Int, recordId)
+                .query('DELETE FROM SportsApp.dbo.SportsRecordingTable WHERE id = @id');
+
+            const affectedRows = deleteResult.rowsAffected[0];
+            console.log('📊 删除影响行数:', affectedRows);
+
+            if (affectedRows === 0) {
+                console.log('❌ 删除操作未影响任何行，ID:', recordId);
+                return res.status(500).json({
+                    success: false,
+                    message: '记录删除失败'
+                });
+            }
+
+            // 通知所有客户端有运动记录删除
+            io.emit('sports_record_deleted', {
+                id: recordId,
+                sport_type: deletedRecord.sport_type,
+                participant: deletedRecord.participant
+            });
+
+            console.log('✅ 删除成功，ID:', recordId);
+            res.status(200).json({
+                success: true,
+                message: '记录删除成功',
+                deletedRows: affectedRows,
+                deletedId: recordId
+            });
+
+        } catch (err) {
+            console.error('❌ 删除数据库错误:', err);
+            res.status(500).json({
                 success: false,
-                message: '记录删除失败'
+                message: '服务器错误: ' + err.message
             });
         }
-
-        // 通知所有客户端有运动记录删除
-        io.emit('sports_record_deleted', {
-            id: recordId,
-            sport_type: deletedRecord.sport_type,
-            participant: deletedRecord.participant
-        });
-
-        console.log('✅ 删除成功，ID:', recordId);
-        res.status(200).json({
-            success: true,
-            message: '记录删除成功',
-            deletedRows: affectedRows,
-            deletedId: recordId
-        });
-
-    } catch (err) {
-        console.error('❌ 删除数据库错误:', err);
-        res.status(500).json({
-            success: false,
-            message: '服务器错误: ' + err.message
-        });
-    }
-});
-
+    });
+}
 
 //房屋图片上传
 // 配置 multer 中间件
@@ -2345,375 +2360,375 @@ app.get('/api/checkImageExists', (req, res) => {
 
 
 
-//聊天👇
+{ //好友聊天//聊天👇
 
-// 获取聊天所有用户管理数据
-app.get('/api/user-management', async (req, res) => {
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request().query('SELECT * FROM ChatApp.dbo.UserManagement');
-        res.json(result.recordset);
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+    // 获取聊天所有用户管理数据
+    app.get('/api/user-management', async (req, res) => {
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request().query('SELECT * FROM ChatApp.dbo.UserManagement');
+            res.json(result.recordset);
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
 
-// 更新好友昵称的 API
-app.post('/api/update-nickname', async (req, res) => {
-    try {
-        const { username, friend, newNickname } = req.body;
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('username', sql.NVarChar(50), username)
-            .input('friend', sql.NVarChar(50), friend)
-            .input('newNickname', sql.NVarChar(50), newNickname)
-            .query(`
+    // 更新好友昵称的 API
+    app.post('/api/update-nickname', async (req, res) => {
+        try {
+            const { username, friend, newNickname } = req.body;
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('username', sql.NVarChar(50), username)
+                .input('friend', sql.NVarChar(50), friend)
+                .input('newNickname', sql.NVarChar(50), newNickname)
+                .query(`
                 UPDATE ChatApp.dbo.UserManagement
                 SET friend_nickname = @newNickname
                 WHERE username = @username AND friend = @friend
             `);
 
-        if (result.rowsAffected[0] > 0) {
-            res.status(200).json({ message: '昵称更新成功' });
-        } else {
-            res.status(404).json({ message: '未找到对应的好友记录，更新失败' });
+            if (result.rowsAffected[0] > 0) {
+                res.status(200).json({ message: '昵称更新成功' });
+            } else {
+                res.status(404).json({ message: '未找到对应的好友记录，更新失败' });
+            }
+
+            io.emit('friendListChanged');
+        } catch (error) {
+            console.error('更新昵称时出错:', error);
+            res.status(500).json({ message: '服务器内部错误，请稍后再试' });
         }
+    });
 
-        io.emit('friendListChanged');
-    } catch (error) {
-        console.error('更新昵称时出错:', error);
-        res.status(500).json({ message: '服务器内部错误，请稍后再试' });
-    }
-});
+    // 添加好友
+    // 验证用户是否存在
+    app.get('/api/validate-user/:username', async (req, res) => {
+        const { username } = req.params;
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('username', sql.NVarChar(50), username)
+                .query('SELECT * FROM AccountLogin WHERE username = @username');
 
-// 添加好友
-// 验证用户是否存在
-app.get('/api/validate-user/:username', async (req, res) => {
-    const { username } = req.params;
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('username', sql.NVarChar(50), username)
-            .query('SELECT * FROM AccountLogin WHERE username = @username');
-
-        if (result.recordset.length > 0) {
-            res.status(200).json({ exists: true });
-        } else {
-            res.status(404).json({ exists: false, message: '用户不存在' });
+            if (result.recordset.length > 0) {
+                res.status(200).json({ exists: true });
+            } else {
+                res.status(404).json({ exists: false, message: '用户不存在' });
+            }
+            io.emit('friendListChanged');
+        } catch (err) {
+            res.status(500).send(err.message);
         }
-        io.emit('friendListChanged');
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+    });
 
-// 请求添加好友
-app.post('/api/user-management', async (req, res) => {
-    try {
-        const { username, friend, is_friend_request_accepted = false, is_show_request = true } = req.body;
-        const pool = await sql.connect(config);
-        const query = `
+    // 请求添加好友
+    app.post('/api/user-management', async (req, res) => {
+        try {
+            const { username, friend, is_friend_request_accepted = false, is_show_request = true } = req.body;
+            const pool = await sql.connect(config);
+            const query = `
             INSERT INTO ChatApp.dbo.UserManagement (username, friend, is_friend_request_accepted, is_show_request)
             VALUES (@username, @friend, @is_friend_request_accepted, @is_show_request)
         `;
-        const request = pool.request();
-        request.input('username', sql.NVarChar(50), username);
-        request.input('friend', sql.NVarChar(50), friend);
-        request.input('is_friend_request_accepted', sql.Bit, is_friend_request_accepted);
-        request.input('is_show_request', sql.Bit, is_show_request);
+            const request = pool.request();
+            request.input('username', sql.NVarChar(50), username);
+            request.input('friend', sql.NVarChar(50), friend);
+            request.input('is_friend_request_accepted', sql.Bit, is_friend_request_accepted);
+            request.input('is_show_request', sql.Bit, is_show_request);
 
-        await request.query(query);
-        res.status(201).json({ message: '好友请求添加成功' });
+            await request.query(query);
+            res.status(201).json({ message: '好友请求添加成功' });
 
-        // 发送好友请求通知给接收方
-        io.emit('newFriendRequest', { sender: username, receiver: friend });
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+            // 发送好友请求通知给接收方
+            io.emit('newFriendRequest', { sender: username, receiver: friend });
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
 
 
-// 同意好友请求
-app.put('/api/user-management/:username/:friend/accept', async (req, res) => {
-    try {
-        const { username, friend } = req.params;
-        const pool = await sql.connect(config);
-        const query = `
+    // 同意好友请求
+    app.put('/api/user-management/:username/:friend/accept', async (req, res) => {
+        try {
+            const { username, friend } = req.params;
+            const pool = await sql.connect(config);
+            const query = `
             UPDATE ChatApp.dbo.UserManagement
             SET is_friend_request_accepted = 1
             WHERE (username = @username AND friend = @friend)
                OR (username = @friend AND friend = @username)
         `;
-        const request = pool.request();
-        request.input('username', sql.NVarChar, username);
-        request.input('friend', sql.NVarChar, friend);
-        const result = await request.query(query);
-        if (result.rowsAffected[0] > 0) {
-            res.status(200).json({ message: '好友请求已同意' });
-        } else {
-            res.status(404).json({ message: '未找到该好友请求记录' });
+            const request = pool.request();
+            request.input('username', sql.NVarChar, username);
+            request.input('friend', sql.NVarChar, friend);
+            const result = await request.query(query);
+            if (result.rowsAffected[0] > 0) {
+                res.status(200).json({ message: '好友请求已同意' });
+            } else {
+                res.status(404).json({ message: '未找到该好友请求记录' });
+            }
+            io.emit('friendListChanged');
+        } catch (err) {
+            res.status(500).send(err.message);
         }
-        io.emit('friendListChanged');
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+    });
 
-// 拒绝好友请求
-app.delete('/api/user-management/:username/:friend', async (req, res) => {
-    try {
-        const { username, friend } = req.params;
-        const pool = await sql.connect(config);
-        const query = `
+    // 拒绝好友请求
+    app.delete('/api/user-management/:username/:friend', async (req, res) => {
+        try {
+            const { username, friend } = req.params;
+            const pool = await sql.connect(config);
+            const query = `
             DELETE FROM ChatApp.dbo.UserManagement
             WHERE (username = @username AND friend = @friend)
                OR (username = @friend AND friend = @username)
         `;
-        const request = pool.request();
-        request.input('username', sql.NVarChar, username);
-        request.input('friend', sql.NVarChar, friend);
-        const result = await request.query(query);
-        // 无论是否删除了记录，都返回 200 状态码
-        res.status(200).json({ message: '好友请求删除操作已处理' });
+            const request = pool.request();
+            request.input('username', sql.NVarChar, username);
+            request.input('friend', sql.NVarChar, friend);
+            const result = await request.query(query);
+            // 无论是否删除了记录，都返回 200 状态码
+            res.status(200).json({ message: '好友请求删除操作已处理' });
 
-        io.emit('friendListChanged');
-    } catch (err) {
-        console.error('Error deleting friend request:', err);
-        res.status(500).send(err.message);
-    }
-});
+            io.emit('friendListChanged');
+        } catch (err) {
+            console.error('Error deleting friend request:', err);
+            res.status(500).send(err.message);
+        }
+    });
 
-//聊天界面删除好友
-app.delete('/api/user-management/:username/:friend', async (req, res) => {
-    try {
-        const { username, friend } = req.params;
-        const pool = await sql.connect(config);
-        const query = `
+    //聊天界面删除好友
+    app.delete('/api/user-management/:username/:friend', async (req, res) => {
+        try {
+            const { username, friend } = req.params;
+            const pool = await sql.connect(config);
+            const query = `
             DELETE FROM ChatApp.dbo.UserManagement
             WHERE username = @username AND friend = @friend
         `;
-        const request = pool.request();
-        request.input('username', sql.VarChar, username);
-        request.input('friend', sql.VarChar, friend);
-        const result = await request.query(query);
-        if (result.rowsAffected[0] > 0) {
-            res.status(200).json({ message: '好友已删除', success: true }); // 添加 success 字段
-        } else {
-            res.status(404).json({ message: '未找到该好友记录', success: false }); // 添加 success 字段
+            const request = pool.request();
+            request.input('username', sql.VarChar, username);
+            request.input('friend', sql.VarChar, friend);
+            const result = await request.query(query);
+            if (result.rowsAffected[0] > 0) {
+                res.status(200).json({ message: '好友已删除', success: true }); // 添加 success 字段
+            } else {
+                res.status(404).json({ message: '未找到该好友记录', success: false }); // 添加 success 字段
+            }
+
+            io.emit('friendListChanged');
+        } catch (err) {
+            res.status(500).send(err.message);
         }
-
-        io.emit('friendListChanged');
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+    });
 
 
-//聊天界面上传图片功能 👇
-// 修改存储配置，不依赖请求体
-const storageChatImages = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // 先存储到临时目录，等收到完整请求后再移动文件
-        const tempPath = path.join(__dirname, 'images', 'ChatImages', 'temp');
+    //聊天界面上传图片功能 👇
+    // 修改存储配置，不依赖请求体
+    const storageChatImages = multer.diskStorage({
+        destination: (req, file, cb) => {
+            // 先存储到临时目录，等收到完整请求后再移动文件
+            const tempPath = path.join(__dirname, 'images', 'ChatImages', 'temp');
 
-        // 如果临时文件夹不存在，则递归创建
-        if (!fs.existsSync(tempPath)) {
-            fs.mkdirSync(tempPath, { recursive: true });
+            // 如果临时文件夹不存在，则递归创建
+            if (!fs.existsSync(tempPath)) {
+                fs.mkdirSync(tempPath, { recursive: true });
+            }
+
+            cb(null, tempPath);
+        },
+        filename: (req, file, cb) => {
+            // 生成唯一文件名：时间戳 + 随机数 + 原扩展名
+            const timestamp = Date.now();
+            const random = Math.floor(Math.random() * 10000);
+            const ext = path.extname(file.originalname);
+            const filename = `${timestamp}_${random}${ext}`;
+            cb(null, filename);
         }
+    });
 
-        cb(null, tempPath);
-    },
-    filename: (req, file, cb) => {
-        // 生成唯一文件名：时间戳 + 随机数 + 原扩展名
-        const timestamp = Date.now();
-        const random = Math.floor(Math.random() * 10000);
-        const ext = path.extname(file.originalname);
-        const filename = `${timestamp}_${random}${ext}`;
-        cb(null, filename);
-    }
-});
-
-const uploadChatImage = multer({
-    storage: storageChatImages,
-    fileFilter: (req, file, cb) => {
-        // 只检查文件类型，不依赖请求体
-        if (file.mimetype.match(/image\/(jpeg|jpg|png|gif|bmp|webp)/)) {
-            cb(null, true);
-        } else {
-            cb(new Error('只允许上传图片文件 (JPEG, JPG, PNG, GIF, BMP, WebP)'), false);
+    const uploadChatImage = multer({
+        storage: storageChatImages,
+        fileFilter: (req, file, cb) => {
+            // 只检查文件类型，不依赖请求体
+            if (file.mimetype.match(/image\/(jpeg|jpg|png|gif|bmp|webp)/)) {
+                cb(null, true);
+            } else {
+                cb(new Error('只允许上传图片文件 (JPEG, JPG, PNG, GIF, BMP, WebP)'), false);
+            }
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024 // 限制5MB
         }
-    },
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 限制5MB
-    }
-});
+    });
 
-// 上传聊天图片的API
-app.post('/api/messages/uploadImage',
-    uploadChatImage.single('image'),
-    async (req, res) => {
-        try {
-            const { sender_name, receiver_name } = req.body;
+    // 上传聊天图片的API
+    app.post('/api/messages/uploadImage',
+        uploadChatImage.single('image'),
+        async (req, res) => {
+            try {
+                const { sender_name, receiver_name } = req.body;
 
-            if (!sender_name || !receiver_name) {
-                // 删除已上传的文件
-                if (req.file) {
-                    fs.unlink(req.file.path, () => { });
+                if (!sender_name || !receiver_name) {
+                    // 删除已上传的文件
+                    if (req.file) {
+                        fs.unlink(req.file.path, () => { });
+                    }
+                    return res.status(400).json({ error: '发送者和接收者名称必须提供' });
                 }
-                return res.status(400).json({ error: '发送者和接收者名称必须提供' });
-            }
 
-            if (!req.file) {
-                return res.status(400).json({ error: '请选择要上传的图片' });
-            }
+                if (!req.file) {
+                    return res.status(400).json({ error: '请选择要上传的图片' });
+                }
 
-            // 创建最终存储目录
-            const finalDir = path.join(__dirname, 'images', 'ChatImages', sender_name);
-            if (!fs.existsSync(finalDir)) {
-                fs.mkdirSync(finalDir, { recursive: true });
-            }
+                // 创建最终存储目录
+                const finalDir = path.join(__dirname, 'images', 'ChatImages', sender_name);
+                if (!fs.existsSync(finalDir)) {
+                    fs.mkdirSync(finalDir, { recursive: true });
+                }
 
-            const finalPath = path.join(finalDir, req.file.filename);
+                const finalPath = path.join(finalDir, req.file.filename);
 
-            // 将文件从临时目录移动到最终目录
-            fs.renameSync(req.file.path, finalPath);
+                // 将文件从临时目录移动到最终目录
+                fs.renameSync(req.file.path, finalPath);
 
-            const pool = await sql.connect(config);
+                const pool = await sql.connect(config);
 
-            // 插入消息记录到数据库
-            const result = await pool.request()
-                .input('message_text', sql.Text, '[图片]')
-                .input('sender_name', sql.VarChar(100), sender_name)
-                .input('receiver_name', sql.VarChar(100), receiver_name)
-                .input('message_type', sql.VarChar(50), 'image')
-                .input('image_filename', sql.VarChar(255), req.file.filename)
-                .query(`
+                // 插入消息记录到数据库
+                const result = await pool.request()
+                    .input('message_text', sql.Text, '[图片]')
+                    .input('sender_name', sql.VarChar(100), sender_name)
+                    .input('receiver_name', sql.VarChar(100), receiver_name)
+                    .input('message_type', sql.VarChar(50), 'image')
+                    .input('image_filename', sql.VarChar(255), req.file.filename)
+                    .query(`
                     INSERT INTO ChatApp.dbo.ChatMessages 
                     (message_text, sender_name, receiver_name, message_type, image_filename) 
                     VALUES (@message_text, @sender_name, @receiver_name, @message_type, @image_filename); 
                     SELECT SCOPE_IDENTITY() as message_id;
                 `);
 
-            const messageId = result.recordset[0].message_id;
+                const messageId = result.recordset[0].message_id;
 
-            // 构建图片访问URL
-            const imageUrl = `http://121.4.22.55:80/backend/images/ChatImages/${sender_name}/${req.file.filename}`;
+                // 构建图片访问URL
+                const imageUrl = `http://121.4.22.55:80/backend/images/ChatImages/${sender_name}/${req.file.filename}`;
 
-            res.status(201).json({
-                success: true,
-                message: '图片上传成功',
-                message_id: messageId,
-                image_url: imageUrl,
-                image_filename: req.file.filename
-            });
+                res.status(201).json({
+                    success: true,
+                    message: '图片上传成功',
+                    message_id: messageId,
+                    image_url: imageUrl,
+                    image_filename: req.file.filename
+                });
 
-            // 发送消息通知给接收者
-            io.emit('newMessage', {
-                message_id: messageId,
-                message_text: '[图片]',
-                sender_name,
-                receiver_name,
-                message_type: 'image',
-                image_filename: req.file.filename,
-                timestamp: new Date(),
-                is_read: 0
-            });
+                // 发送消息通知给接收者
+                io.emit('newMessage', {
+                    message_id: messageId,
+                    message_text: '[图片]',
+                    sender_name,
+                    receiver_name,
+                    message_type: 'image',
+                    image_filename: req.file.filename,
+                    timestamp: new Date(),
+                    is_read: 0
+                });
 
-            // 触发未读消息计数更新事件
-            io.emit('unreadCountsUpdated');
+                // 触发未读消息计数更新事件
+                io.emit('unreadCountsUpdated');
 
-        } catch (error) {
-            // 出错时删除已上传的文件
-            if (req.file && fs.existsSync(req.file.path)) {
-                fs.unlink(req.file.path, () => { });
+            } catch (error) {
+                // 出错时删除已上传的文件
+                if (req.file && fs.existsSync(req.file.path)) {
+                    fs.unlink(req.file.path, () => { });
+                }
+
+                console.error('上传聊天图片错误:', error);
+                res.status(500).json({
+                    error: '上传失败',
+                    message: error.message
+                });
+            }
+        }
+    );
+    //聊天界面上传图片功能 👆
+
+
+    // 获取消息
+    app.get('/api/messages', async (req, res) => {
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request().query('SELECT * FROM ChatApp.dbo.ChatMessages');
+            res.json(result.recordset);
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
+
+    // header接受参数并查询特定用户的未读消息总数
+    app.get('/api/headerUnreadMessages', async (req, res) => {
+        try {
+            const { username } = req.query;
+            if (!username) {
+                return res.status(400).json({ error: '用户名参数缺失' });
             }
 
-            console.error('上传聊天图片错误:', error);
-            res.status(500).json({
-                error: '上传失败',
-                message: error.message
-            });
-        }
-    }
-);
-//聊天界面上传图片功能 👆
-
-
-// 获取消息
-app.get('/api/messages', async (req, res) => {
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request().query('SELECT * FROM ChatApp.dbo.ChatMessages');
-        res.json(result.recordset);
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
-
-// header接受参数并查询特定用户的未读消息总数
-app.get('/api/headerUnreadMessages', async (req, res) => {
-    try {
-        const { username } = req.query;
-        if (!username) {
-            return res.status(400).json({ error: '用户名参数缺失' });
-        }
-
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('username', sql.VarChar(100), username)
-            .query(`
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('username', sql.VarChar(100), username)
+                .query(`
                 SELECT COUNT(*) as count 
                 FROM ChatApp.dbo.ChatMessages 
                 WHERE receiver_name = @username AND is_read = 0
             `);
 
-        res.json({ count: result.recordset[0].count });
-    } catch (err) {
-        console.error('数据库查询错误:', err);
-        res.status(500).send(err.message);
-    }
-});
+            res.json({ count: result.recordset[0].count });
+        } catch (err) {
+            console.error('数据库查询错误:', err);
+            res.status(500).send(err.message);
+        }
+    });
 
-// 新增 API 端点：获取当前用户和指定好友之间的消息
-app.get('/api/messages/chatold', async (req, res) => {
-    const { senderName, receiverName } = req.query;
+    // 新增 API 端点：获取当前用户和指定好友之间的消息
+    app.get('/api/messages/chatold', async (req, res) => {
+        const { senderName, receiverName } = req.query;
 
-    if (!senderName || !receiverName) {
-        return res.status(400).send('senderName 和 receiverName 是必填参数');
-    }
+        if (!senderName || !receiverName) {
+            return res.status(400).send('senderName 和 receiverName 是必填参数');
+        }
 
-    try {
-        const pool = await sql.connect(config);
-        const query = `
+        try {
+            const pool = await sql.connect(config);
+            const query = `
             SELECT * 
             FROM ChatApp.dbo.ChatMessages 
             WHERE (sender_name = @senderName AND receiver_name = @receiverName)
                OR (sender_name = @receiverName AND receiver_name = @senderName)
             ORDER BY message_id ASC
         `;
-        const result = await pool.request()
-            .input('senderName', sql.VarChar, senderName)
-            .input('receiverName', sql.VarChar, receiverName)
-            .query(query);
+            const result = await pool.request()
+                .input('senderName', sql.VarChar, senderName)
+                .input('receiverName', sql.VarChar, receiverName)
+                .query(query);
 
-        res.json(result.recordset);
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
-//分页获取消息，滚动条向上滚动
-app.get('/api/messages/chat', async (req, res) => {
-    const { senderName, receiverName, page = 1, pageSize = 20 } = req.query;
+            res.json(result.recordset);
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
+    //分页获取消息，滚动条向上滚动
+    app.get('/api/messages/chat', async (req, res) => {
+        const { senderName, receiverName, page = 1, pageSize = 20 } = req.query;
 
-    if (!senderName || !receiverName) {
-        return res.status(400).send('senderName 和 receiverName 是必填参数');
-    }
+        if (!senderName || !receiverName) {
+            return res.status(400).send('senderName 和 receiverName 是必填参数');
+        }
 
-    try {
-        const pool = await sql.connect(config);
-        const offset = (page - 1) * pageSize;
+        try {
+            const pool = await sql.connect(config);
+            const offset = (page - 1) * pageSize;
 
-        const query = `
+            const query = `
             SELECT * 
             FROM ChatApp.dbo.ChatMessages 
             WHERE (sender_name = @senderName AND receiver_name = @receiverName)
@@ -2722,483 +2737,485 @@ app.get('/api/messages/chat', async (req, res) => {
             OFFSET @offset ROWS 
             FETCH NEXT @pageSize ROWS ONLY
         `;
-        const result = await pool.request()
-            .input('senderName', sql.VarChar, senderName)
-            .input('receiverName', sql.VarChar, receiverName)
-            .input('offset', sql.Int, offset)
-            .input('pageSize', sql.Int, parseInt(pageSize))
-            .query(query);
+            const result = await pool.request()
+                .input('senderName', sql.VarChar, senderName)
+                .input('receiverName', sql.VarChar, receiverName)
+                .input('offset', sql.Int, offset)
+                .input('pageSize', sql.Int, parseInt(pageSize))
+                .query(query);
 
-        // 直接返回数据库中的时间，不要做任何转换
-        const messages = result.recordset.map(msg => {
-            // 确保时间戳是有效的 Date 对象
-            if (msg.timestamp) {
-                // 如果数据库返回的是字符串，确保它被正确解析
-                msg.timestamp = new Date(msg.timestamp).toISOString();
-            }
-            return msg;
-        });
+            // 直接返回数据库中的时间，不要做任何转换
+            const messages = result.recordset.map(msg => {
+                // 确保时间戳是有效的 Date 对象
+                if (msg.timestamp) {
+                    // 如果数据库返回的是字符串，确保它被正确解析
+                    msg.timestamp = new Date(msg.timestamp).toISOString();
+                }
+                return msg;
+            });
 
-        res.json(messages.reverse());
-    } catch (err) {
-        console.error('API错误:', err);
-        res.status(500).send(err.message);
-    }
-});
-// 发送消息
-// 发送消息（修改支持消息类型）
-app.post('/api/messages', async (req, res) => {
-    const { message_text, sender_name, receiver_name, message_type = 'text', image_filename = null } = req.body;
-    try {
-        const pool = await sql.connect(config);
+            res.json(messages.reverse());
+        } catch (err) {
+            console.error('API错误:', err);
+            res.status(500).send(err.message);
+        }
+    });
+    // 发送消息
+    // 发送消息（修改支持消息类型）
+    app.post('/api/messages', async (req, res) => {
+        const { message_text, sender_name, receiver_name, message_type = 'text', image_filename = null } = req.body;
+        try {
+            const pool = await sql.connect(config);
 
-        // 使用当前时间，让数据库存储正确的时间戳
-        const now = new Date();
+            // 使用当前时间，让数据库存储正确的时间戳
+            const now = new Date();
 
-        const result = await pool.request()
-            .input('message_text', sql.Text, message_text)
-            .input('sender_name', sql.VarChar(100), sender_name)
-            .input('receiver_name', sql.VarChar(100), receiver_name)
-            .input('message_type', sql.VarChar(50), message_type)
-            .input('image_filename', sql.VarChar(255), image_filename)
-            .input('timestamp', sql.DateTime, now) // 使用当前时间对象
-            .query(`
+            const result = await pool.request()
+                .input('message_text', sql.Text, message_text)
+                .input('sender_name', sql.VarChar(100), sender_name)
+                .input('receiver_name', sql.VarChar(100), receiver_name)
+                .input('message_type', sql.VarChar(50), message_type)
+                .input('image_filename', sql.VarChar(255), image_filename)
+                .input('timestamp', sql.DateTime, now) // 使用当前时间对象
+                .query(`
                 INSERT INTO ChatApp.dbo.ChatMessages 
                 (message_text, sender_name, receiver_name, message_type, image_filename, timestamp) 
                 VALUES (@message_text, @sender_name, @receiver_name, @message_type, @image_filename, @timestamp); 
                 SELECT SCOPE_IDENTITY() as message_id;
             `);
 
-        const messageId = result.recordset[0].message_id;
+            const messageId = result.recordset[0].message_id;
 
-        res.status(201).send('Message added');
+            res.status(201).send('Message added');
 
-        // 发送消息通知给接收者 - 使用 ISO 字符串格式
-        io.emit('newMessage', {
-            message_id: messageId,
-            message_text,
-            sender_name,
-            receiver_name,
-            message_type,
-            image_filename,
-            timestamp: now.toISOString() // 使用 ISO 格式
-        });
+            // 发送消息通知给接收者 - 使用 ISO 字符串格式
+            io.emit('newMessage', {
+                message_id: messageId,
+                message_text,
+                sender_name,
+                receiver_name,
+                message_type,
+                image_filename,
+                timestamp: now.toISOString() // 使用 ISO 格式
+            });
 
-        // 触发消息已读事件和未读消息计数更新事件
-        io.emit('messagesRead', [messageId]);
-        io.emit('unreadCountsUpdated');
+            // 触发消息已读事件和未读消息计数更新事件
+            io.emit('messagesRead', [messageId]);
+            io.emit('unreadCountsUpdated');
 
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
-// 标记消息为已读
-// 标记消息为已读
-app.put('/api/messages/read', async (req, res) => {
-    const { messageIds } = req.body;
-    try {
-        const pool = await sql.connect(config);
-        for (const id of messageIds) {
-            await pool.request()
-                .input('message_id', sql.BigInt, id)
-                .query('UPDATE ChatApp.dbo.ChatMessages SET is_read = 1 WHERE message_id = @message_id');
+        } catch (err) {
+            res.status(500).send(err.message);
         }
-        res.status(200).send('Messages marked as read');
+    });
+    // 标记消息为已读
+    // 标记消息为已读
+    app.put('/api/messages/read', async (req, res) => {
+        const { messageIds } = req.body;
+        try {
+            const pool = await sql.connect(config);
+            for (const id of messageIds) {
+                await pool.request()
+                    .input('message_id', sql.BigInt, id)
+                    .query('UPDATE ChatApp.dbo.ChatMessages SET is_read = 1 WHERE message_id = @message_id');
+            }
+            res.status(200).send('Messages marked as read');
 
-        io.emit('messagesRead', messageIds); // 触发消息已读事件
-        io.emit('unreadCountsUpdated'); // 触发未读消息计数更新事件
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+            io.emit('messagesRead', messageIds); // 触发消息已读事件
+            io.emit('unreadCountsUpdated'); // 触发未读消息计数更新事件
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
 
 
-//按下输入框的时候，开始发送消息的时候  将所有未读的消息标记为已读
-app.put('/api/messages/markAllAsRead', async (req, res) => {
-    const { sender_name, receiver_name } = req.body;
-    try {
-        const pool = await sql.connect(config);
+    //按下输入框的时候，开始发送消息的时候  将所有未读的消息标记为已读
+    app.put('/api/messages/markAllAsRead', async (req, res) => {
+        const { sender_name, receiver_name } = req.body;
+        try {
+            const pool = await sql.connect(config);
 
-        // 更新所有符合条件的消息为已读
-        const result = await pool.request()
-            .input('sender_name', sql.NVarChar, sender_name)
-            .input('receiver_name', sql.NVarChar, receiver_name)
-            .query('UPDATE ChatApp.dbo.ChatMessages SET is_read = 1 WHERE sender_name = @sender_name AND receiver_name = @receiver_name');
+            // 更新所有符合条件的消息为已读
+            const result = await pool.request()
+                .input('sender_name', sql.NVarChar, sender_name)
+                .input('receiver_name', sql.NVarChar, receiver_name)
+                .query('UPDATE ChatApp.dbo.ChatMessages SET is_read = 1 WHERE sender_name = @sender_name AND receiver_name = @receiver_name');
 
-        // 获取更新后的消息 ID
-        const updatedMessages = await pool.request()
-            .input('sender_name', sql.NVarChar, sender_name)
-            .input('receiver_name', sql.NVarChar, receiver_name)
-            .query('SELECT message_id FROM ChatApp.dbo.ChatMessages WHERE sender_name = @sender_name AND receiver_name = @receiver_name AND is_read = 1');
+            // 获取更新后的消息 ID
+            const updatedMessages = await pool.request()
+                .input('sender_name', sql.NVarChar, sender_name)
+                .input('receiver_name', sql.NVarChar, receiver_name)
+                .query('SELECT message_id FROM ChatApp.dbo.ChatMessages WHERE sender_name = @sender_name AND receiver_name = @receiver_name AND is_read = 1');
 
-        const messageIds = updatedMessages.recordset.map(msg => msg.message_id);
+            const messageIds = updatedMessages.recordset.map(msg => msg.message_id);
 
-        // 广播消息已读事件给所有客户端
-        io.emit('messagesRead', messageIds);
+            // 广播消息已读事件给所有客户端
+            io.emit('messagesRead', messageIds);
 
-        res.status(200).send('All messages marked as read');
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+            res.status(200).send('All messages marked as read');
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
 
-// 删除消息
-// 删除消息（同时删除图片文件）
-app.delete('/api/messages', async (req, res) => {
-    const { messageIds } = req.body;
-    try {
-        const pool = await sql.connect(config);
+    // 删除消息
+    // 删除消息（同时删除图片文件）
+    app.delete('/api/messages', async (req, res) => {
+        const { messageIds } = req.body;
+        try {
+            const pool = await sql.connect(config);
 
-        // 先查询要删除的消息，获取图片文件名
-        const idList = messageIds.map(id => `'${id}'`).join(',');
-        const queryResult = await pool.request()
-            .query(`
+            // 先查询要删除的消息，获取图片文件名
+            const idList = messageIds.map(id => `'${id}'`).join(',');
+            const queryResult = await pool.request()
+                .query(`
                 SELECT message_id, sender_name, message_type, image_filename 
                 FROM ChatApp.dbo.ChatMessages 
                 WHERE message_id IN (${idList})
             `);
 
-        const messagesToDelete = queryResult.recordset;
+            const messagesToDelete = queryResult.recordset;
 
-        // 删除数据库中的消息
-        await pool.request().query(`DELETE FROM ChatApp.dbo.ChatMessages WHERE message_id IN (${idList})`);
+            // 删除数据库中的消息
+            await pool.request().query(`DELETE FROM ChatApp.dbo.ChatMessages WHERE message_id IN (${idList})`);
 
-        // 删除对应的图片文件
-        await deleteMessageImages(messagesToDelete);
+            // 删除对应的图片文件
+            await deleteMessageImages(messagesToDelete);
 
-        res.status(200).send('Messages deleted');
+            res.status(200).send('Messages deleted');
 
-        // 通知客户端刷新消息
-        io.emit('refreshMessages');
-    } catch (err) {
-        console.error('删除消息错误:', err);
-        res.status(500).send(err.message);
-    }
-});
-// 删除单条消息（用于socket事件）
-app.delete('/api/messages/:messageId', async (req, res) => {
-    const { messageId } = req.params;
-    try {
-        const pool = await sql.connect(config);
+            // 通知客户端刷新消息
+            io.emit('refreshMessages');
+        } catch (err) {
+            console.error('删除消息错误:', err);
+            res.status(500).send(err.message);
+        }
+    });
+    // 删除单条消息（用于socket事件）
+    app.delete('/api/messages/:messageId', async (req, res) => {
+        const { messageId } = req.params;
+        try {
+            const pool = await sql.connect(config);
 
-        // 先查询要删除的消息
-        const queryResult = await pool.request()
-            .input('messageId', sql.BigInt, messageId)
-            .query(`
+            // 先查询要删除的消息
+            const queryResult = await pool.request()
+                .input('messageId', sql.BigInt, messageId)
+                .query(`
                 SELECT message_id, sender_name, message_type, image_filename 
                 FROM ChatApp.dbo.ChatMessages 
                 WHERE message_id = @messageId
             `);
 
-        if (queryResult.recordset.length === 0) {
-            return res.status(404).send('消息不存在');
-        }
-
-        const message = queryResult.recordset[0];
-
-        // 删除数据库中的消息
-        await pool.request()
-            .input('messageId', sql.BigInt, messageId)
-            .query('DELETE FROM ChatApp.dbo.ChatMessages WHERE message_id = @messageId');
-
-        // 删除对应的图片文件
-        await deleteMessageImages([message]);
-
-        res.status(200).send('Message deleted');
-
-        // 通知客户端刷新消息
-        io.emit('refreshMessages');
-    } catch (err) {
-        console.error('删除消息错误:', err);
-        res.status(500).send(err.message);
-    }
-});
-
-// 删除图片文件的辅助函数
-async function deleteMessageImages(messages) {
-    const deletePromises = messages.map(async (message) => {
-        // 只删除图片类型的消息
-        if (message.message_type === 'image' && message.image_filename) {
-            const imagePath = path.join(__dirname, 'images', 'ChatImages', message.sender_name, message.image_filename);
-
-            try {
-                if (fs.existsSync(imagePath)) {
-                    await fs.promises.unlink(imagePath);
-                    console.log(`删除图片文件: ${imagePath}`);
-                }
-            } catch (error) {
-                console.error(`删除图片文件失败: ${imagePath}`, error);
-                // 不抛出错误，继续删除其他文件
+            if (queryResult.recordset.length === 0) {
+                return res.status(404).send('消息不存在');
             }
+
+            const message = queryResult.recordset[0];
+
+            // 删除数据库中的消息
+            await pool.request()
+                .input('messageId', sql.BigInt, messageId)
+                .query('DELETE FROM ChatApp.dbo.ChatMessages WHERE message_id = @messageId');
+
+            // 删除对应的图片文件
+            await deleteMessageImages([message]);
+
+            res.status(200).send('Message deleted');
+
+            // 通知客户端刷新消息
+            io.emit('refreshMessages');
+        } catch (err) {
+            console.error('删除消息错误:', err);
+            res.status(500).send(err.message);
         }
     });
 
-    await Promise.allSettled(deletePromises);
-}
-// 批量删除用户的所有图片消息（可选功能）
-app.delete('/api/messages/user/:username/images', async (req, res) => {
-    const { username } = req.params;
-    try {
-        const pool = await sql.connect(config);
+    // 删除图片文件的辅助函数
+    async function deleteMessageImages(messages) {
+        const deletePromises = messages.map(async (message) => {
+            // 只删除图片类型的消息
+            if (message.message_type === 'image' && message.image_filename) {
+                const imagePath = path.join(__dirname, 'images', 'ChatImages', message.sender_name, message.image_filename);
 
-        // 查询用户的所有图片消息
-        const queryResult = await pool.request()
-            .input('username', sql.VarChar(100), username)
-            .query(`
+                try {
+                    if (fs.existsSync(imagePath)) {
+                        await fs.promises.unlink(imagePath);
+                        console.log(`删除图片文件: ${imagePath}`);
+                    }
+                } catch (error) {
+                    console.error(`删除图片文件失败: ${imagePath}`, error);
+                    // 不抛出错误，继续删除其他文件
+                }
+            }
+        });
+
+        await Promise.allSettled(deletePromises);
+    }
+    // 批量删除用户的所有图片消息（可选功能）
+    app.delete('/api/messages/user/:username/images', async (req, res) => {
+        const { username } = req.params;
+        try {
+            const pool = await sql.connect(config);
+
+            // 查询用户的所有图片消息
+            const queryResult = await pool.request()
+                .input('username', sql.VarChar(100), username)
+                .query(`
                 SELECT message_id, sender_name, image_filename 
                 FROM ChatApp.dbo.ChatMessages 
                 WHERE sender_name = @username AND message_type = 'image'
             `);
 
-        const imageMessages = queryResult.recordset;
+            const imageMessages = queryResult.recordset;
 
-        // 删除数据库中的图片消息
-        await pool.request()
-            .input('username', sql.VarChar(100), username)
-            .query(`DELETE FROM ChatApp.dbo.ChatMessages WHERE sender_name = @username AND message_type = 'image'`);
+            // 删除数据库中的图片消息
+            await pool.request()
+                .input('username', sql.VarChar(100), username)
+                .query(`DELETE FROM ChatApp.dbo.ChatMessages WHERE sender_name = @username AND message_type = 'image'`);
 
-        // 删除对应的图片文件
-        await deleteMessageImages(imageMessages);
+            // 删除对应的图片文件
+            await deleteMessageImages(imageMessages);
 
-        res.status(200).json({
-            success: true,
-            message: `成功删除 ${imageMessages.length} 条图片消息`,
-            deletedCount: imageMessages.length
+            res.status(200).json({
+                success: true,
+                message: `成功删除 ${imageMessages.length} 条图片消息`,
+                deletedCount: imageMessages.length
+            });
+        } catch (err) {
+            console.error('删除用户图片消息错误:', err);
+            res.status(500).send(err.message);
+        }
+    });
+
+    // 查找消息
+    app.get('/api/messages/search', async (req, res) => {
+        const { keyword } = req.query;
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('keyword', sql.NVarChar, `%${keyword}%`)
+                .query('SELECT * FROM ChatApp.dbo.ChatMessages WHERE message_text LIKE @keyword');
+            res.json(result.recordset);
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
+
+    io.on('connection', (socket) => {
+        // 服务器端代码示例
+        socket.on('messagesReadByReceiver', (data) => {
+            // 广播给所有连接的客户端，特别是发送者
+            socket.broadcast.emit('messagesReadByReceiver', data);
         });
-    } catch (err) {
-        console.error('删除用户图片消息错误:', err);
-        res.status(500).send(err.message);
-    }
-});
 
-// 查找消息
-app.get('/api/messages/search', async (req, res) => {
-    const { keyword } = req.query;
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('keyword', sql.NVarChar, `%${keyword}%`)
-            .query('SELECT * FROM ChatApp.dbo.ChatMessages WHERE message_text LIKE @keyword');
-        res.json(result.recordset);
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
-
-io.on('connection', (socket) => {
-    // 服务器端代码示例
-    socket.on('messagesReadByReceiver', (data) => {
-        // 广播给所有连接的客户端，特别是发送者
-        socket.broadcast.emit('messagesReadByReceiver', data);
+        socket.on('unreadCountsUpdated', (data) => {
+            // 通知所有客户端更新未读计数
+            socket.broadcast.emit('unreadCountsUpdated', data);
+        });
     });
 
-    socket.on('unreadCountsUpdated', (data) => {
-        // 通知所有客户端更新未读计数
-        socket.broadcast.emit('unreadCountsUpdated', data);
-    });
-});
 
 
 
-//下面的没用
-app.post('/api/dsfaadd-friend', async (req, res) => {
-    const { username, friend_ip } = req.body;
 
-    if (!username || !friend_ip) {
-        return res.status(400).json({ message: '用户名和好友IP不能为空' });
-    }
+    //下面的没用
+    app.post('/api/dsfaadd-friend', async (req, res) => {
+        const { username, friend_ip } = req.body;
 
-    try {
-        const pool = await sql.connect(config);
-        // 检查好友IP是否存在
-        const checkFriendQuery = `SELECT * FROM ChatApp.dbo.UserManagement WHERE username = '${friend_ip}'`;
-        const friendResult = await pool.request().query(checkFriendQuery);
-
-        if (friendResult.recordset.length === 0) {
-            return res.status(404).json({ message: '未找到该好友IP对应的用户' });
+        if (!username || !friend_ip) {
+            return res.status(400).json({ message: '用户名和好友IP不能为空' });
         }
 
-        // 插入好友关系
-        const insertQuery = `
+        try {
+            const pool = await sql.connect(config);
+            // 检查好友IP是否存在
+            const checkFriendQuery = `SELECT * FROM ChatApp.dbo.UserManagement WHERE username = '${friend_ip}'`;
+            const friendResult = await pool.request().query(checkFriendQuery);
+
+            if (friendResult.recordset.length === 0) {
+                return res.status(404).json({ message: '未找到该好友IP对应的用户' });
+            }
+
+            // 插入好友关系
+            const insertQuery = `
             INSERT INTO ChatApp.dbo.UserManagement (username, friend, friend_ip, is_friend_request_accepted)
             VALUES ('${username}', '${friendResult.recordset[0].username}', '${friend_ip}', 0)
         `;
-        await pool.request().query(insertQuery);
+            await pool.request().query(insertQuery);
 
-        res.status(201).json({ message: '好友请求已发送' });
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+            res.status(201).json({ message: '好友请求已发送' });
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
 
-// 获取头像图片
-app.get('/api/getuserheadimage', (req, res) => {
-    const { username } = req.query; // 从查询参数中获取用户名
+    // 获取头像图片
+    app.get('/api/getuserheadimage', (req, res) => {
+        const { username } = req.query; // 从查询参数中获取用户名
 
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required' });
-    }
-
-    // 动态构建图片目录路径
-    const imageDir = path.join(__dirname, 'images/ChatApp', username, 'headpicture');
-    //console.log('Image directory path:', imageDir);
-
-    // 检查目录是否存在
-    if (!fs.existsSync(imageDir)) {
-        // 关闭对话框显示报错
-        //没有找到图片
-        // console.error('Image directory does not exist:', imageDir);
-        return res.status(404).json({ error: 'Image directory not found' });
-    }
-
-    // 读取目录中的文件
-    fs.readdir(imageDir, (err, files) => {
-        if (err) {
-            console.error('Error reading image directory:', err);
-            return res.status(500).json({ error: 'Unable to read image directory' });
+        if (!username) {
+            return res.status(400).json({ error: 'Username is required' });
         }
 
-        // 过滤出图片文件（假设图片格式为 .jpg, .png, .jpeg）
-        const imageFiles = files.filter(file => /\.(jpg|jpeg|png)$/i.test(file));
+        // 动态构建图片目录路径
+        const imageDir = path.join(__dirname, 'images/ChatApp', username, 'headpicture');
+        //console.log('Image directory path:', imageDir);
 
-        if (imageFiles.length === 0) {
-            console.error('No image files found in directory:', imageDir);
-            return res.status(404).json({ error: 'No image found' });
+        // 检查目录是否存在
+        if (!fs.existsSync(imageDir)) {
+            // 关闭对话框显示报错
+            //没有找到图片
+            // console.error('Image directory does not exist:', imageDir);
+            return res.status(404).json({ error: 'Image directory not found' });
         }
 
-        // 返回第一张图片的URL
-        const imageUrl = `http://121.4.22.55:80/backend/images/ChatApp/${encodeURIComponent(username)}/headpicture/${imageFiles[0]}`;
+        // 读取目录中的文件
+        fs.readdir(imageDir, (err, files) => {
+            if (err) {
+                console.error('Error reading image directory:', err);
+                return res.status(500).json({ error: 'Unable to read image directory' });
+            }
+
+            // 过滤出图片文件（假设图片格式为 .jpg, .png, .jpeg）
+            const imageFiles = files.filter(file => /\.(jpg|jpeg|png)$/i.test(file));
+
+            if (imageFiles.length === 0) {
+                console.error('No image files found in directory:', imageDir);
+                return res.status(404).json({ error: 'No image found' });
+            }
+
+            // 返回第一张图片的URL
+            const imageUrl = `http://121.4.22.55:80/backend/images/ChatApp/${encodeURIComponent(username)}/headpicture/${imageFiles[0]}`;
+            res.json({ imageUrl });
+        });
+    });
+
+
+    // 下面的上传图片作废
+
+    //上传和覆盖头像图片
+    // 配置 multer 用于处理文件上传
+    // 配置 multer 存储路径
+    const storageheadimage = multer.diskStorage({
+        destination: (req, file, cb) => {
+            const { username } = req.query;
+            const imageDir = path.join(__dirname, 'images/ChatApp', username, 'headpicture');
+
+            // 检查目录是否存在，如果不存在则创建
+            if (!fs.existsSync(imageDir)) {
+                fs.mkdirSync(imageDir, { recursive: true });
+            }
+
+            // 删除原有的头像文件
+            fs.readdir(imageDir, (err, files) => {
+                if (err) {
+                    console.error('Error reading image directory:', err);
+                    return cb(err);
+                }
+
+                // 删除所有以 "avatar" 开头的文件
+                files.forEach(file => {
+                    if (file.startsWith('avatar')) {
+                        const filePath = path.join(imageDir, file);
+                        fs.unlink(filePath, (unlinkErr) => {
+                            if (unlinkErr) {
+                                console.error('Error deleting existing avatar:', unlinkErr);
+                            }
+                        });
+                    }
+                });
+
+                // 确保删除完成后调用 cb
+                cb(null, imageDir);
+            });
+        },
+        filename: (req, file, cb) => {
+            const ext = path.extname(file.originalname);
+            cb(null, `avatar${ext}`); // 固定文件名为 avatar + 扩展名
+        }
+    });
+
+    const uploadheadimage = multer({ storage: storageheadimage });
+
+    // 处理图片上传的接口
+    app.post('/backend/api/uploaduserheadimage', uploadheadimage.single('image'), (req, res) => {
+        const { username } = req.query;
+        if (!username) {
+            return res.status(400).json({ error: 'Username is required' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+
+        // 返回新的头像 URL
+        const imageUrl = `http://121.4.22.55:80/backend/images/ChatApp/${encodeURIComponent(username)}/headpicture/${req.file.filename}`;
         res.json({ imageUrl });
     });
-});
 
 
-// 下面的上传图片作废
 
-//上传和覆盖头像图片
-// 配置 multer 用于处理文件上传
-// 配置 multer 存储路径
-const storageheadimage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const { username } = req.query;
-        const imageDir = path.join(__dirname, 'images/ChatApp', username, 'headpicture');
 
-        // 检查目录是否存在，如果不存在则创建
-        if (!fs.existsSync(imageDir)) {
-            fs.mkdirSync(imageDir, { recursive: true });
-        }
+    //聊天背景图片处理
+    // 配置存储路径和文件名
+    const storageChatBackground = multer.diskStorage({
+        destination: (req, file, cb) => {
+            const { username } = req.query;
+            const imageDir = path.join(__dirname, 'images/ChatApp', username, 'chatbackgroundimage');
 
-        // 删除原有的头像文件
-        fs.readdir(imageDir, (err, files) => {
-            if (err) {
-                console.error('Error reading image directory:', err);
-                return cb(err);
+            // 检查目录是否存在，如果不存在则创建
+            if (!fs.existsSync(imageDir)) {
+                fs.mkdirSync(imageDir, { recursive: true });
             }
 
-            // 删除所有以 "avatar" 开头的文件
-            files.forEach(file => {
-                if (file.startsWith('avatar')) {
-                    const filePath = path.join(imageDir, file);
-                    fs.unlink(filePath, (unlinkErr) => {
-                        if (unlinkErr) {
-                            console.error('Error deleting existing avatar:', unlinkErr);
-                        }
-                    });
+            // 删除原有的背景图片文件
+            fs.readdir(imageDir, (err, files) => {
+                if (err) {
+                    console.error('Error reading image directory:', err);
+                    return cb(err);
                 }
+
+                // 删除所有以 "backgroundimage" 开头的文件
+                files.forEach(file => {
+                    if (file.startsWith('backgroundimage')) {
+                        const filePath = path.join(imageDir, file);
+                        fs.unlink(filePath, (unlinkErr) => {
+                            if (unlinkErr) {
+                                console.error('Error deleting existing background image:', unlinkErr);
+                            }
+                        });
+                    }
+                });
+
+                // 确保删除完成后调用 cb
+                cb(null, imageDir);
             });
+        },
+        filename: (req, file, cb) => {
+            const ext = path.extname(file.originalname);
+            cb(null, `backgroundimage${ext}`); // 固定文件名为 backgroundimage + 扩展名
+        }
+    });
 
-            // 确保删除完成后调用 cb
-            cb(null, imageDir);
-        });
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `avatar${ext}`); // 固定文件名为 avatar + 扩展名
-    }
-});
+    const uploadChatBackground = multer({ storage: storageChatBackground });
 
-const uploadheadimage = multer({ storage: storageheadimage });
-
-// 处理图片上传的接口
-app.post('/backend/api/uploaduserheadimage', uploadheadimage.single('image'), (req, res) => {
-    const { username } = req.query;
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required' });
-    }
-
-    if (!req.file) {
-        return res.status(400).json({ error: 'No image file provided' });
-    }
-
-    // 返回新的头像 URL
-    const imageUrl = `http://121.4.22.55:80/backend/images/ChatApp/${encodeURIComponent(username)}/headpicture/${req.file.filename}`;
-    res.json({ imageUrl });
-});
-
-
-
-
-//聊天背景图片处理
-// 配置存储路径和文件名
-const storageChatBackground = multer.diskStorage({
-    destination: (req, file, cb) => {
+    // 处理聊天背景图片上传的接口
+    app.post('/backend/api/uploadchatbackground', uploadChatBackground.single('image'), (req, res) => {
         const { username } = req.query;
-        const imageDir = path.join(__dirname, 'images/ChatApp', username, 'chatbackgroundimage');
-
-        // 检查目录是否存在，如果不存在则创建
-        if (!fs.existsSync(imageDir)) {
-            fs.mkdirSync(imageDir, { recursive: true });
+        if (!username) {
+            return res.status(400).json({ error: 'Username is required' });
         }
 
-        // 删除原有的背景图片文件
-        fs.readdir(imageDir, (err, files) => {
-            if (err) {
-                console.error('Error reading image directory:', err);
-                return cb(err);
-            }
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
 
-            // 删除所有以 "backgroundimage" 开头的文件
-            files.forEach(file => {
-                if (file.startsWith('backgroundimage')) {
-                    const filePath = path.join(imageDir, file);
-                    fs.unlink(filePath, (unlinkErr) => {
-                        if (unlinkErr) {
-                            console.error('Error deleting existing background image:', unlinkErr);
-                        }
-                    });
-                }
-            });
+        // 返回新的背景图片 URL
+        const imageUrl = `http://121.4.22.55:80/backend/images/ChatApp/${encodeURIComponent(username)}/chatbackgroundimage/${req.file.filename}`;
+        res.json({ imageUrl });
+    });
 
-            // 确保删除完成后调用 cb
-            cb(null, imageDir);
-        });
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `backgroundimage${ext}`); // 固定文件名为 backgroundimage + 扩展名
-    }
-});
-
-const uploadChatBackground = multer({ storage: storageChatBackground });
-
-// 处理聊天背景图片上传的接口
-app.post('/backend/api/uploadchatbackground', uploadChatBackground.single('image'), (req, res) => {
-    const { username } = req.query;
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required' });
-    }
-
-    if (!req.file) {
-        return res.status(400).json({ error: 'No image file provided' });
-    }
-
-    // 返回新的背景图片 URL
-    const imageUrl = `http://121.4.22.55:80/backend/images/ChatApp/${encodeURIComponent(username)}/chatbackgroundimage/${req.file.filename}`;
-    res.json({ imageUrl });
-});
-
-//聊天👆
-
+    //聊天👆
+}
 
 //主题设置
 
@@ -8971,7 +8988,7 @@ app.get('/api/getallmusics-bug', async (req, res) => {
 app.get('/api/getallmusics', async (req, res) => {
     // 1. 从查询参数中获取 page 和 pageSize，并提供默认值
     const page = parseInt(req.query.page, 10) || 1;
-    const pageSize = parseInt(req.query.pageSize, 10) || 20; // 默认每页20条
+    const pageSize = parseInt(req.query.pageSize, 10) || 100; // 默认每页100条
     const searchTerm = req.query.search || ''; // 支持分页的同时也支持搜索
 
     // 2. 计算 OFFSET，即需要跳过多少条记录
@@ -11132,8 +11149,7 @@ app.get('/api/react-demo/background-image/:email/:themeId', (req, res) => {
 //reactdemo 主题管理 👆
 
 
-{
-    //价格查询-网页询价 👇 NeighborhoodFinder
+{   //价格查询-网页询价 👇 NeighborhoodFinder
 
     // API: 根据小区名查询评估报告
     app.get('/api/SearchNeighborhoodsByArea', async (req, res) => {
@@ -12218,68 +12234,68 @@ app.get('/api/react-demo/background-image/:email/:themeId', (req, res) => {
 
 {//查看合并的pdf  👇  
 
-// 后端新增 API：获取用户所属公司
-app.get('/api/user/company', async (req, res) => {
-    try {
-        const { username, email } = req.query;
-        
-        if (!username && !email) {
-            return res.status(400).json({ error: '请提供用户名或邮箱' });
-        }
+    // 后端新增 API：获取用户所属公司
+    app.get('/api/user/company', async (req, res) => {
+        try {
+            const { username, email } = req.query;
 
-        let pool = await sql.connect(config);
-        let query;
-        let request = pool.request();
+            if (!username && !email) {
+                return res.status(400).json({ error: '请提供用户名或邮箱' });
+            }
 
-        if (username) {
-            query = 'SELECT companyName FROM PdfFileData.dbo.PdfPrintFileCompanyPersonnel WHERE username = @username';
-            request.input('username', sql.NVarChar(50), username);
-        } else {
-            query = 'SELECT companyName FROM PdfFileData.dbo.PdfPrintFileCompanyPersonnel WHERE email = @email';
-            request.input('email', sql.NVarChar(100), email);
-        }
+            let pool = await sql.connect(config);
+            let query;
+            let request = pool.request();
 
-        const result = await request.query(query);
-        
-        if (result.recordset.length > 0) {
-            res.json({ 
-                companyName: result.recordset[0].companyName,
-                found: true 
-            });
-        } else {
-            // 如果没有记录，返回默认公司
-            res.json({ 
-                companyName: 'wu', // 默认公司
-                found: false 
-            });
-        }
-        
-        pool.close();
-    } catch (err) {
-        console.error('获取用户公司信息错误:', err);
-        res.status(500).json({ error: '获取公司信息失败' });
-    }
-});
+            if (username) {
+                query = 'SELECT companyName FROM PdfFileData.dbo.PdfPrintFileCompanyPersonnel WHERE username = @username';
+                request.input('username', sql.NVarChar(50), username);
+            } else {
+                query = 'SELECT companyName FROM PdfFileData.dbo.PdfPrintFileCompanyPersonnel WHERE email = @email';
+                request.input('email', sql.NVarChar(100), email);
+            }
 
-app.get('/api/ReportPdfPrintFile', async (req, res) => {
-    const { company } = req.query; // 只接收参数，不设置默认值
-    
-    try {
-        // 检查是否有传入公司参数
-        if (!company) {
-            return res.status(400).json({ 
-                error: '缺少公司参数',
-                message: '请在请求中提供 company 参数'
-            });
+            const result = await request.query(query);
+
+            if (result.recordset.length > 0) {
+                res.json({
+                    companyName: result.recordset[0].companyName,
+                    found: true
+                });
+            } else {
+                // 如果没有记录，返回默认公司
+                res.json({
+                    companyName: 'wu', // 默认公司
+                    found: false
+                });
+            }
+
+            pool.close();
+        } catch (err) {
+            console.error('获取用户公司信息错误:', err);
+            res.status(500).json({ error: '获取公司信息失败' });
         }
-        
-        console.log('获取PDF文件列表，公司:', company);
-        
-        const pool = await sql.connect(config);
-        const request = pool.request();
-        
-        // 根据公司名称查询对应的文件
-        const query = `
+    });
+
+    app.get('/api/ReportPdfPrintFile', async (req, res) => {
+        const { company } = req.query; // 只接收参数，不设置默认值
+
+        try {
+            // 检查是否有传入公司参数
+            if (!company) {
+                return res.status(400).json({
+                    error: '缺少公司参数',
+                    message: '请在请求中提供 company 参数'
+                });
+            }
+
+            console.log('获取PDF文件列表，公司:', company);
+
+            const pool = await sql.connect(config);
+            const request = pool.request();
+
+            // 根据公司名称查询对应的文件
+            const query = `
             SELECT 
     fileType, 
     pdfPrintFileName, 
@@ -12301,21 +12317,21 @@ ORDER BY
     fileType, 
     pdfPrintFileName;
         `;
-        
-        request.input('companyName', sql.NVarChar(100), company);
-        
-        const result = await request.query(query);
-        
-        console.log(`公司 ${company} 查询到 ${result.recordset.length} 个文件`);
-        
-        // 返回查询结果
-        res.json(result.recordset);
-        pool.close();
-    } catch (err) {
-        console.error('Database query failed:', err);
-        res.status(500).json({ error: 'Database query failed' });
-    }
-});
+
+            request.input('companyName', sql.NVarChar(100), company);
+
+            const result = await request.query(query);
+
+            console.log(`公司 ${company} 查询到 ${result.recordset.length} 个文件`);
+
+            // 返回查询结果
+            res.json(result.recordset);
+            pool.close();
+        } catch (err) {
+            console.error('Database query failed:', err);
+            res.status(500).json({ error: 'Database query failed' });
+        }
+    });
 
 
     //后期如果有多个合并的pdf没有删除的话，
@@ -12400,10 +12416,10 @@ ORDER BY
         try {
             const { files, oldFilename, companyName } = req.body; // 新增 companyName 参数
 
-             // 验证 companyName
-        if (!companyName) {
-            return res.status(400).json({ error: '缺少公司名称参数' });
-        }
+            // 验证 companyName
+            if (!companyName) {
+                return res.status(400).json({ error: '缺少公司名称参数' });
+            }
 
             // 🔒 第一重保险：清理超量旧文件（比如超过10个就删最旧的）
             cleanupOldMergedFiles(10);
@@ -12448,33 +12464,33 @@ ORDER BY
             for (const file of files) {
                 if (!file.category || !file.filename || !file.paperSize) continue;
 
- // 修改文件路径：使用传入的 companyName
- const filePath = path.join(
-    __dirname, 
-    './public/PDFFilePrint', 
-    companyName,  // 使用动态的公司名称
-    file.category, 
-    file.filename
-);
-if (!fs.existsSync(filePath)) {
-    console.warn(`文件不存在: ${filePath}，尝试使用默认路径`);
-    
-    // 如果指定公司的文件不存在，尝试使用默认 zhonghe 路径
-    const defaultFilePath = path.join(
-        __dirname, 
-        './public/PDFFilePrint/zhonghe', 
-        file.category, 
-        file.filename
-    );
-    
-    if (fs.existsSync(defaultFilePath)) {
-        console.log(`使用默认文件: ${defaultFilePath}`);
-        // 继续使用 defaultFilePath...
-    } else {
-        throw new Error(`文件不存在: ${filePath} 和 ${defaultFilePath}`);
-    }
-}
-               // const filePath = path.join(__dirname, './public/PDFFilePrint/ruida', file.category, file.filename);
+                // 修改文件路径：使用传入的 companyName
+                const filePath = path.join(
+                    __dirname,
+                    './public/PDFFilePrint',
+                    companyName,  // 使用动态的公司名称
+                    file.category,
+                    file.filename
+                );
+                if (!fs.existsSync(filePath)) {
+                    console.warn(`文件不存在: ${filePath}，尝试使用默认路径`);
+
+                    // 如果指定公司的文件不存在，尝试使用默认 zhonghe 路径
+                    const defaultFilePath = path.join(
+                        __dirname,
+                        './public/PDFFilePrint/zhonghe',
+                        file.category,
+                        file.filename
+                    );
+
+                    if (fs.existsSync(defaultFilePath)) {
+                        console.log(`使用默认文件: ${defaultFilePath}`);
+                        // 继续使用 defaultFilePath...
+                    } else {
+                        throw new Error(`文件不存在: ${filePath} 和 ${defaultFilePath}`);
+                    }
+                }
+                // const filePath = path.join(__dirname, './public/PDFFilePrint/ruida', file.category, file.filename);
                 // if (!fs.existsSync(filePath)) {
                 //     throw new Error(`文件不存在: ${filePath}`);
                 // }
