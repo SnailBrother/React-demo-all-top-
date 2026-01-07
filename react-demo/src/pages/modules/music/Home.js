@@ -68,20 +68,25 @@ const Home = () => {
                 play_mode: playMode,
                 email: user.email,
                 is_host: isHost,
-                currentSong: songToPlay,
+
                 isPlaying: true,
-                queue: musics,
+
                 volume: volume,
                 currentRoom: currentRoom,
                 isInRoom: isInRoom,
                 roomUsers: roomUsers,
-                isHost: isHost
+                isHost: isHost,
+                // 添加 queue 字段，传递完整的歌单
+                queue: musics,  // 这是关键，要把歌单传到后端
+                // 其他状态信息（可选）
+                currentSong: songToPlay,
+                currentIndex: musics.findIndex(music => music.id === songToPlay.id)
             };
 
-            console.log('发送播放歌曲变更:', {
+            console.log('发送播放歌曲变更，包含歌单:', {
                 title: songToPlay.title,
-                artist: songToPlay.artist,
-                genre: songToPlay.genre
+                queueLength: musics.length,
+                queue: musics.map(m => m.title)
             });
 
             // 设置请求头，确保支持UTF-8编码
@@ -112,9 +117,14 @@ const Home = () => {
         });
 
         const actualIndex = musics.findIndex(music => music.id === songToPlay.id);
+        // 更新本地状态
         dispatch({
             type: 'PLAY_SONG',
-            payload: { song: songToPlay, queue: musics, index: actualIndex }
+            payload: {
+                song: songToPlay,
+                queue: musics,  // 使用 musics 作为队列
+                index: actualIndex
+            }
         });
 
         // 发送播放变更通知
@@ -136,8 +146,7 @@ const Home = () => {
 
             try {
                 console.log('接收到播放变更广播:', data);
-
-                // 从数据库获取最新的播放状态
+    
                 const response = await axios.get('/api/ListenTogetherMusic/ChangePlaySong', {
                     params: {
                         room_name: data.room_name,
@@ -147,11 +156,10 @@ const Home = () => {
                         'Content-Type': 'application/json; charset=utf-8'
                     }
                 });
-
+    
                 const roomData = response.data;
-                console.log('从数据库获取的房间数据:', roomData);
-
-                // 更新音乐上下文状态
+                console.log('从数据库获取的房间数据，包含歌单:', roomData);
+    
                 if (roomData) {
                     // 创建歌曲对象
                     const newSong = {
@@ -162,38 +170,43 @@ const Home = () => {
                         genre: roomData.genre,
                         id: roomData.id || Date.now()
                     };
-
-                    console.log('更新播放状态为:', newSong);
-
-                    // 更新播放状态
+    
+                    // 从后端获取歌单（queue）
+                    const receivedQueue = roomData.queue || [];
+                    console.log('接收到的歌单:', receivedQueue.length, '首歌');
+    
+                    // 找到当前歌曲在歌单中的索引
+                    const songIndex = receivedQueue.findIndex(song => 
+                        song.title === newSong.title && 
+                        song.artist === newSong.artist
+                    );
+                    
+                    const indexToUse = songIndex !== -1 ? songIndex : 0;
+    
+                    // 更新播放状态，包括歌单
                     dispatch({
                         type: 'PLAY_SONG',
                         payload: {
                             song: newSong,
-                            queue: [newSong],
-                            index: 0
+                            queue: receivedQueue,  // 使用从后端获取的歌单
+                            index: indexToUse
                         }
                     });
-
-                    // 如果需要更新播放模式
-                    if (roomData.play_mode && roomData.play_mode !== playMode) {
-                        console.log('播放模式需要更新为:', roomData.play_mode);
+    
+                    // 可选：如果需要同步歌单到本地状态
+                    if (receivedQueue.length > 0) {
+                        console.log('同步歌单到本地状态');
+                        // 这里可以更新本地的 musics 状态
+                        // setMusics(receivedQueue);
                     }
-
-                    console.log('已同步房间播放状态:', roomData);
                 }
             } catch (error) {
                 console.error('同步播放状态失败:', error);
-                if (error.response) {
-                    console.error('错误响应:', error.response.data);
-                }
             }
         };
-
-        // 注册事件监听器
+    
         socket.on('TogetherMusicRoomUsersChangePlaySong', handleTogetherMusicRoomUsersChangePlaySong);
-
-        // 清理函数
+    
         return () => {
             socket.off('TogetherMusicRoomUsersChangePlaySong', handleTogetherMusicRoomUsersChangePlaySong);
         };

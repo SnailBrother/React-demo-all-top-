@@ -10404,12 +10404,25 @@ app.post('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
         is_playing,
         play_mode,
         email,
-        is_host
+        is_host,
+        queue  // 添加 queue 参数
     } = req.body;
 
     console.log('接收到的播放歌曲数据:', {
-        room_name, title, artist, genre, email
+        room_name, 
+        title, 
+        artist, 
+        genre, 
+        email,
+        queueLength: queue ? queue.length : 0  // 打印队列长度
     });
+
+    // 检查 queue 是否存在
+    if (!queue) {
+        console.warn('警告：请求中没有包含 queue 参数');
+        // 可以根据需要决定是否返回错误
+        // return res.status(400).json({ error: '缺少 queue 参数' });
+    }
 
     try {
         const pool = await poolConnect;
@@ -10439,11 +10452,13 @@ app.post('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
                 src = @src,
                 genre = @genre,
                 is_playing = @is_playing,
-                play_mode = @play_mode
+                play_mode = @play_mode,
+                queue = @queue  -- 存储为字符串
             WHERE room_name = @room_name
         `;
 
         await pool.request()
+            .input('queue', sql.NVarChar(sql.MAX), JSON.stringify(queue)) // 转为 JSON 字符串
             .input('room_name', sql.NVarChar, room_name)
             .input('title', sql.NVarChar, title) // 使用 NVARCHAR 支持韩语等Unicode字符
             .input('artist', sql.NVarChar, artist)
@@ -10471,7 +10486,8 @@ app.post('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
             is_playing,
             play_mode,
             email,
-            is_host
+            is_host,
+            queue  // 广播时也包含 queue
         });
 
     } catch (err) {
@@ -10518,7 +10534,8 @@ app.get('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
                 src,
                 genre,
                 is_playing,
-                play_mode
+                play_mode,
+                queue  -- 确保查询 queue 字段
             FROM reactDemoApp.dbo.ListenMusicTogetherMusicRooms 
             WHERE room_name = @room_name
         `;
@@ -10527,9 +10544,24 @@ app.get('/api/ListenTogetherMusic/ChangePlaySong', async (req, res) => {
             .input('room_name', sql.NVarChar, room_name)
             .query(roomQuery);
 
+        // 返回数据时需要手动解析 JSON 字符串
         if (roomResult.recordset.length > 0) {
             const roomData = roomResult.recordset[0];
-            console.log('返回房间播放信息:', roomData);
+
+            // 解析 queue 字段
+            if (roomData.queue && typeof roomData.queue === 'string' && roomData.queue.trim() !== '') {
+                try {
+                    roomData.queue = JSON.parse(roomData.queue);
+                } catch (e) {
+                    console.error('解析歌单 JSON 失败:', e);
+                    console.error('原始数据:', roomData.queue);
+                    roomData.queue = [];
+                }
+            } else {
+                roomData.queue = [];
+            }
+
+            console.log('返回房间数据，queue长度:', roomData.queue.length);
             res.json(roomData);
         } else {
             res.status(404).json({ error: '房间不存在' });
