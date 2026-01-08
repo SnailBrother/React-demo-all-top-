@@ -3,7 +3,7 @@
     padding: 16px;
     max-width: 1200px;
     margin: 0 auto;
-    color: #ffffff;
+    color: var(--font-color);
     
 }
 
@@ -20,30 +20,30 @@
 /* 日期选择样式 */
 .accountingdetails-date-selector {
     cursor: pointer;
-    color: #ffffff;
+    color: var(--font-color);
 }
 /* 汇总显示的日期 */
 .accountingdetails-date {
-    color: #ffffff;
+    color: var(--font-color);
 }
 .date-display-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: #ffffff;
+    color: var(--font-color);
 }
 
 .accountingdetails-date-year {
     font-size: 14px;
     /* color: #757575; */
-    color: #ffffff;
+    color: var(--font-color);
 }
 
 .accountingdetails-date-month {
     font-size: 18px;
     font-weight: bold;
     /* color: #333; */
-    color: #ffffff;
+    color: var(--font-color);
 }
 
 /* 统计样式 */
@@ -63,7 +63,7 @@
     font-weight: bold;
     font-size: 16px;
     margin-top: 4px;
-    color: #ffffff;
+    color: var(--font-color);
 }
 
 .accountingdetails-summary-amount.income {
@@ -114,7 +114,7 @@
     display: flex;
     align-items: center;
     flex: 0 0 120px;
-    color: #ffffff;
+    color: var(--font-color);
 }
 
 .accountingdetails-details-icon {
