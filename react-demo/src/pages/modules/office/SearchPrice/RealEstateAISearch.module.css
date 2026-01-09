@@ -28,6 +28,7 @@
     flex-direction: column;
     min-height: 0;
     width: 100%;
+    box-sizing: border-box; /* 添加这个 */
 }
 
 /* 欢迎页面 */
@@ -166,7 +167,8 @@
     gap: 24px;
 
     margin: 0 auto;
-    width: 100%;
+   width: 100%;
+    box-sizing: border-box; /* 添加这个 */
 }
 
 .message {
@@ -223,6 +225,8 @@
     /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); */
     border: 1px solid #f0f0f0;
     max-width: 100%;
+        width: 100%; /* 添加这个 */
+    box-sizing: border-box; /* 添加这个 */
 }
 
 .aiHeader {
@@ -350,13 +354,15 @@
     max-height: 400px;
     background: white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    width: 100%; /* 确保宽度100% */
+    box-sizing: border-box; /* 添加这个 */
 }
 
 .dataTable table {
-    width: 100%;
+     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
-    min-width: 600px;
+    min-width: 100%; /* 改为100%而不是固定值 */
 }
 
 .dataTable th {
@@ -572,17 +578,15 @@
 
 /* 输入区域 - 固定在底部 */
 .inputContainer {
-    width: calc(100% - 40px);
-
-    border-top: 2px solid #e1e5e9;
+    box-sizing: border-box;
+    
+    /* border-top: 2px solid #e1e5e9; */
     margin-top: 10px;
-    margin-left: 20px;
-    margin-right: 20px;
+
     flex-shrink: 0;
     /* box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); */
     position: relative;
     z-index: 10;
-    box-sizing: border-box;
     border: 2px solid #e1e5e9;
     border-radius: 12px;
 

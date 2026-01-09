@@ -9,8 +9,7 @@ const RealEstateAISearch = () => {
     const [showExamples, setShowExamples] = useState(true);
     const messagesEndRef = useRef(null);
     const chatContainerRef = useRef(null);
-    // 新增两个状态控制显示
-    const [showAnalysis, setShowAnalysis] = useState(false);
+    // 新增状态控制显示
     const [showSQL, setShowSQL] = useState(false);
     // 示例查询语句
     const exampleQueries = [
@@ -96,7 +95,8 @@ const RealEstateAISearch = () => {
                                     content: displayedText,
                                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                                     sql: data.sql,
-                                    data: data.data
+                                    data: data.data,
+                                    analysis: data.analysis
                                 }
                             ];
                         }
@@ -168,11 +168,17 @@ const RealEstateAISearch = () => {
         return { __html: formatted.replace(/\n/g, '<br>') };
     };
 
-    // 格式化数据表格
+    // 格式化数据表格 - 移除reportsID，添加序号
     const formatData = (data) => {
         if (!data || !Array.isArray(data) || data.length === 0) return null;
 
-        const headers = Object.keys(data[0]);
+        // 移除reportsID字段，并添加序号
+        const formattedData = data.map((item, index) => {
+            const { reportsID, ...rest } = item;
+            return { 序号: index + 1, ...rest };
+        });
+
+        const headers = Object.keys(formattedData[0]);
 
         return (
             <div className={styles.dataTable}>
@@ -185,7 +191,7 @@ const RealEstateAISearch = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {data.slice(0, 10).map((row, index) => (
+                        {formattedData.slice(0, 10).map((row, index) => (
                             <tr key={index}>
                                 {headers.map(header => (
                                     <td key={header}>
@@ -198,9 +204,9 @@ const RealEstateAISearch = () => {
                         ))}
                     </tbody>
                 </table>
-                {data.length > 10 && (
+                {formattedData.length > 10 && (
                     <div className={styles.tableNote}>
-                        显示前10条记录，共 {data.length} 条
+                        显示前10条记录，共 {formattedData.length} 条
                     </div>
                 )}
             </div>
@@ -208,80 +214,67 @@ const RealEstateAISearch = () => {
     };
 
     // 渲染消息内容
-    
-const renderMessageContent = (message) => {
-    if (message.type === 'user') {
+    const renderMessageContent = (message) => {
+        if (message.type === 'user') {
+            return (
+                <div className={styles.userMessage}>
+                    <div className={styles.messageContent}>{message.content}</div>
+                    <div className={styles.messageTime}>{message.timestamp}</div>
+                </div>
+            );
+        }
+
         return (
-            <div className={styles.userMessage}>
-                <div className={styles.messageContent}>{message.content}</div>
+            <div className={styles.aiMessage}>
+                <div className={styles.aiContent}>
+                    {message.content}
+                </div>
+
+                {showSQL && message.sql && (
+                    <div className={styles.sqlSection}>
+                        <div className={styles.sqlTitle}>
+                            <span>📋 生成的SQL：</span>
+                            <button
+                                className={styles.copyBtn}
+                                onClick={() => navigator.clipboard.writeText(message.sql)}
+                            >
+                                复制SQL
+                            </button>
+                        </div>
+                        <div
+                            className={styles.sqlCode}
+                            dangerouslySetInnerHTML={formatSQL(message.sql)}
+                        />
+                    </div>
+                )}
+
+                {message.data && message.data.length > 0 && (
+                    <div className={styles.dataSection}>
+                        <div className={styles.dataTitle}>📊 查询结果：</div>
+                        {formatData(message.data)}
+                    </div>
+                )}
+
+                {message.analysis && (
+                    <div className={styles.analysisSection}>
+                        <div className={styles.analysisTitle}>📈 数据分析：</div>
+                        <div className={styles.analysisContent}>{message.analysis}</div>
+                    </div>
+                )}
+                
                 <div className={styles.messageTime}>{message.timestamp}</div>
             </div>
         );
-    }
-
-    return (
-        <div className={styles.aiMessage}>
-            {/* <div className={styles.aiHeader}>
-                <span className={styles.aiAvatar}>🤖</span>
-                <span className={styles.aiTitle}>AI助手</span>
-            </div> */}
-            <div className={styles.aiContent}>
-                {message.content}
-            </div>
-
-            {showSQL && message.sql && (
-                <div className={styles.sqlSection}>
-                    <div className={styles.sqlTitle}>
-                        <span>📋 生成的SQL：</span>
-                        <button
-                            className={styles.copyBtn}
-                            onClick={() => navigator.clipboard.writeText(message.sql)}
-                        >
-                            复制SQL
-                        </button>
-                    </div>
-                    <div
-                        className={styles.sqlCode}
-                        dangerouslySetInnerHTML={formatSQL(message.sql)}
-                    />
-                </div>
-            )}
-
-            {message.data && message.data.length > 0 && (
-                <div className={styles.dataSection}>
-                    <div className={styles.dataTitle}>📊 查询结果：</div>
-                    {formatData(message.data)}
-                </div>
-            )}
-
-            {showAnalysis && message.analysis && (
-                <div className={styles.analysisSection}>
-                    <div className={styles.analysisTitle}>📈 分析结果：</div>
-                    <div className={styles.analysisContent}>{message.analysis}</div>
-                </div>
-            )}
-            <div className={styles.messageTime}>{message.timestamp}</div>
-        </div>
-    );
-};
+    };
 
     return (
         <div className={styles.container}>
-
-
             {/* 聊天区域 - 使用flex布局 */}
             <div className={styles.chatArea}>
                 {/* 消息容器 */}
                 <div className={styles.messagesContainer} ref={chatContainerRef}>
                     {messages.length === 0 ? (
                         <div className={styles.welcomeSection}>
-                            {/* <div className={styles.welcomeAvatar}>🏠</div>
-                            <div className={styles.welcomeTitle}>
-                                重庆房产AI查询助手
-                            </div> */}
-                            {/* <div className={styles.welcomeSubtitle}>
-                                我可以帮您查询和分析重庆房产数据，支持自然语言提问
-                            </div> */}
                             <div className={styles.tipsBox}>
                                 <div className={styles.tipItem}>📍 支持重庆所有区域查询</div>
                                 <div className={styles.tipItem}>💰 支持价格区间筛选</div>
@@ -332,8 +325,6 @@ const renderMessageContent = (message) => {
                 {/* 输入区域 - 固定在底部 */}
                 <div className={styles.inputContainer}>
                     <div className={styles.inputWrapper}>
-
-
                         <textarea
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
@@ -343,20 +334,9 @@ const renderMessageContent = (message) => {
                             rows="3"
                             className={styles.textarea}
                         />
-
-
                     </div>
 
                     <div className={styles.displaySettings}>
-                        {/* 显示分析结果按钮 */}
-                        <button
-                            className={`${styles.toggleBtn} ${showAnalysis ? styles.active : ''}`}
-                            onClick={() => setShowAnalysis(!showAnalysis)}
-                            title={showAnalysis ? "隐藏分析结果" : "显示分析结果"}
-                        >
-                            📈 {showAnalysis ? '隐藏分析' : '显示分析'}
-                        </button>
-
                         {/* 显示SQL按钮 */}
                         <button
                             className={`${styles.toggleBtn} ${showSQL ? styles.active : ''}`}
@@ -382,8 +362,6 @@ const renderMessageContent = (message) => {
                             )}
                         </button>
                     </div>
-
-
                 </div>
             </div>
         </div>
