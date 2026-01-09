@@ -8028,7 +8028,7 @@ app.get('/api/searchHousePrice', async (req, res) => {
         if (searchTerm) {
             whereClause = `
                 WHERE documentNo LIKE '%${searchTerm}%'
-                OR entrustingParty LIKE '%${searchTerm}%'
+                -- OR entrustingParty LIKE '%${searchTerm}%'
                 OR location LIKE '%${searchTerm}%'
                 OR appraiserNameA LIKE '%${searchTerm}%'
                 OR appraiserNameB LIKE '%${searchTerm}%'
@@ -12633,6 +12633,832 @@ ORDER BY
 }
 
 
+
+{  //AI房地产询价回复
+
+// 重庆AI查询路由
+app.post('/api/ai-query', async (req, res) => {
+    try {
+        const { question, history } = req.body;
+        
+        if (!question) {
+            return res.status(400).json({ error: '问题不能为空' });
+        }
+
+        console.log('收到查询:', question);
+        
+        // 1. 解析用户问题，生成SQL
+        const parsedQuery = parseChongqingQuestion(question);
+        console.log('解析结果:', parsedQuery);
+        
+        let generatedSQL = generateChongqingSQL(parsedQuery);
+        console.log('生成的SQL:', generatedSQL);
+        
+        let aiResponse = generateChongqingAIResponse(question, parsedQuery);
+        
+        // 2. 执行SQL查询
+        let queryResult = [];
+        let analysis = null;
+        
+        if (generatedSQL) {
+            try {
+                await poolConnect;
+                console.log('执行SQL...');
+                const result = await pool.request().query(generatedSQL);
+                queryResult = result.recordset;
+                console.log('查询结果数量:', queryResult.length);
+                
+                // 3. 分析查询结果
+                analysis = analyzeChongqingResults(parsedQuery, queryResult);
+                if (analysis) {
+                    aiResponse += `\n\n${analysis}`;
+                }
+            } catch (sqlError) {
+                console.error('SQL执行错误:', sqlError);
+                aiResponse += '\n\n⚠️ SQL执行出错，请检查查询条件是否合理。';
+            }
+        }
+
+        // 4. 返回结果
+        res.json({
+            success: true,
+            question,
+            response: aiResponse,
+            sql: generatedSQL,
+            data: queryResult.slice(0, 20), // 限制返回数据量
+            analysis: analysis,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('AI查询错误:', error);
+        res.status(500).json({ 
+            error: 'AI查询失败', 
+            details: error.message 
+        });
+    }
+});
+
+// 解析重庆地区用户问题
+function parseChongqingQuestion(question) {
+    const parsed = {
+        type: 'query', // query, analysis, comparison, statistics, trend
+        filters: [],
+        aggregations: [],
+        orderBy: null,
+        limit: 20,
+        timeRange: null,
+        specialConditions: []
+    };
+
+    const lowerQuestion = question.toLowerCase();
+
+    // 1. 重庆区域识别
+    const chongqingDistricts = [
+        '渝中', '江北', '南岸', '沙坪坝', '九龙坡', '大渡口', '北碚', 
+        '渝北', '巴南', '两江新区', '高新区', '经开区',
+        '璧山', '江津', '永川', '合川', '綦江', '南川', '铜梁', '潼南', '荣昌', '大足', '万盛',
+        '涪陵', '长寿', '万州', '开州', '云阳', '奉节', '巫山', '巫溪', '城口', '忠县', '垫江', '丰都', '武隆', '彭水', '黔江', '酉阳', '秀山', '石柱'
+    ];
+    
+    chongqingDistricts.forEach(district => {
+        if (lowerQuestion.includes(district.toLowerCase())) {
+            parsed.filters.push({
+                field: 'location',
+                operator: 'LIKE',
+                value: `%${district}%`
+            });
+            
+            // 添加重庆特色区域标记
+            if (['渝中', '江北', '南岸', '沙坪坝'].includes(district)) {
+                parsed.specialConditions.push('重庆主城核心区');
+            } else if (['两江新区', '高新区'].includes(district)) {
+                parsed.specialConditions.push('重庆新区发展区');
+            } else if (['北碚', '巴南', '渝北'].includes(district)) {
+                parsed.specialConditions.push('重庆主城拓展区');
+            }
+        }
+    });
+
+    // 2. 面积筛选（重庆特色：按套内面积为主）
+    const areaMatch = lowerQuestion.match(/(\d+)\s*[-\~到]\s*(\d+)\s*(平米|平方米|平方|m²)/);
+    if (areaMatch) {
+        const minArea = parseInt(areaMatch[1]);
+        const maxArea = parseInt(areaMatch[2]);
+        parsed.filters.push({
+            field: 'interiorArea', // 重庆注重套内面积
+            operator: 'BETWEEN',
+            value: [minArea, maxArea]
+        });
+    } else if (lowerQuestion.includes('面积')) {
+        const areaNum = lowerQuestion.match(/(\d+)\s*(平米|平方米|平方|m²)/);
+        if (areaNum) {
+            const area = parseInt(areaNum[1]);
+            parsed.filters.push({
+                field: 'interiorArea',
+                operator: '>=',
+                value: area * 0.8
+            });
+            parsed.filters.push({
+                field: 'interiorArea',
+                operator: '<=',
+                value: area * 1.2
+            });
+        }
+    }
+
+    // 3. 价格筛选（重庆房价水平）
+    const priceMatch = lowerQuestion.match(/(\d+)\s*[-\~到]\s*(\d+)\s*(万|元)/);
+    if (priceMatch) {
+        const minPrice = parseInt(priceMatch[1]);
+        const maxPrice = parseInt(priceMatch[2]);
+        
+        if (lowerQuestion.includes('万')) {
+            parsed.filters.push({
+                field: 'valuationPrice',
+                operator: 'BETWEEN',
+                value: [minPrice * 10000, maxPrice * 10000]
+            });
+        } else {
+            parsed.filters.push({
+                field: 'valuationPrice',
+                operator: 'BETWEEN',
+                value: [minPrice, maxPrice]
+            });
+        }
+    }
+
+    // 4. 户型筛选（重庆常用说法）
+    if (lowerQuestion.includes('单配') || lowerQuestion.includes('一室')) {
+        parsed.filters.push({ field: 'housePurpose', operator: 'LIKE', value: '%一室%' });
+    }
+    if (lowerQuestion.includes('两室') || lowerQuestion.includes('2室') || lowerQuestion.includes('双卫')) {
+        parsed.filters.push({ field: 'housePurpose', operator: 'LIKE', value: '%两室%' });
+    }
+    if (lowerQuestion.includes('三室') || lowerQuestion.includes('3室') || lowerQuestion.includes('大三房')) {
+        parsed.filters.push({ field: 'housePurpose', operator: 'LIKE', value: '%三室%' });
+    }
+    if (lowerQuestion.includes('四室') || lowerQuestion.includes('4室') || lowerQuestion.includes('跃层')) {
+        parsed.filters.push({ field: 'housePurpose', operator: 'LIKE', value: '%四室%' });
+    }
+
+    // 5. 重庆特色条件
+    if (lowerQuestion.includes('电梯')) {
+        parsed.filters.push({ field: 'elevator', operator: '=', value: 1 });
+    }
+    if (lowerQuestion.includes('江景') || lowerQuestion.includes('临江')) {
+        parsed.specialConditions.push('江景房');
+        parsed.filters.push({ 
+            field: 'boundaries', 
+            operator: 'LIKE', 
+            value: '%江%' 
+        });
+    }
+    if (lowerQuestion.includes('学区')) {
+        parsed.specialConditions.push('学区房');
+        parsed.filters.push({ field: 'school', operator: 'IS NOT', value: 'NULL' });
+    }
+    if (lowerQuestion.includes('地铁') || lowerQuestion.includes('轻轨')) {
+        parsed.specialConditions.push('轨道房');
+        parsed.filters.push({ 
+            field: 'busStopName', 
+            operator: 'LIKE', 
+            value: '%轨道%' 
+        });
+    }
+    if (lowerQuestion.includes('装修') || lowerQuestion.includes('精装')) {
+        parsed.filters.push({ 
+            field: 'decorationStatus', 
+            operator: 'NOT LIKE', 
+            value: '%清水%' 
+        });
+    }
+    if (lowerQuestion.includes('清水')) {
+        parsed.filters.push({ 
+            field: 'decorationStatus', 
+            operator: 'LIKE', 
+            value: '%清水%' 
+        });
+    }
+
+    // 6. 查询类型判断
+    if (lowerQuestion.includes('对比') || lowerQuestion.includes('比较')) {
+        parsed.type = 'comparison';
+    } else if (lowerQuestion.includes('统计') || lowerQuestion.includes('分布') || lowerQuestion.includes('多少')) {
+        parsed.type = 'statistics';
+    } else if (lowerQuestion.includes('趋势') || lowerQuestion.includes('变化') || lowerQuestion.includes('最近')) {
+        parsed.type = 'trend';
+        // 时间范围判断
+        if (lowerQuestion.includes('半年')) {
+            parsed.timeRange = '6 months';
+        } else if (lowerQuestion.includes('一年')) {
+            parsed.timeRange = '1 year';
+        } else if (lowerQuestion.includes('月')) {
+            parsed.timeRange = '1 month';
+        }
+    } else if (lowerQuestion.includes('分析') || lowerQuestion.includes('投资') || lowerQuestion.includes('潜力')) {
+        parsed.type = 'analysis';
+    } else if (lowerQuestion.includes('推荐') || lowerQuestion.includes('建议')) {
+        parsed.type = 'recommendation';
+    }
+
+    // 7. 排序
+    if (lowerQuestion.includes('最新') || lowerQuestion.includes('最近')) {
+        parsed.orderBy = { field: 'entrustDate', direction: 'DESC' };
+    } else if (lowerQuestion.includes('最贵') || lowerQuestion.includes('最高')) {
+        parsed.orderBy = { field: 'valuationPrice', direction: 'DESC' };
+    } else if (lowerQuestion.includes('最便宜') || lowerQuestion.includes('最低')) {
+        parsed.orderBy = { field: 'valuationPrice', direction: 'ASC' };
+    } else if (lowerQuestion.includes('最大') || lowerQuestion.includes('面积大')) {
+        parsed.orderBy = { field: 'buildingArea', direction: 'DESC' };
+    }
+
+    return parsed;
+}
+
+// 生成重庆房产SQL查询
+function generateChongqingSQL(parsedQuery) {
+    const baseFields = [
+        'reportsID as 报告ID',
+        'documentNo as 委托书编号',
+        'entrustingParty as 委托方',
+        'location as 房产坐落',
+        'buildingArea as 建筑面积',
+        'interiorArea as 套内面积',
+        'valuationPrice as 评估单价',
+        'communityName as 小区名称',
+        'totalFloors as 总层数',
+        'floorNumber as 所在楼层',
+        'housePurpose as 房屋用途',
+        'elevator as 有无电梯',
+        'yearBuilt as 建成年份',
+        'entrustDate as 委托日期',
+        'decorationStatus as 装修状况',
+        'spaceLayout as 空间布局'
+    ];
+
+    let sql = '';
+    
+    // 根据查询类型生成不同的SQL
+    switch(parsedQuery.type) {
+        case 'statistics':
+            sql = generateStatisticsSQL(parsedQuery);
+            break;
+        case 'comparison':
+            sql = generateComparisonSQL(parsedQuery);
+            break;
+        case 'trend':
+            sql = generateTrendSQL(parsedQuery);
+            break;
+        case 'analysis':
+            sql = generateAnalysisSQL(parsedQuery);
+            break;
+        default:
+            sql = generateBasicSQL(parsedQuery, baseFields);
+    }
+
+    return sql;
+}
+
+// 生成基础查询SQL
+function generateBasicSQL(parsedQuery, fields) {
+    let sql = `SELECT ${fields.join(', ')} FROM WebWordReports.dbo.WordReportsInformation`;
+    let whereClauses = [];
+
+    // 构建WHERE条件
+    parsedQuery.filters.forEach(filter => {
+        if (filter.operator === 'LIKE') {
+            whereClauses.push(`${filter.field} LIKE '${filter.value}'`);
+        } else if (filter.operator === 'BETWEEN') {
+            whereClauses.push(`${filter.field} BETWEEN ${filter.value[0]} AND ${filter.value[1]}`);
+        } else if (filter.operator === 'IS NOT') {
+            whereClauses.push(`${filter.field} IS NOT NULL`);
+        } else if (filter.operator === 'NOT LIKE') {
+            whereClauses.push(`${filter.field} NOT LIKE '${filter.value}'`);
+        } else {
+            whereClauses.push(`${filter.field} ${filter.operator} ${filter.value}`);
+        }
+    });
+
+    if (whereClauses.length > 0) {
+        sql += ` WHERE ${whereClauses.join(' AND ')}`;
+    }
+
+    // 排序
+    if (parsedQuery.orderBy) {
+        sql += ` ORDER BY ${parsedQuery.orderBy.field} ${parsedQuery.orderBy.direction}`;
+    } else {
+        sql += ' ORDER BY entrustDate DESC';
+    }
+    
+    // 限制数量
+    if (parsedQuery.limit) {
+        sql += ` OFFSET 0 ROWS FETCH NEXT ${parsedQuery.limit} ROWS ONLY`;
+    }
+
+    return sql;
+}
+
+// 生成统计SQL
+function generateStatisticsSQL(parsedQuery) {
+    return `
+        SELECT 
+            CASE 
+                WHEN location LIKE '%渝中%' THEN '渝中区'
+                WHEN location LIKE '%江北%' THEN '江北区'
+                WHEN location LIKE '%南岸%' THEN '南岸区'
+                WHEN location LIKE '%沙坪坝%' THEN '沙坪坝区'
+                WHEN location LIKE '%九龙坡%' THEN '九龙坡区'
+                WHEN location LIKE '%大渡口%' THEN '大渡口区'
+                WHEN location LIKE '%渝北%' THEN '渝北区'
+                WHEN location LIKE '%巴南%' THEN '巴南区'
+                WHEN location LIKE '%北碚%' THEN '北碚区'
+                WHEN location LIKE '%两江新区%' THEN '两江新区'
+                ELSE '其他区县'
+            END as 区域,
+            COUNT(*) as 房源数量,
+            ROUND(AVG(CAST(valuationPrice AS FLOAT)), 0) as 平均评估单价,
+            ROUND(AVG(CAST(buildingArea AS FLOAT)), 2) as 平均建筑面积,
+            ROUND(AVG(CAST(interiorArea AS FLOAT)), 2) as 平均套内面积,
+            SUM(CASE WHEN elevator = 1 THEN 1 ELSE 0 END) as 有电梯数量,
+            SUM(CASE WHEN decorationStatus NOT LIKE '%清水%' THEN 1 ELSE 0 END) as 已装修数量
+        FROM WebWordReports.dbo.WordReportsInformation
+        WHERE 1=1
+        ${buildWhereClause(parsedQuery.filters, true)}
+        GROUP BY 
+            CASE 
+                WHEN location LIKE '%渝中%' THEN '渝中区'
+                WHEN location LIKE '%江北%' THEN '江北区'
+                WHEN location LIKE '%南岸%' THEN '南岸区'
+                WHEN location LIKE '%沙坪坝%' THEN '沙坪坝区'
+                WHEN location LIKE '%九龙坡%' THEN '九龙坡区'
+                WHEN location LIKE '%大渡口%' THEN '大渡口区'
+                WHEN location LIKE '%渝北%' THEN '渝北区'
+                WHEN location LIKE '%巴南%' THEN '巴南区'
+                WHEN location LIKE '%北碚%' THEN '北碚区'
+                WHEN location LIKE '%两江新区%' THEN '两江新区'
+                ELSE '其他区县'
+            END
+        ORDER BY COUNT(*) DESC
+    `;
+}
+
+// 生成对比SQL
+function generateComparisonSQL(parsedQuery) {
+    const regions = [];
+    parsedQuery.filters.forEach(filter => {
+        if (filter.field === 'location' && filter.operator === 'LIKE') {
+            const region = filter.value.replace(/%/g, '');
+            regions.push(region);
+        }
+    });
+
+    if (regions.length >= 2) {
+        return `
+            SELECT 
+                CASE 
+                    ${regions.map((region, index) => 
+                        `WHEN location LIKE '%${region}%' THEN '${region}'`
+                    ).join('\n                    ')}
+                    ELSE '其他区域'
+                END as 对比区域,
+                COUNT(*) as 房源数量,
+                ROUND(AVG(CAST(valuationPrice AS FLOAT)), 0) as 平均评估单价,
+                ROUND(AVG(CAST(buildingArea AS FLOAT)), 2) as 平均建筑面积,
+                ROUND(AVG(CAST(interiorArea AS FLOAT)), 2) as 平均套内面积,
+                ROUND(MIN(CAST(valuationPrice AS FLOAT)), 0) as 最低单价,
+                ROUND(MAX(CAST(valuationPrice AS FLOAT)), 0) as 最高单价,
+                ROUND(AVG(CAST(yearBuilt AS FLOAT)), 0) as 平均建成年份
+            FROM WebWordReports.dbo.WordReportsInformation
+            WHERE (${regions.map(region => `location LIKE '%${region}%'`).join(' OR ')})
+            GROUP BY 
+                CASE 
+                    ${regions.map((region, index) => 
+                        `WHEN location LIKE '%${region}%' THEN '${region}'`
+                    ).join('\n                    ')}
+                    ELSE '其他区域'
+                END
+            ORDER BY 平均评估单价 DESC
+        `;
+    }
+
+    // 如果没有明确区域，对比主城核心区
+    return `
+        SELECT 
+            CASE 
+                WHEN location LIKE '%渝中%' THEN '渝中区'
+                WHEN location LIKE '%江北%' THEN '江北区'
+                WHEN location LIKE '%南岸%' THEN '南岸区'
+                WHEN location LIKE '%沙坪坝%' THEN '沙坪坝区'
+                ELSE '其他区域'
+            END as 对比区域,
+            COUNT(*) as 房源数量,
+            ROUND(AVG(CAST(valuationPrice AS FLOAT)), 0) as 平均评估单价,
+            ROUND(AVG(CAST(buildingArea AS FLOAT)), 2) as 平均建筑面积
+        FROM WebWordReports.dbo.WordReportsInformation
+        WHERE location LIKE '%渝中%' 
+           OR location LIKE '%江北%' 
+           OR location LIKE '%南岸%' 
+           OR location LIKE '%沙坪坝%'
+        GROUP BY 
+            CASE 
+                WHEN location LIKE '%渝中%' THEN '渝中区'
+                WHEN location LIKE '%江北%' THEN '江北区'
+                WHEN location LIKE '%南岸%' THEN '南岸区'
+                WHEN location LIKE '%沙坪坝%' THEN '沙坪坝区'
+                ELSE '其他区域'
+            END
+        ORDER BY 平均评估单价 DESC
+    `;
+}
+
+// 生成趋势SQL
+function generateTrendSQL(parsedQuery) {
+    let dateCondition = '';
+    if (parsedQuery.timeRange === '6 months') {
+        dateCondition = "AND entrustDate >= DATEADD(MONTH, -6, GETDATE())";
+    } else if (parsedQuery.timeRange === '1 year') {
+        dateCondition = "AND entrustDate >= DATEADD(YEAR, -1, GETDATE())";
+    }
+
+    return `
+        SELECT 
+            FORMAT(entrustDate, 'yyyy-MM') as 年月,
+            COUNT(*) as 委托数量,
+            ROUND(AVG(CAST(valuationPrice AS FLOAT)), 0) as 月均评估单价,
+            ROUND(AVG(CAST(buildingArea AS FLOAT)), 2) as 月均建筑面积,
+            ROUND(MIN(CAST(valuationPrice AS FLOAT)), 0) as 月度最低单价,
+            ROUND(MAX(CAST(valuationPrice AS FLOAT)), 0) as 月度最高单价
+        FROM WebWordReports.dbo.WordReportsInformation
+        WHERE 1=1
+        ${dateCondition}
+        ${buildWhereClause(parsedQuery.filters, true)}
+        GROUP BY FORMAT(entrustDate, 'yyyy-MM')
+        ORDER BY 年月 DESC
+    `;
+}
+
+// 生成分析SQL
+function generateAnalysisSQL(parsedQuery) {
+    return `
+        SELECT 
+            communityName as 小区名称,
+            COUNT(*) as 房源数量,
+            ROUND(AVG(CAST(valuationPrice AS FLOAT)), 0) as 小区均价,
+            ROUND(AVG(CAST(buildingArea AS FLOAT)), 2) as 平均面积,
+            ROUND(AVG(CAST(interiorArea AS FLOAT)), 2) as 平均套内面积,
+            ROUND(AVG(CAST(yearBuilt AS FLOAT)), 0) as 平均房龄,
+            SUM(CASE WHEN elevator = 1 THEN 1 ELSE 0 END) as 有电梯数量,
+            SUM(CASE WHEN decorationStatus NOT LIKE '%清水%' THEN 1 ELSE 0 END) as 已装修数量
+        FROM WebWordReports.dbo.WordReportsInformation
+        WHERE 1=1
+        ${buildWhereClause(parsedQuery.filters, true)}
+        GROUP BY communityName
+        HAVING COUNT(*) >= 3
+        ORDER BY 小区均价 DESC
+    `;
+}
+
+// 辅助函数：构建WHERE子句
+function buildWhereClause(filters, excludeLocation = false) {
+    const whereClauses = [];
+    
+    filters.forEach(filter => {
+        if (excludeLocation && filter.field === 'location') {
+            return; // 跳过区域筛选
+        }
+        
+        if (filter.operator === 'LIKE') {
+            whereClauses.push(`${filter.field} LIKE '${filter.value}'`);
+        } else if (filter.operator === 'BETWEEN') {
+            whereClauses.push(`${filter.field} BETWEEN ${filter.value[0]} AND ${filter.value[1]}`);
+        } else if (filter.operator === 'IS NOT') {
+            whereClauses.push(`${filter.field} IS NOT NULL`);
+        } else if (filter.operator === 'NOT LIKE') {
+            whereClauses.push(`${filter.field} NOT LIKE '${filter.value}'`);
+        } else {
+            whereClauses.push(`${filter.field} ${filter.operator} ${filter.value}`);
+        }
+    });
+    
+    return whereClauses.length > 0 ? `AND ${whereClauses.join(' AND ')}` : '';
+}
+
+// 生成重庆特色的AI回复
+function generateChongqingAIResponse(question, parsedQuery) {
+    const responses = {
+        query: `根据您关于"${question}"的查询，我在重庆房产数据库中找到了相关信息：\n\n`,
+        statistics: `📊 重庆房产统计（"${question}"）：\n\n`,
+        comparison: `🔍 重庆区域对比分析（"${question}"）：\n\n`,
+        analysis: `📈 重庆房产投资分析（"${question}"）：\n\n`,
+        trend: `📅 重庆房价趋势分析（"${question}"）：\n\n`,
+        recommendation: `💡 重庆购房推荐（"${question}"）：\n\n`
+    };
+
+    let response = responses[parsedQuery.type] || `您查询的是重庆房产："${question}"\n\n`;
+    
+    // 添加重庆特色问候
+    response += "🏙️ 重庆房产AI助手为您服务！\n\n";
+    
+    // 添加筛选条件说明
+    if (parsedQuery.filters.length > 0) {
+        response += "🔍 识别出的筛选条件：\n";
+        parsedQuery.filters.forEach(filter => {
+            let conditionText = '';
+            if (filter.field === 'location') {
+                conditionText = `区域：${filter.value.replace(/%/g, '')}`;
+            } else if (filter.field === 'interiorArea') {
+                conditionText = `套内面积：${filter.operator} ${Array.isArray(filter.value) ? `${filter.value[0]}-${filter.value[1]}平米` : filter.value}`;
+            } else if (filter.field === 'valuationPrice') {
+                const price = Array.isArray(filter.value) ? 
+                    `${(filter.value[0]/10000).toFixed(0)}-${(filter.value[1]/10000).toFixed(0)}万元` : 
+                    `${(filter.value/10000).toFixed(0)}万元`;
+                conditionText = `价格：${price}`;
+            } else if (filter.field === 'elevator') {
+                conditionText = `电梯：${filter.value === 1 ? '有' : '无'}`;
+            } else {
+                conditionText = `${filter.field}：${filter.value}`;
+            }
+            response += `• ${conditionText}\n`;
+        });
+        response += "\n";
+    }
+
+    // 添加特殊条件说明
+    if (parsedQuery.specialConditions.length > 0) {
+        response += "✨ 特殊需求：\n";
+        parsedQuery.specialConditions.forEach(condition => {
+            response += `• ${condition}\n`;
+        });
+        response += "\n";
+    }
+
+    return response;
+}
+
+// 分析重庆查询结果
+function analyzeChongqingResults(parsedQuery, results) {
+    if (!results || results.length === 0) {
+        return "⚠️ 没有找到符合条件的重庆房产记录。\n\n💡 建议：\n1. 调整筛选条件\n2. 扩大搜索区域\n3. 联系人工客服获取更多帮助";
+    }
+
+    let analysis = "📋 分析报告：\n\n";
+
+    switch(parsedQuery.type) {
+        case 'statistics':
+            analysis += analyzeStatistics(results);
+            break;
+        case 'comparison':
+            analysis += analyzeComparison(results);
+            break;
+        case 'trend':
+            analysis += analyzeTrend(results);
+            break;
+        case 'analysis':
+            analysis += analyzeInvestment(results);
+            break;
+        default:
+            analysis += analyzeBasicResults(parsedQuery, results);
+    }
+
+    // 添加重庆房产市场建议
+    analysis += "\n\n🏙️ 重庆房产市场特点：\n";
+    analysis += "• 主城核心区（渝中、江北、南岸）价格较高\n";
+    analysis += "• 两江新区、高新区发展潜力较大\n";
+    analysis += "• 重庆注重套内面积，得房率较高\n";
+    analysis += "• 江景房、轨道房增值潜力明显\n";
+
+    return analysis;
+}
+
+// 分析统计结果
+function analyzeStatistics(results) {
+    let analysis = `📊 统计汇总：共 ${results.length} 个区域\n\n`;
+    
+    const totalCount = results.reduce((sum, row) => sum + (row['房源数量'] || 0), 0);
+    const totalAvgPrice = results.reduce((sum, row) => sum + (row['平均评估单价'] || 0), 0) / results.length;
+    
+    analysis += `• 总房源数量：${totalCount} 套\n`;
+    analysis += `• 全市平均单价：${Math.round(totalAvgPrice)} 元/平米\n\n`;
+    
+    analysis += "🏆 房源数量TOP3区域：\n";
+    const top3ByCount = [...results].sort((a, b) => (b['房源数量'] || 0) - (a['房源数量'] || 0)).slice(0, 3);
+    top3ByCount.forEach((row, index) => {
+        const percentage = ((row['房源数量'] / totalCount) * 100).toFixed(1);
+        analysis += `${index + 1}. ${row['区域']}：${row['房源数量']}套（${percentage}%）`;
+        if (row['平均评估单价']) {
+            analysis += `，均价 ${Math.round(row['平均评估单价'])} 元/平米`;
+        }
+        analysis += '\n';
+    });
+    
+    analysis += "\n💰 单价TOP3区域：\n";
+    const top3ByPrice = [...results].sort((a, b) => (b['平均评估单价'] || 0) - (a['平均评估单价'] || 0)).slice(0, 3);
+    top3ByPrice.forEach((row, index) => {
+        analysis += `${index + 1}. ${row['区域']}：${Math.round(row['平均评估单价'] || 0)} 元/平米\n`;
+    });
+
+    return analysis;
+}
+
+// 分析对比结果
+function analyzeComparison(results) {
+    if (results.length < 2) {
+        return "对比区域不足，无法进行有效对比。";
+    }
+
+    let analysis = "🔍 区域对比分析：\n\n";
+    
+    results.forEach(row => {
+        analysis += `📍 ${row['对比区域']}：\n`;
+        analysis += `   • 房源数量：${row['房源数量']} 套\n`;
+        analysis += `   • 平均单价：${Math.round(row['平均评估单价'] || 0)} 元/平米\n`;
+        analysis += `   • 平均面积：${row['平均建筑面积']?.toFixed(1) || 'N/A'} 平米\n`;
+        analysis += `   • 价格区间：${row['最低单价'] || 'N/A'} - ${row['最高单价'] || 'N/A'} 元/平米\n`;
+        
+        if (row['平均建成年份']) {
+            const age = new Date().getFullYear() - row['平均建成年份'];
+            analysis += `   • 平均房龄：${age} 年\n`;
+        }
+        analysis += '\n';
+    });
+
+    // 价格差异分析
+    if (results[0]['平均评估单价'] && results[1]['平均评估单价']) {
+        const diff = results[0]['平均评估单价'] - results[1]['平均评估单价'];
+        const diffPercent = (diff / results[1]['平均评估单价'] * 100).toFixed(1);
+        analysis += `💰 价格差异分析：\n`;
+        analysis += `• ${results[0]['对比区域']}比${results[1]['对比区域']}${diff > 0 ? '高' : '低'}${Math.abs(diffPercent)}%\n`;
+        analysis += `• 绝对差价：${Math.abs(Math.round(diff))} 元/平米\n`;
+    }
+
+    return analysis;
+}
+
+// 分析趋势结果
+function analyzeTrend(results) {
+    if (results.length < 2) {
+        return "数据不足，无法进行趋势分析。";
+    }
+
+    let analysis = "📈 房价趋势分析：\n\n";
+    
+    // 按时间排序
+    const sortedResults = [...results].sort((a, b) => a['年月'].localeCompare(b['年月']));
+    
+    analysis += `📅 分析时段：${sortedResults[0]['年月']} - ${sortedResults[sortedResults.length - 1]['年月']}\n\n`;
+    
+    // 计算总体变化
+    const firstPrice = sortedResults[0]['月均评估单价'];
+    const lastPrice = sortedResults[sortedResults.length - 1]['月均评估单价'];
+    const totalChange = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(1);
+    
+    analysis += `• 期初均价：${Math.round(firstPrice)} 元/平米\n`;
+    analysis += `• 期末均价：${Math.round(lastPrice)} 元/平米\n`;
+    analysis += `• 总体变化：${totalChange}%\n\n`;
+    
+    // 按月分析
+    analysis += "📊 月度变化详情：\n";
+    for (let i = 1; i < sortedResults.length; i++) {
+        const current = sortedResults[i];
+        const previous = sortedResults[i - 1];
+        const change = ((current['月均评估单价'] - previous['月均评估单价']) / previous['月均评估单价'] * 100).toFixed(1);
+        
+        analysis += `• ${current['年月']}：${Math.round(current['月均评估单价'])} 元/平米`;
+        analysis += `（${change > 0 ? '+' : ''}${change}%）`;
+        analysis += `，${current['委托数量']} 笔委托\n`;
+    }
+
+    return analysis;
+}
+
+// 分析投资潜力
+function analyzeInvestment(results) {
+    if (results.length === 0) {
+        return "暂无投资分析数据。";
+    }
+
+    let analysis = "💰 投资潜力分析：\n\n";
+    
+    // 按均价排序
+    const sortedByPrice = [...results].sort((a, b) => (b['小区均价'] || 0) - (a['小区均价'] || 0));
+    
+    analysis += "🏆 高价值小区TOP5：\n";
+    sortedByPrice.slice(0, 5).forEach((row, index) => {
+        analysis += `${index + 1}. ${row['小区名称']}：${Math.round(row['小区均价'] || 0)} 元/平米`;
+        analysis += `（${row['房源数量']}套房源）\n`;
+        
+        // 添加投资建议
+        if (row['平均房龄']) {
+            const age = new Date().getFullYear() - row['平均房龄'];
+            if (age < 5) {
+                analysis += `   💡 建议：次新房，居住品质高\n`;
+            } else if (age < 10) {
+                analysis += `   💡 建议：成熟小区，配套设施完善\n`;
+            } else {
+                analysis += `   💡 建议：老小区，可能有改造潜力\n`;
+            }
+        }
+        analysis += '\n';
+    });
+
+    // 按房源数量排序（热门小区）
+    const sortedByCount = [...results].sort((a, b) => (b['房源数量'] || 0) - (a['房源数量'] || 0));
+    
+    analysis += "🔥 热门交易小区TOP5：\n";
+    sortedByCount.slice(0, 5).forEach((row, index) => {
+        analysis += `${index + 1}. ${row['小区名称']}：${row['房源数量']} 套房源在售\n`;
+        analysis += `   • 均价：${Math.round(row['小区均价'] || 0)} 元/平米\n`;
+        analysis += `   • 平均面积：${row['平均面积']?.toFixed(1) || 'N/A'} 平米\n`;
+        
+        // 电梯和装修情况
+        if (row['有电梯数量'] > 0) {
+            const elevatorRatio = (row['有电梯数量'] / row['房源数量'] * 100).toFixed(0);
+            analysis += `   • 电梯房占比：${elevatorRatio}%\n`;
+        }
+        if (row['已装修数量'] > 0) {
+            const decorationRatio = (row['已装修数量'] / row['房源数量'] * 100).toFixed(0);
+            analysis += `   • 已装修占比：${decorationRatio}%\n`;
+        }
+        analysis += '\n';
+    });
+
+    return analysis;
+}
+
+// 分析基础结果
+function analyzeBasicResults(parsedQuery, results) {
+    let analysis = `🔍 查询结果分析：\n\n`;
+    analysis += `• 找到 ${results.length} 条符合条件的记录\n`;
+    
+    if (results.length > 0) {
+        // 价格分析
+        const prices = results.map(r => r['评估单价'] || 0).filter(p => p > 0);
+        if (prices.length > 0) {
+            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            
+            analysis += `• 价格范围：${Math.round(minPrice)} - ${Math.round(maxPrice)} 元/平米\n`;
+            analysis += `• 平均价格：${Math.round(avgPrice)} 元/平米\n`;
+        }
+        
+        // 面积分析
+        const areas = results.map(r => r['套内面积'] || r['建筑面积'] || 0).filter(a => a > 0);
+        if (areas.length > 0) {
+            const avgArea = areas.reduce((a, b) => a + b, 0) / areas.length;
+            analysis += `• 平均面积：${avgArea.toFixed(1)} 平米\n`;
+        }
+        
+        // 电梯情况
+        const elevatorCount = results.filter(r => r['有无电梯'] === 1).length;
+        if (elevatorCount > 0) {
+            const elevatorRatio = (elevatorCount / results.length * 100).toFixed(0);
+            analysis += `• 电梯房比例：${elevatorRatio}%\n`;
+        }
+        
+        // 装修情况
+        const decoratedCount = results.filter(r => 
+            r['装修状况'] && !r['装修状况'].includes('清水')
+        ).length;
+        if (decoratedCount > 0) {
+            const decoratedRatio = (decoratedCount / results.length * 100).toFixed(0);
+            analysis += `• 已装修比例：${decoratedRatio}%\n`;
+        }
+        
+        // 推荐TOP3
+        if (results.length >= 3) {
+            analysis += "\n💎 推荐房源（按性价比）：\n";
+            const recommendations = [...results]
+                .sort((a, b) => {
+                    // 简单的性价比排序：价格/面积
+                    const ratioA = (a['评估单价'] || 0) / (a['套内面积'] || 1);
+                    const ratioB = (b['评估单价'] || 0) / (b['套内面积'] || 1);
+                    return ratioA - ratioB;
+                })
+                .slice(0, 3);
+            
+            recommendations.forEach((item, index) => {
+                analysis += `${index + 1}. ${item['小区名称'] || '未知小区'}\n`;
+                analysis += `   • 坐落：${item['房产坐落']}\n`;
+                if (item['评估单价']) {
+                    analysis += `   • 单价：${Math.round(item['评估单价'])} 元/平米\n`;
+                }
+                if (item['套内面积']) {
+                    analysis += `   • 套内：${item['套内面积']} 平米\n`;
+                }
+                if (item['房屋用途']) {
+                    analysis += `   • 户型：${item['房屋用途']}\n`;
+                }
+                analysis += '\n';
+            });
+        }
+    }
+
+    return analysis;
+}
+
+}
 
 // 启动服务器
 http.listen(port, () => {

@@ -6,13 +6,14 @@ import Buildings from './SearchPrice/SearchBuildings';
 import Tree from './SearchPrice/Tree';
 import Equipment from './SearchPrice/Equipment';
 import NeighborhoodFinder from './SearchPrice/NeighborhoodFinder';
-
+import RealEstateAISearch from './SearchPrice/RealEstateAISearch';
 const SearchPrice = () => {
   const [activeTab, setActiveTab] = useState('房地产');
 
   const tabs = [
     { id: 'realEstate', label: '房地产', component: SearchHousePrice },
     { id: 'neighborhood', label: '地图找房', component: NeighborhoodFinder },
+     { id: 'realestateaisearch', label: '智能管家', component: RealEstateAISearch },   
     { id: 'buildings', label: '构筑物', component: Buildings },
     { id: 'tree', label: '苗木', component: Tree },
     { id: 'equipment', label: '机器设备', component: Equipment }
