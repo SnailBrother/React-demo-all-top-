@@ -14,30 +14,66 @@
     decorationStatus VARCHAR(500) NOT NULL,            -- 装饰装修
     spaceLayout VARCHAR(100) NOT NULL,                 -- 空间布局
 
-CREATE TABLE RealEstateAISearch.dbo.QuestionType是一个字典意图关键词词典
-questionType（问题类型）                      triggerKeyword（触发问题关键字）
-comparison                                  "对比", "比较", "哪个贵", "相差", "比……便宜"，"均价"
-statistics                                       "房源", "明细", "数据", "统计", "分布", "多少"
-trend                                           "趋势", "变化", "最近"
-valuation                                     "多少钱", "价值多少", "价值多少钱", "多少元", "多少一平"
 
-其中上面得数据是comparison区域房价对比、statistics提取详细房源、trend价格趋势变化、valuation房屋单价咨询
 
-CREATE TABLE RealEstateAISearch.dbo.SearchKeywords是一个字典用来触发查找的关键字
-    searchType                        triggerKeyword                                                     SearchKeyword     
-    location,                  -- "坐落", "位于", "涉及", "区 , "县“                                 "渝北",  "九龙坡", "南岸", "巴南"
-    buildingArea,            -- "建筑面积", "名义面积", "上证面积"                          "40", "80", "120"
-    interiorArea,            -- "套内面积", "使用面积", "实得面积"                          "40", "80", "120"
-    communityName,              -- "小区名称", "小区名", "小区"
-    totalFloors,                          -- "总楼层", "所有楼层", "一共楼层"                  "1", "2", "3"
-    floorNumber,                          -- "所在楼层层", "所在层", "名义层"                 "1", "2", "3"
-    housePurpose,                -- "住宅", "办公", "商", "厂房"                                "住宅", "办公", "商", "厂房"
-    elevator,                             -- "电梯", "有电梯", "无电梯"                               "True", "False"
-    yearBuilt,                            -- "竣工", "建成", "完工"                                      "2001", "2002", "2003"
-    valuationPrice,            -- "单价", "市场单价", "元/平方米", "元/㎡"            "10000", "11000", "9000"
-    valueDate,                         -- "价值时点", "成交时间", "时间"                "2024年", "2025年", "2026年"
-    decorationStatus,            -- "清水", "木地板", "地砖"                                    "清水", "木地板", "地砖"
-    spaceLayout,                 -- "室", "卫", "厨"                                                      "两室", "三室", "一室"
+CREATE TABLE RealEstateAISearch.dbo.QuestionType (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    comparison NVARCHAR(MAX) NOT NULL,       
+    triggerKeyword NVARCHAR(MAX) NOT NULL,   
+);
+INSERT INTO RealEstateAISearch.dbo.QuestionType (comparison, triggerKeyword)
+VALUES 
+('comparison', '对比、比较、哪个贵、相差、比……便宜、均价'),
+('statistics', '房源、明细、数据、统计、分布、多少'),
+('trend', '趋势、变化、最近'),
+('valuation', '多少钱、价值多少、价值多少钱、多少元、多少一平');
+
+CREATE TABLE RealEstateAISearch.dbo.SearchKeywords (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    searchType NVARCHAR(MAX) NOT NULL,      
+    triggerKeyword NVARCHAR(MAX) NOT NULL,   
+    SearchKeyword NVARCHAR(MAX)
+);
+INSERT INTO RealEstateAISearch.dbo.SearchKeywords (searchType, triggerKeyword, SearchKeyword)
+VALUES 
+-- location区域
+('location', '坐落、位于、涉及、区、县', '渝北、九龙坡、南岸、巴南、江北、沙坪坝、渝中、北碚、大渡口、江津、合川、永川、长寿、涪陵、綦江、大足、璧山、铜梁、潼南、荣昌、梁平、城口、丰都、垫江、武隆、忠县、开州、云阳、奉节、巫山、巫溪、石柱、秀山、酉阳、彭水'),
+
+-- buildingArea建筑面积
+('buildingArea', '建筑面积、名义面积、上证面积、面积', '40、50、60、70、80、90、100、120、150、200'),
+
+-- interiorArea套内面积
+('interiorArea', '套内面积、使用面积、实得面积', '40、50、60、70、80、90、100、120、150、200'),
+
+-- communityName小区名称
+('communityName', '小区名称、小区名、小区、楼盘', NULL),
+
+-- totalFloors总楼层
+('totalFloors', '总楼层、所有楼层、一共楼层、总层数', '1、2、3、6、8、11、18、26、32、33'),
+
+-- floorNumber所在楼层
+('floorNumber', '所在楼层、所在层、名义层、第几层', '1、2、3、4、5、6、7、8、9、10、11、12、13、14、15、16、17、18、19、20、21、22、23、24、25、26、27、28、29、30、31、32、33'),
+
+-- housePurpose房屋用途
+('housePurpose', '住宅、办公、商、厂房、商业、商铺', '住宅、办公、商业、厂房'),
+
+-- elevator电梯
+('elevator', '电梯、有电梯、无电梯', 'True、False'),
+
+-- yearBuilt建成年份
+('yearBuilt', '竣工、建成、完工、建成年份', '2001、2002、2003、2004、2005、2006、2007、2008、2009、2010、2011、2012、2013、2014、2015、2016、2017、2018、2019、2020、2021、2022、2023、2024、2025'),
+
+-- valuationPrice评估单价
+('valuationPrice', '单价、市场单价、元/平方米、元/㎡、价格、估价', '10000、11000、9000、8000、7000、6000、5000、4000、3000、2000、15000、20000'),
+
+-- valueDate价值时点
+('valueDate', '价值时点、成交时间、时间、日期', '2024年、2025年、2026年、2027年、2028年'),
+
+-- decorationStatus装修状况
+('decorationStatus', '清水、木地板、地砖、装修、装饰', '清水、简装、精装、豪华装、木地板、地砖'),
+
+-- spaceLayout空间布局
+('spaceLayout', '室、卫、厨、厅、卧室、卫生间、厨房', '一室、两室、三室、四室、五室、一卫、两卫、三卫、一厨、两厨');
 
 我现在要实现得目的效果就是，比如说我在前端输入一个问题，这仅仅是一个例子，
 比如说我问：Question：现在渝北区的住宅房屋均价怎么样
@@ -48,6 +84,9 @@ CREATE TABLE RealEstateAISearch.dbo.SearchKeywords是一个字典用来触发查
 特别注意的是：
 1、后端处理涉及到小区的时候，要从WebWordReports.dbo.WordReportsInformation里面拿取小区名
 2、处理valuation 这个问题类型的时候，我要先找有没有有没有关键字，有的话就从小区查找，如果没有就从区域均价作为结果
+3、实现的原理就是先通过数据库来判断我前端的字段包含哪些数据库的问题，然后再进行查找，有点像反向查找
+4、在valuation提问的时候，就先是匹配是否有同小区名，如果没有再用区域均价
+5、针对有时间的时候，就是以当前年月为基础，往前合计2年
 
 前端返回我要的结果效果是：
 第一种comparison区域房价对比 ：

@@ -11,21 +11,41 @@ const RealEstateAISearch = () => {
     const chatContainerRef = useRef(null);
     // 新增状态控制显示
     const [showSQL, setShowSQL] = useState(false);
+    const [showExamplePopup, setShowExamplePopup] = useState(false);
+    const popupRef = useRef(null);
+    const exampleBtnRef = useRef(null);
+    // 监听点击外部关闭悬浮框
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            // 如果悬浮框是关闭的，就不处理
+            if (!showExamplePopup) return;
+
+            // 检查点击是否在悬浮框内或示例按钮内
+            const isClickInsidePopup = popupRef.current && popupRef.current.contains(event.target);
+            const isClickOnExampleBtn = exampleBtnRef.current && exampleBtnRef.current.contains(event.target);
+
+            // 如果点击在悬浮框或示例按钮外部，关闭悬浮框
+            if (!isClickInsidePopup && !isClickOnExampleBtn) {
+                setShowExamplePopup(false);
+            }
+        };
+
+        // 添加事件监听
+        document.addEventListener('mousedown', handleClickOutside);
+
+        // 清理函数
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showExamplePopup]);
     // 示例查询语句
     const exampleQueries = [
         "渝中区有哪些房源？",
-        "找找江北区面积80-100平米的房子",
-        "南岸区单价8000-10000元的房源有哪些？",
         "对比一下渝北和江北的房价",
         "最近半年重庆房价趋势如何？",
         "统计一下重庆各区房源分布",
-        "找个预算150万左右房子",
-        "两江新区的房子升值潜力如何？",
-        "总价100-150万的房子有哪些？",
-        "要三室两厅带装修的房子",
         "找带电梯的住宅",
-        "找房，面积120平米以上",
-        "沙坪坝区大学城附近房源"
+        "南岸区房屋均价多少",
     ];
 
     // 滚动到底部
@@ -261,7 +281,7 @@ const RealEstateAISearch = () => {
                         <div className={styles.analysisContent}>{message.analysis}</div>
                     </div>
                 )}
-                
+
                 <div className={styles.messageTime}>{message.timestamp}</div>
             </div>
         );
@@ -282,7 +302,7 @@ const RealEstateAISearch = () => {
                                 <div className={styles.tipItem}>📊 支持统计分析</div>
                             </div>
 
-                            {showExamples && (
+                            {/* {showExamples && (
                                 <div className={styles.examplesSection}>
                                     <div className={styles.examplesTitle}>💡 试试这样问我：</div>
                                     <div className={styles.examplesGrid}>
@@ -297,7 +317,7 @@ const RealEstateAISearch = () => {
                                         ))}
                                     </div>
                                 </div>
-                            )}
+                            )} */}
                         </div>
                     ) : (
                         <div className={styles.messages}>
@@ -337,6 +357,45 @@ const RealEstateAISearch = () => {
                     </div>
 
                     <div className={styles.displaySettings}>
+                        {/* 示例查询悬浮框按钮 */}
+                        <button
+                         ref={exampleBtnRef}
+                            className={styles.toggleBtn}
+                            onClick={() => setShowExamplePopup(!showExamplePopup)}
+                            title="查看示例问题"
+                        >
+                            💡 示例问题
+                        </button>
+
+                        {/* 示例查询悬浮框 */}
+                        {showExamplePopup && (
+                            <div  ref={popupRef}
+                            className={styles.examplesPopup}>
+                                <div className={styles.popupHeader}>
+                                    <span>💡 试试这样问我</span>
+                                    <button
+                                        className={styles.closeBtn}
+                                        onClick={() => setShowExamplePopup(false)}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                                <div className={styles.popupContent}>
+                                    {exampleQueries.map((query, index) => (
+                                        <div
+                                            key={index}
+                                            className={styles.popupExample}
+                                            onClick={() => {
+                                                setInputText(query);
+                                                setShowExamplePopup(false);
+                                            }}
+                                        >
+                                            {query}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {/* 显示SQL按钮 */}
                         <button
                             className={`${styles.toggleBtn} ${showSQL ? styles.active : ''}`}
