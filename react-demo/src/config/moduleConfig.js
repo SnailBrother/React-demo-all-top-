@@ -65,6 +65,7 @@ const TravelManager = lazy(() => import('../pages/modules/travel/TravelManager')
 //------------------------------游戏------------------------------
 const ToolAuntFlo = lazy(() => import('../pages/modules/tool/AuntFlo'));
 const ToolDeepseekAi = lazy(() => import('../pages/modules/tool/DeepseekAi'));
+//const ToolAliyunAi = lazy(() => import('../pages/modules/tool/AliyunAi'));
 const ToolDoubleChromosphere = lazy(() => import('../pages/modules/tool/DoubleChromosphere'));
 const ToolImageCompressionTool = lazy(() => import('../pages/modules/tool/ImageCompressionTool'));
 const ToolFunGames = lazy(() => import('../pages/modules/tool/FunGames'));
@@ -182,8 +183,10 @@ export const moduleConfig = {
       { key: 'imagecompressiontool', label: '图片压缩', icon: '#icon-gongju1', component: ToolImageCompressionTool, showInNavigation: true },
       { key: 'doublechromosphere', label: '双色球', icon: '#icon-shuangseqiu', component: ToolDoubleChromosphere, showInNavigation: true },
        { key: 'deepseekai', label: 'AI', icon: '#icon-Ai', component: ToolDeepseekAi, showInNavigation: true },
+      // { key: 'aliyunAi', label: '阿里百炼', icon: '#icon-yigui1', component: ToolAliyunAi, showInNavigation: true },
       { key: 'auntflo', label: '经期', icon: '#icon-tianjiabiao', component: ToolAuntFlo, showInNavigation: true },
       { key: 'fungames', label: '游戏', icon: '#icon-yigui1', component: ToolFunGames, showInNavigation: true },
+     
     ]
   }
 };

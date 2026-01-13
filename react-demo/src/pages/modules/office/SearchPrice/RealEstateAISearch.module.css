@@ -774,3 +774,48 @@
 .welcomeSection {
     /* 可以去掉原来的examplesSection样式 */
 }
+/* 在RealEstateAISearch.module.css中添加以下样式 */
+
+/* 阿里云标签样式 */
+.aliyunTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.aliyunIcon {
+    font-size: 14px;
+}
+
+/* 阿里云模式提示 */
+.aliyunTip {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 10px;
+}
+
+/* 阿里云按钮样式 */
+.aliyunBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: 1px solid #667eea;
+}
+
+.aliyunBtn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.aliyunBtn.active {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-color: #f093fb;
+}

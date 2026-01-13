@@ -12633,9 +12633,10 @@ ORDER BY
 }
 
 
- {//智能回复
+{//智能管家回复
+{//智能回复
    // /api/ai-query 接口实现
-app.post('/api/ai-query', async (req, res) => {
+   app.post('/api/ai-query', async (req, res) => {
     try {
         const { question, history } = req.body;
         
@@ -12752,11 +12753,57 @@ async function identifyQuestionType(question) {
     }
 }
 
+// 辅助函数：获取住宅用途关键词
+async function getResidentialPurposeKeywords() {
+    try {
+        await poolConnect;
+        
+        const query = `
+            SELECT SearchKeyword 
+            FROM RealEstateAISearch.dbo.SearchKeywords 
+            WHERE searchType = 'housePurpose' AND SearchKeyword IS NOT NULL
+        `;
+        
+        const result = await pool.request().query(query);
+        
+        if (result.recordset.length > 0) {
+            const purposes = result.recordset[0].SearchKeyword.split('、');
+            // 优先查找住宅相关的关键词
+            for (const purpose of purposes) {
+                if (purpose.includes('住宅') || purpose.includes('住房') || purpose.includes('居住')) {
+                    return purpose.trim();
+                }
+            }
+            // 如果没有明确找到住宅，返回第一个
+            return purposes[0].trim();
+        }
+        
+        return '住宅'; // 默认值
+        
+    } catch (error) {
+        console.error('获取住宅用途关键词时出错:', error);
+        return '住宅';
+    }
+}
+
 // 辅助函数：提取关键词
 async function extractKeywords(question) {
     try {
         await poolConnect;
         
+        // 1. 先从数据库获取所有小区名
+        const communityQuery = `
+            SELECT DISTINCT communityName 
+            FROM WebWordReports.dbo.WordReportsInformation 
+            WHERE communityName IS NOT NULL AND communityName != ''
+        `;
+        
+        const communityResult = await pool.request().query(communityQuery);
+        const allCommunityNames = communityResult.recordset.map(row => row.communityName.trim());
+        
+        console.log('数据库中的所有小区名:', allCommunityNames);
+        
+        // 2. 获取关键词配置
         const query = `
             SELECT searchType, triggerKeyword, SearchKeyword
             FROM RealEstateAISearch.dbo.SearchKeywords
@@ -12794,17 +12841,96 @@ async function extractKeywords(question) {
                     }
                 }
             } else if (hasTriggerKeyword && searchType === 'communityName') {
-                // 对于小区名称，从问题中提取
-                const match = question.match(/([^\s，,。]{2,4})(小区|楼盘)/);
-                if (match && match[1]) {
+                // 对于小区名称，从所有小区名中查找匹配
+                let matchedCommunity = null;
+                
+                // 首先检查完整匹配
+                for (const communityName of allCommunityNames) {
+                    if (communityName && question.includes(communityName)) {
+                        matchedCommunity = communityName;
+                        console.log('完整匹配到小区名:', communityName);
+                        break;
+                    }
+                }
+                
+                // 如果没有完整匹配，尝试部分匹配
+                if (!matchedCommunity) {
+                    for (const communityName of allCommunityNames) {
+                        // 检查小区名是否在问题中以任何形式出现
+                        // 例如：凰城御府 -> 检查是否包含"凰城"或"御府"
+                        const parts = communityName.split('');
+                        let isMatched = false;
+                        
+                        for (let i = 0; i < parts.length - 1; i++) {
+                            // 创建所有可能的2-4字组合
+                            for (let len = 2; len <= Math.min(4, parts.length - i); len++) {
+                                const part = parts.slice(i, i + len).join('');
+                                if (part && question.includes(part)) {
+                                    matchedCommunity = communityName;
+                                    console.log('部分匹配到小区名:', communityName, '匹配部分:', part);
+                                    isMatched = true;
+                                    break;
+                                }
+                            }
+                            if (isMatched) break;
+                        }
+                        if (isMatched) break;
+                    }
+                }
+                
+                // 如果还没有匹配到，尝试模糊匹配（针对小区名称包含特殊后缀的情况）
+                if (!matchedCommunity) {
+                    const questionParts = question.match(/[\u4e00-\u9fa5]{2,4}/g) || [];
+                    for (const questionPart of questionParts) {
+                        for (const communityName of allCommunityNames) {
+                            if (communityName && communityName.includes(questionPart)) {
+                                matchedCommunity = communityName;
+                                console.log('模糊匹配到小区名:', communityName, '问题部分:', questionPart);
+                                break;
+                            }
+                        }
+                        if (matchedCommunity) break;
+                    }
+                }
+                
+                if (matchedCommunity) {
                     if (!extractedKeywords[searchType]) {
                         extractedKeywords[searchType] = [];
                     }
-                    extractedKeywords[searchType].push(match[1].trim());
+                    if (!extractedKeywords[searchType].includes(matchedCommunity)) {
+                        extractedKeywords[searchType].push(matchedCommunity);
+                        console.log('最终匹配到小区名:', matchedCommunity);
+                    }
+                }
+            } else if (hasTriggerKeyword && searchType === 'location') {
+                // 对于位置，需要先匹配
+                const locationKeywords = row.SearchKeyword ? row.SearchKeyword.split('、') : [];
+                for (const keyword of locationKeywords) {
+                    if (keyword && question.includes(keyword.trim())) {
+                        if (!extractedKeywords[searchType]) {
+                            extractedKeywords[searchType] = [];
+                        }
+                        if (!extractedKeywords[searchType].includes(keyword.trim())) {
+                            extractedKeywords[searchType].push(keyword.trim());
+                        }
+                    }
                 }
             }
         }
         
+        // 特殊处理：如果问题中有区名，也添加到location中
+        const districtMatch = question.match(/([\u4e00-\u9fa5]{2,3})区/);
+        if (districtMatch && districtMatch[1]) {
+            if (!extractedKeywords['location']) {
+                extractedKeywords['location'] = [];
+            }
+            if (!extractedKeywords['location'].includes(districtMatch[1])) {
+                extractedKeywords['location'].push(districtMatch[1]);
+                console.log('提取到区名:', districtMatch[1]);
+            }
+        }
+        
+        console.log('最终提取的关键词:', extractedKeywords);
         return extractedKeywords;
         
     } catch (error) {
@@ -12857,6 +12983,10 @@ async function handleComparisonQuery(keywords, question) {
         if (keywords.housePurpose && keywords.housePurpose.length > 0) {
             const purposeConditions = keywords.housePurpose.map(p => `housePurpose LIKE '%${p}%'`).join(' OR ');
             whereConditions.push(`(${purposeConditions})`);
+        } else {
+            // 默认添加住宅条件
+            const residentialPurpose = await getResidentialPurposeKeywords();
+            whereConditions.push(`housePurpose LIKE '%${residentialPurpose}%'`);
         }
         
         // 时间条件：最近2年
@@ -12936,6 +13066,10 @@ async function handleStatisticsQuery(keywords, question) {
         if (keywords.housePurpose && keywords.housePurpose.length > 0) {
             const purposeConditions = keywords.housePurpose.map(p => `housePurpose LIKE '%${p}%'`).join(' OR ');
             whereConditions.push(`(${purposeConditions})`);
+        } else {
+            // 默认添加住宅条件
+            const residentialPurpose = await getResidentialPurposeKeywords();
+            whereConditions.push(`housePurpose LIKE '%${residentialPurpose}%'`);
         }
         
         if (keywords.communityName && keywords.communityName.length > 0) {
@@ -13012,6 +13146,10 @@ async function handleTrendQuery(keywords, question) {
         if (keywords.housePurpose && keywords.housePurpose.length > 0) {
             const purposeConditions = keywords.housePurpose.map(p => `housePurpose LIKE '%${p}%'`).join(' OR ');
             whereConditions.push(`(${purposeConditions})`);
+        } else {
+            // 默认添加住宅条件
+            const residentialPurpose = await getResidentialPurposeKeywords();
+            whereConditions.push(`housePurpose LIKE '%${residentialPurpose}%'`);
         }
         
         const currentYear = new Date().getFullYear();
@@ -13049,59 +13187,148 @@ async function handleTrendQuery(keywords, question) {
     }
 }
 
-// 处理估值查询
+// 处理估值查询 - 优化版本
 async function handleValuationQuery(keywords, question) {
     try {
         await poolConnect;
         
         let whereConditions = [];
-        let isCommunitySearch = false;
+        let searchType = '';
+        let searchTarget = '';
         
-        // 优先搜索小区
+        // 1. 优先搜索小区
         if (keywords.communityName && keywords.communityName.length > 0) {
-            const communityConditions = keywords.communityName.map(c => `communityName LIKE '%${c}%'`).join(' OR ');
+            const communityConditions = keywords.communityName.map(c => `communityName = '${c}'`).join(' OR ');
             whereConditions.push(`(${communityConditions})`);
-            isCommunitySearch = true;
+            searchType = '小区';
+            searchTarget = keywords.communityName[0];
+            console.log('小区查询条件:', whereConditions);
+        } else {
+            console.log('未提取到小区名关键词');
         }
         
-        // 如果没有小区，搜索区域
-        if (!isCommunitySearch && keywords.location && keywords.location.length > 0) {
+        // 2. 如果没有小区，搜索区域
+        if (!searchType && keywords.location && keywords.location.length > 0) {
             const locationConditions = keywords.location.map(loc => `location LIKE '%${loc}%'`).join(' OR ');
             whereConditions.push(`(${locationConditions})`);
+            searchType = '区域';
+            searchTarget = keywords.location[0];
+            console.log('区域查询条件:', whereConditions);
         }
         
+        // 3. 处理房屋用途
+        let purposeWhereCondition = '';
         if (keywords.housePurpose && keywords.housePurpose.length > 0) {
             const purposeConditions = keywords.housePurpose.map(p => `housePurpose LIKE '%${p}%'`).join(' OR ');
-            whereConditions.push(`(${purposeConditions})`);
+            purposeWhereCondition = `(${purposeConditions})`;
+        } else {
+            // 默认添加住宅条件
+            const residentialPurpose = await getResidentialPurposeKeywords();
+            purposeWhereCondition = `housePurpose LIKE '%${residentialPurpose}%'`;
         }
         
+        if (purposeWhereCondition) {
+            whereConditions.push(purposeWhereCondition);
+            console.log('房屋用途条件:', purposeWhereCondition);
+        }
+        
+        // 4. 时间条件：最近2年
         const currentYear = new Date().getFullYear();
         whereConditions.push(`YEAR(valueDate) >= ${currentYear - 2}`);
         
         const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
         
+        console.log('生成的SQL WHERE条件:', whereClause);
+        
+        // 5. 执行主查询
         const sql = `
             SELECT 
                 COUNT(*) AS 记录数量,
                 MIN(valuationPrice) AS 最低单价,
                 MAX(valuationPrice) AS 最高单价,
                 CAST(AVG(valuationPrice) AS DECIMAL(10,0)) AS 平均单价,
-                CAST(AVG(buildingArea) AS DECIMAL(10,1)) AS 平均面积
+                CAST(AVG(buildingArea) AS DECIMAL(10,1)) AS 平均面积,
+                CAST(AVG(yearBuilt) AS DECIMAL(10,0)) AS 平均建成年份,
+                CAST(AVG(floorNumber) AS DECIMAL(10,0)) AS 平均楼层,
+                AVG(CASE WHEN elevator = 1 THEN 1.0 ELSE 0.0 END) * 100 AS 电梯比例,
+                MIN(communityName) AS 小区名称,
+                MIN(location) AS 位置
             FROM WebWordReports.dbo.WordReportsInformation
             ${whereClause}
         `;
         
+        console.log('执行的SQL:', sql);
         const result = await pool.request().query(sql);
+        console.log('查询结果:', result.recordset);
         
         let analysis = '';
         if (result.recordset.length > 0 && result.recordset[0].记录数量 > 0) {
             const data = result.recordset[0];
-            analysis = `基于${data.记录数量}条${isCommunitySearch ? '同小区' : '同区域'}历史数据：\n` +
+            const purposeDesc = keywords.housePurpose && keywords.housePurpose.length > 0 ? 
+                keywords.housePurpose[0] : '住宅';
+            
+            analysis = `基于${data.记录数量}条${searchType}历史数据（${searchTarget}，${purposeDesc}，最近2年）：\n` +
                       `• 价格范围：${data.最低单价 || 0} - ${data.最高单价 || 0} 元/平米\n` +
                       `• 平均价格：${data.平均单价 || 0} 元/平米\n` +
-                      `• 平均面积：${data.平均面积 || 0} 平米`;
+                      `• 平均面积：${data.平均面积 || 0} 平米\n` +
+                      `• 平均建成年份：${data.平均建成年份 || '未知'} 年\n` +
+                      `• 电梯比例：${Math.round(data.电梯比例 || 0)}%`;
         } else {
-            analysis = '未找到相关历史数据。';
+            // 如果没有找到数据，尝试更宽泛的搜索
+            console.log('主查询无结果，尝试降级查询...');
+            
+            // 移除小区条件，只保留区域和用途
+            const fallbackConditions = [];
+            
+            if (keywords.location && keywords.location.length > 0) {
+                const locationConditions = keywords.location.map(loc => `location LIKE '%${loc}%'`).join(' OR ');
+                fallbackConditions.push(`(${locationConditions})`);
+            }
+            
+            if (purposeWhereCondition) {
+                fallbackConditions.push(purposeWhereCondition);
+            }
+            
+            fallbackConditions.push(`YEAR(valueDate) >= ${currentYear - 2}`);
+            
+            const fallbackWhereClause = fallbackConditions.length > 0 ? `WHERE ${fallbackConditions.join(' AND ')}` : '';
+            
+            if (fallbackWhereClause) {
+                const fallbackSql = `
+                    SELECT 
+                        COUNT(*) AS 记录数量,
+                        MIN(valuationPrice) AS 最低单价,
+                        MAX(valuationPrice) AS 最高单价,
+                        CAST(AVG(valuationPrice) AS DECIMAL(10,0)) AS 平均单价,
+                        CAST(AVG(buildingArea) AS DECIMAL(10,1)) AS 平均面积
+                    FROM WebWordReports.dbo.WordReportsInformation
+                    ${fallbackWhereClause}
+                `;
+                
+                console.log('降级查询SQL:', fallbackSql);
+                const fallbackResult = await pool.request().query(fallbackSql);
+                console.log('降级查询结果:', fallbackResult.recordset);
+                
+                if (fallbackResult.recordset.length > 0 && fallbackResult.recordset[0].记录数量 > 0) {
+                    const fallbackData = fallbackResult.recordset[0];
+                    const locationDesc = keywords.location && keywords.location.length > 0 ? 
+                        keywords.location[0] : '该区域';
+                    
+                    if (keywords.communityName && keywords.communityName.length > 0) {
+                        analysis = `未找到"${keywords.communityName[0]}"小区的具体数据，为您提供${locationDesc}的参考均价：\n` +
+                                  `• 平均价格：${fallbackData.平均单价 || 0} 元/平米\n` +
+                                  `• 基于 ${fallbackData.记录数量} 条区域住宅数据`;
+                    } else {
+                        analysis = `为您提供${locationDesc}的住宅参考均价：\n` +
+                                  `• 平均价格：${fallbackData.平均单价 || 0} 元/平米\n` +
+                                  `• 基于 ${fallbackData.记录数量} 条区域住宅数据`;
+                    }
+                } else {
+                    analysis = `抱歉，没有找到"${searchTarget}"相关的历史数据。`;
+                }
+            } else {
+                analysis = `抱歉，没有找到"${searchTarget}"相关的历史数据。`;
+            }
         }
         
         return {
@@ -13121,6 +13348,18 @@ async function handleDefaultQuery(keywords, question) {
     try {
         await poolConnect;
         
+        let whereConditions = [];
+        
+        // 默认添加住宅条件
+        const residentialPurpose = await getResidentialPurposeKeywords();
+        whereConditions.push(`housePurpose LIKE '%${residentialPurpose}%'`);
+        
+        // 时间条件：最近2年
+        const currentYear = new Date().getFullYear();
+        whereConditions.push(`YEAR(valueDate) >= ${currentYear - 2}`);
+        
+        const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+        
         const sql = `
             SELECT TOP 10
                 location AS 房产坐落,
@@ -13137,13 +13376,13 @@ async function handleDefaultQuery(keywords, question) {
                 decorationStatus AS 装修状况,
                 spaceLayout AS 空间布局
             FROM WebWordReports.dbo.WordReportsInformation
-            WHERE YEAR(valueDate) >= YEAR(GETDATE()) - 2
+            ${whereClause}
             ORDER BY valueDate DESC
         `;
         
         const result = await pool.request().query(sql);
         
-        const analysis = `为您展示了最近的${result.recordset.length}条房源信息。`;
+        const analysis = `为您展示了最近的${result.recordset.length}条住宅房源信息。`;
         
         return {
             sql: sql,
@@ -13209,10 +13448,21 @@ async function generateAIResponse(questionType, data, keywords, originalQuestion
                     response = `根据您的问题"${originalQuestion}"，估值分析如下：\n\n`;
                     response += `• 价格范围：${item.最低单价 || 0} - ${item.最高单价 || 0} 元/平米\n`;
                     response += `• 平均价格：${item.平均单价 || 0} 元/平米\n`;
-                    response += `• 平均面积：${item.平均面积 || 0} 平米\n\n`;
-                    response += `基于最近2年 ${item.记录数量} 条历史评估数据。`;
+                    response += `• 平均面积：${item.平均面积 || 0} 平米\n`;
+                    if (item.平均建成年份) {
+                        response += `• 平均建成年份：${item.平均建成年份} 年\n`;
+                    }
+                    if (item.电梯比例) {
+                        response += `• 电梯比例：${Math.round(item.电梯比例)}%\n`;
+                    }
+                    response += `\n基于最近2年 ${item.记录数量} 条历史评估数据。`;
                 } else {
-                    response = `抱歉，没有找到相关的估值数据。`;
+                    // 从analysis中获取备用数据
+                    if (data && data.analysis) {
+                        response = `根据您的问题"${originalQuestion}"，分析结果如下：\n\n${data.analysis}`;
+                    } else {
+                        response = `抱歉，没有找到"${originalQuestion}"相关的估值数据。`;
+                    }
                 }
                 break;
                 
@@ -13238,7 +13488,7 @@ async function generateAIResponse(questionType, data, keywords, originalQuestion
 } 
 
  }
-
+}
 
 
 // 启动服务器
