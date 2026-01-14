@@ -988,3 +988,12 @@ VALUES
 
 -- spaceLayout空间布局
 ('spaceLayout', '室、卫、厨、厅、卧室、卫生间、厨房', '一室、两室、三室、四室、五室、一卫、两卫、三卫、一厨、两厨');
+
+
+
+CREATE TABLE LazyBee.dbo.Websites (
+    id INT IDENTITY(1,1) PRIMARY KEY,       -- 网站ID，主键
+    name NVARCHAR(100) NOT NULL,                   -- 网站名称
+    url NVARCHAR(255) NOT NULL,                    -- 网址
+    notes NVARCHAR(MAX)                            -- 备注
+);

@@ -15,17 +15,8 @@ const SearchHousePrice = () => {
     const [hasMore, setHasMore] = useState(true);
     const [initialSearch, setInitialSearch] = useState(false);
     const [showFullscreenLoading, setShowFullscreenLoading] = useState(false);
-
-    // 新增：联想词相关状态
-    const [suggestions, setSuggestions] = useState([]);
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-    const [suggestionError, setSuggestionError] = useState('');
-
     const observer = useRef();
     const lastRecordRef = useRef();
-    const searchInputRef = useRef();
-    const suggestionsRef = useRef();
 
     // 计算评估总价
     const calculateTotalPrice = (area, unitPrice) => {
@@ -90,80 +81,6 @@ const SearchHousePrice = () => {
         }
     };
 
-    // 获取搜索联想词
-    const fetchSuggestions = useCallback(async (input) => {
-        //  添加字符数检查
-        if (input.trim().length < 2) {
-            setSuggestions([]);
-            setShowSuggestions(false);
-            return;
-        }
-
-        try {
-            setLoadingSuggestions(true);
-            setSuggestionError('');
-
-            const response = await axios.get('/api/searchBoxHouseItemsSource', {
-                params: {
-                    searchTerm: input,
-                    limit: 10 // 限制返回的数量，避免太多
-                }
-            });
-
-            if (response.data.success) {
-                setSuggestions(response.data.data || []);
-                setShowSuggestions(true);
-            } else {
-                setSuggestionError('获取联想词失败');
-                setSuggestions([]);
-            }
-        } catch (err) {
-            console.error('获取联想词错误:', err);
-            setSuggestionError('网络错误，无法获取联想词');
-            setSuggestions([]);
-        } finally {
-            setLoadingSuggestions(false);
-        }
-    }, []);
-
-    // 处理搜索框输入变化
-    const handleInputChange = useCallback((e) => {
-        const value = e.target.value;
-        setSearchTerm(value);
-
-        // 如果输入值变化，获取联想词
-        // 修改这里：要求至少输入2个字符才触发联想
-        if (value.trim().length >= 2) {
-            // 防抖处理，避免频繁请求
-            const timer = setTimeout(() => {
-                fetchSuggestions(value);
-            }, 300);
-
-            return () => clearTimeout(timer);
-        } else {
-            // 如果字符数少于2，清除联想词
-            setSuggestions([]);
-            setShowSuggestions(false);
-        }
-    }, [fetchSuggestions]);
-
-    // 点击联想词
-    const handleSuggestionClick = useCallback((suggestion) => {
-        // 将选择的联想词设置为搜索词
-        setSearchTerm(suggestion);
-        setShowSuggestions(false);
-        setSuggestions([]);
-
-        // 聚焦到搜索框
-        if (searchInputRef.current) {
-            searchInputRef.current.focus();
-        }
-
-        // 可以立即触发搜索，或者等待用户点击搜索按钮
-        // 如果需要立即搜索，可以调用 searchRecords
-        // searchRecords(1, false);
-    }, []);
-
     // 搜索函数
     const searchRecords = useCallback(async (page = 1, isLoadMore = false) => {
         if (searchTerm.trim() === '') {
@@ -176,9 +93,6 @@ const SearchHousePrice = () => {
         }
 
         try {
-            // 隐藏联想词下拉框
-            setShowSuggestions(false);
-
             // 初始搜索时显示全屏加载
             if (!isLoadMore) {
                 setShowFullscreenLoading(true);
@@ -241,8 +155,6 @@ const SearchHousePrice = () => {
     // 处理搜索
     const handleSearch = (e) => {
         e.preventDefault();
-        setShowSuggestions(false); // 隐藏联想词下拉框
-
         if (searchTerm.trim() === '') {
             setRecords([]);
             setHasMore(false);
@@ -255,29 +167,9 @@ const SearchHousePrice = () => {
     // 处理Enter键搜索
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
-            setShowSuggestions(false); // 隐藏联想词下拉框
             handleSearch(e);
         }
     };
-
-    // 点击外部关闭联想词下拉框
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                suggestionsRef.current &&
-                !suggestionsRef.current.contains(event.target) &&
-                searchInputRef.current &&
-                !searchInputRef.current.contains(event.target)
-            ) {
-                setShowSuggestions(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
 
     // 无限滚动观察器
     const setupObserver = useCallback(() => {
@@ -441,50 +333,14 @@ const SearchHousePrice = () => {
                 <div className={styles.searchSection}>
                     <form onSubmit={handleSearch} className={styles.searchForm}>
                         <div className={styles.searchInputGroup}>
-                           
                             <input
-                                ref={searchInputRef}
                                 type="text"
                                 value={searchTerm}
-                                onChange={handleInputChange}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 onKeyDown={handleKeyPress}
                                 placeholder="请输入房产坐落、小区名称等进行搜索..."
                                 className={styles.searchInput}
                             />
-                             {/* 联想词下拉框 */}
-                        {showSuggestions && (
-                            <div ref={suggestionsRef} className={styles.suggestionsDropdown}>
-                                {loadingSuggestions ? (
-                                    <div className={styles.suggestionLoading}>
-                                        {/* <div className={styles.suggestionSpinner}></div>
-                                        <span>正在查找相关词...</span> */}
-                                    </div>
-                                ) : suggestionError ? (
-                                    <div className={styles.suggestionError}>
-                                        {suggestionError}
-                                    </div>
-                                ) : suggestions.length > 0 ? (
-                                    <ul className={styles.suggestionsList}>
-                                        {suggestions.map((suggestion, index) => (
-                                            <li
-                                                key={`${suggestion}-${index}`}
-                                                className={styles.suggestionItem}
-                                                onClick={() => handleSuggestionClick(suggestion)}
-                                            >
-                                                <svg className={styles.suggestionIcon} aria-hidden="true">
-                                                    <use xlinkHref="#icon-sousuo" />
-                                                </svg>
-                                                <span className={styles.suggestionText}>{suggestion}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className={styles.noSuggestions}>
-                                        {/* 未找到相关联想词 */}
-                                    </div>
-                                )}
-                            </div>
-                        )}
                             <button
                                 type="submit"
                                 className={styles.searchButton}
@@ -493,10 +349,7 @@ const SearchHousePrice = () => {
                                 搜索
                             </button>
                         </div>
-                       
-
                     </form>
-
                 </div>
 
                 {/* 错误提示 */}

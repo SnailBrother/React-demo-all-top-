@@ -475,3 +475,137 @@
         page-break-inside: avoid;
     }
 }
+/* #region start */
+
+
+/* 搜索框相关样式 */
+.searchSection {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.searchInputGroup {
+    position: relative;
+    display: flex;
+    gap: 10px;
+}
+
+.searchInput {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.searchButton {
+    padding: 12px 24px;
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.searchButton:hover {
+    background-color: #40a9ff;
+}
+
+.searchButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* 联想词下拉框样式 */
+.suggestionsDropdown {
+    position: absolute;
+    top: 100%; /* 在输入框正下方 */
+    left: 0;
+    right: 0; /* 与输入框同宽 */
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    max-width: 800px;
+}
+
+.suggestionsList {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+}
+
+.suggestionItem {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.suggestionItem:hover {
+    background-color: #f5f5f5;
+}
+
+.suggestionIcon {
+    width: 16px;
+    height: 16px;
+    color: #999;
+}
+
+.suggestionText {
+    font-size: 14px;
+    color: #333;
+}
+
+.suggestionLoading {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.suggestionSpinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #1890ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.suggestionError {
+    padding: 20px;
+    text-align: center;
+    color: #ff4d4f;
+}
+
+.noSuggestions {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/*  #endregion end */

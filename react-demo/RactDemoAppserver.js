@@ -75,7 +75,17 @@ app.get('/', (req, res) => {
 
 
 
-
+// 获取所有网站配置
+app.get('/api/LazyBeewebsites', async (req, res) => {
+    try {
+        const request = new sql.Request(await poolConnect);
+        const result = await request.query('SELECT id, name, url, notes FROM LazyBee.dbo.Websites ORDER BY id');
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('获取网站列表失败:', err);
+        res.status(500).json({ error: '服务器内部错误' });
+    }
+});
 
 // 获取 Records 表数据
 app.get('/api/getRecords', async (req, res) => {
@@ -8006,6 +8016,101 @@ app.get('/cyywork/api/searchHousePrice', async (req, res) => {
             success: false,
             message: '搜索房屋价格失败',
             error: error.message
+        });
+    }
+});
+ /**
+ * @route GET /api/searchBoxHouseItemsSource
+ * @desc 获取搜索框联想词（修复ORDER BY问题）
+ */
+app.get('/api/searchBoxHouseItemsSource', async (req, res) => {
+    const { searchTerm, limit = 10 } = req.query;
+    
+    // 如果没有搜索词，返回空数组
+    if (!searchTerm || searchTerm.trim() === '') {
+        return res.json({
+            success: true,
+            data: []
+        });
+    }
+
+    const searchTermClean = searchTerm.trim();
+    
+    try {
+        // 确保数据库连接已就绪
+        await poolConnect;
+        
+        // 修复版本：使用子查询来避免DISTINCT和ORDER BY冲突
+        const query = `
+            SELECT TOP (@limit) 
+                suggestion,
+                LEN(suggestion) as suggestion_length,
+                CASE 
+                    WHEN suggestion LIKE @exactPattern THEN 1
+                    ELSE 2 
+                END as match_priority
+            FROM (
+                -- 搜索location字段
+                SELECT DISTINCT location AS suggestion
+                FROM WebWordReports.dbo.WordReportsInformation 
+                WHERE location LIKE @fuzzyPattern
+                    AND location IS NOT NULL 
+                    AND location != ''
+                    AND LEN(location) > 1
+                
+                UNION ALL
+                
+                -- 搜索communityName字段
+                SELECT DISTINCT communityName AS suggestion
+                FROM WebWordReports.dbo.WordReportsInformation 
+                WHERE communityName LIKE @fuzzyPattern
+                    AND communityName IS NOT NULL 
+                    AND communityName != ''
+                    AND LEN(communityName) > 1
+            ) AS all_suggestions
+            WHERE suggestion IS NOT NULL 
+                AND suggestion != ''
+            ORDER BY 
+                match_priority,
+                suggestion_length,
+                suggestion
+        `;
+
+        const request = pool.request();
+        const exactPattern = `${searchTermClean}%`;  // 开头匹配
+        const fuzzyPattern = `%${searchTermClean}%`; // 模糊匹配
+        
+        request.input('exactPattern', sql.NVarChar, exactPattern);
+        request.input('fuzzyPattern', sql.NVarChar, fuzzyPattern);
+        request.input('limit', sql.Int, parseInt(limit) || 10);
+        
+        const result = await request.query(query);
+
+        // 提取建议词并去重
+        const suggestions = [];
+        const seen = new Set();
+        
+        result.recordset.forEach(row => {
+            if (row.suggestion && !seen.has(row.suggestion)) {
+                seen.add(row.suggestion);
+                suggestions.push(row.suggestion);
+            }
+        });
+
+        return res.json({
+            success: true,
+            data: suggestions,
+            count: suggestions.length,
+            searchTerm: searchTermClean
+        });
+
+    } catch (error) {
+        console.error('获取搜索联想词失败:', error);
+        
+        return res.status(500).json({
+            success: false,
+            message: '获取联想词失败',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
