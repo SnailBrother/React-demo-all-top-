@@ -13596,6 +13596,438 @@ async function generateAIResponse(questionType, data, keywords, originalQuestion
 }
 
 
+{  //项目收费统计
+    
+
+ // 获取字段定义
+app.get('/api/getProjectFields', async (req, res) => {
+  try {
+    const request = pool.request();
+    const result = await request.query(`
+      SELECT EnglishName, ChineseName, DataType, 
+             IsRequired, IsVisible, IsEditable, DisplayOrder
+      FROM ProjectDatabase.dbo.ProjectOption
+      WHERE IsVisible = 1
+      ORDER BY DisplayOrder ASC
+    `);
+    
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('获取字段定义失败:', error);
+    res.status(500).json({ success: false, message: '获取字段定义失败' });
+  }
+});
+
+// 获取项目数据 - 直接查询现有表
+app.get('/api/getProject', async (req, res) => {
+  try {
+    // 获取可见字段
+    const fieldRequest = pool.request();
+    const fieldResult = await fieldRequest.query(`
+      SELECT EnglishName 
+      FROM ProjectDatabase.dbo.ProjectOption 
+      WHERE IsVisible = 1 
+      ORDER BY DisplayOrder ASC
+    `);
+    
+    const visibleFields = fieldResult.recordset.map(f => f.EnglishName);
+    
+    // 如果ProjectData表中实际存在的字段与ProjectOption中定义的不完全一致，
+    // 我们可以先获取ProjectData表的所有列
+    const tableColumnsRequest = pool.request();
+    const tableColumnsResult = await tableColumnsRequest.query(`
+      SELECT COLUMN_NAME
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = 'dbo' 
+      AND TABLE_NAME = 'ProjectData'
+      AND COLUMN_NAME NOT IN ('ProjectID') -- 排除ID列，如果需要的话
+      ORDER BY ORDINAL_POSITION
+    `);
+    
+    const actualColumns = tableColumnsResult.recordset.map(col => col.COLUMN_NAME);
+    
+    // 取交集：既在ProjectOption中定义可见，又实际存在于ProjectData表中的字段
+    const validFields = visibleFields.filter(field => actualColumns.includes(field));
+    
+    // 如果没有匹配的字段，使用所有实际存在的字段（排除ProjectID）
+    const selectFields = validFields.length > 0 ? validFields.join(', ') : 
+      actualColumns.filter(col => col !== 'ProjectID').join(', ');
+    
+    console.log('查询字段:', selectFields);
+    
+    const request = pool.request();
+    let query = `
+      SELECT ${selectFields}
+      FROM ProjectDatabase.dbo.ProjectData
+    `;
+    
+    // 如果selectFields为空，使用SELECT * 但排除不想要的列
+    if (!selectFields || selectFields.trim() === '') {
+      query = `
+        SELECT * 
+        FROM ProjectDatabase.dbo.ProjectData
+      `;
+    }
+    
+    query += ' ORDER BY ProjectID DESC';
+    
+    const result = await request.query(query);
+    
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('获取项目数据失败:', error);
+    res.status(500).json({ success: false, message: '获取数据失败: ' + error.message });
+  }
+});
+
+// 添加项目 - 动态构建INSERT语句
+app.post('/api/addProject', async (req, res) => {
+  try {
+    const data = req.body;
+    
+    // 获取字段定义和实际表结构
+    const [fieldResult, tableColumnsResult] = await Promise.all([
+      pool.request().query(`
+        SELECT EnglishName, DataType, IsRequired, DefaultValue
+        FROM ProjectDatabase.dbo.ProjectOption
+        WHERE IsVisible = 1
+      `),
+      pool.request().query(`
+        SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = 'dbo' 
+        AND TABLE_NAME = 'ProjectData'
+        AND COLUMN_NAME != 'ProjectID'
+      `)
+    ]);
+    
+    const fields = fieldResult.recordset;
+    const actualColumns = tableColumnsResult.recordset;
+    const actualColumnNames = actualColumns.map(col => col.COLUMN_NAME);
+    
+    // 构建插入语句
+    const columns = [];
+    const values = [];
+    const params = [];
+    
+    fields.forEach((field, index) => {
+      // 只插入实际存在的字段
+      if (field.EnglishName !== 'ProjectID' && actualColumnNames.includes(field.EnglishName)) {
+        columns.push(field.EnglishName);
+        
+        let value = data[field.EnglishName];
+        
+        // 处理必填字段
+        if (field.IsRequired && (value === undefined || value === null || value === '')) {
+          if (field.DefaultValue !== null) {
+            value = field.DefaultValue;
+          } else {
+            throw new Error(`字段 ${field.ChineseName || field.EnglishName} 是必填项`);
+          }
+        }
+        
+        // 数据类型转换
+        if (value === undefined || value === null || value === '') {
+          const columnInfo = actualColumns.find(col => col.COLUMN_NAME === field.EnglishName);
+          if (columnInfo.IS_NULLABLE === 'NO') {
+            throw new Error(`字段 ${field.EnglishName} 不能为空`);
+          }
+          values.push('NULL');
+        } else {
+          const paramName = `@p${index}`;
+          params.push({ name: paramName, value: value });
+          values.push(paramName);
+        }
+      }
+    });
+    
+    if (columns.length === 0) {
+      return res.status(400).json({ success: false, message: '没有有效的字段可以插入' });
+    }
+    
+    const sql = `
+      INSERT INTO Project.dbo.ProjectData (${columns.join(', ')})
+      OUTPUT INSERTED.ProjectID
+      VALUES (${values.join(', ')})
+    `;
+    
+    console.log('插入SQL:', sql);
+    console.log('参数:', params);
+    
+    const request = pool.request();
+    
+    // 添加参数
+    params.forEach(param => {
+      request.input(param.name, param.value);
+    });
+    
+    const result = await request.query(sql);
+    
+    res.json({ 
+      success: true, 
+      message: '添加成功',
+      id: result.recordset[0].ProjectID 
+    });
+  } catch (error) {
+    console.error('添加项目失败:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 更新项目
+app.put('/api/updateProject', async (req, res) => {
+  try {
+    const { id, ...data } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({ success: false, message: '项目ID不能为空' });
+    }
+    
+    // 获取可编辑字段和实际表结构
+    const [fieldResult, tableColumnsResult] = await Promise.all([
+      pool.request().query(`
+        SELECT EnglishName, DataType, IsEditable
+        FROM ProjectDatabase.dbo.ProjectOption
+        WHERE IsVisible = 1 AND IsEditable = 1
+      `),
+      pool.request().query(`
+        SELECT COLUMN_NAME
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = 'dbo' 
+        AND TABLE_NAME = 'ProjectData'
+        AND COLUMN_NAME != 'ProjectID'
+      `)
+    ]);
+    
+    const editableFields = fieldResult.recordset;
+    const actualColumnNames = tableColumnsResult.recordset.map(col => col.COLUMN_NAME);
+    
+    // 构建更新语句
+    const updates = [];
+    const params = [];
+    let paramIndex = 0;
+    
+    editableFields.forEach((field) => {
+      // 只更新实际存在的字段
+      if (data[field.EnglishName] !== undefined && 
+          field.EnglishName !== 'ProjectID' && 
+          actualColumnNames.includes(field.EnglishName)) {
+        const paramName = `@p${paramIndex++}`;
+        updates.push(`${field.EnglishName} = ${paramName}`);
+        params.push({ name: paramName, value: data[field.EnglishName] });
+      }
+    });
+    
+    if (updates.length === 0) {
+      return res.status(400).json({ success: false, message: '没有要更新的字段' });
+    }
+    
+    const sql = `
+      UPDATE Project.dbo.ProjectData
+      SET ${updates.join(', ')}
+      WHERE ProjectID = @id
+    `;
+    
+    const request = pool.request();
+    request.input('id', sql.Int, id);
+    
+    // 添加参数
+    params.forEach(param => {
+      request.input(param.name, param.value);
+    });
+    
+    const result = await request.query(sql);
+    
+    if (result.rowsAffected[0] > 0) {
+      res.json({ success: true, message: '更新成功' });
+    } else {
+      res.status(404).json({ success: false, message: '项目不存在' });
+    }
+  } catch (error) {
+    console.error('更新项目失败:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 删除项目
+app.delete('/api/deleteProject', async (req, res) => {
+  try {
+    const { id } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({ success: false, message: '项目ID不能为空' });
+    }
+    
+    const request = pool.request();
+    request.input('id', sql.Int, id);
+    
+    const result = await request.query(`
+      DELETE FROM ProjectDatabase.dbo.ProjectData
+      WHERE ProjectID = @id
+    `);
+    
+    if (result.rowsAffected[0] > 0) {
+      res.json({ success: true, message: '删除成功' });
+    } else {
+      res.status(404).json({ success: false, message: '项目不存在' });
+    }
+  } catch (error) {
+    console.error('删除项目失败:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 批量上传项目
+app.post('/api/batchUploadProject', async (req, res) => {
+  try {
+    const batchData = req.body;
+    
+    if (!Array.isArray(batchData) || batchData.length === 0) {
+      return res.status(400).json({ success: false, message: '数据格式错误' });
+    }
+    
+    // 获取字段定义和实际表结构
+    const [fieldResult, tableColumnsResult] = await Promise.all([
+      pool.request().query(`
+        SELECT EnglishName, DataType, IsRequired, DefaultValue
+        FROM ProjectDatabase.dbo.ProjectOption
+        WHERE IsVisible = 1
+      `),
+      pool.request().query(`
+        SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = 'dbo' 
+        AND TABLE_NAME = 'ProjectData'
+        AND COLUMN_NAME != 'ProjectID'
+      `)
+    ]);
+    
+    const fields = fieldResult.recordset;
+    const actualColumns = tableColumnsResult.recordset;
+    const actualColumnNames = actualColumns.map(col => col.COLUMN_NAME);
+    
+    // 过滤出实际存在的字段
+    const validFields = fields.filter(field => 
+      field.EnglishName !== 'ProjectID' && actualColumnNames.includes(field.EnglishName)
+    );
+    
+    if (validFields.length === 0) {
+      return res.status(400).json({ success: false, message: '没有有效的字段可以插入' });
+    }
+    
+    // 开始事务
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+    
+    try {
+      let insertedCount = 0;
+      
+      for (const data of batchData) {
+        // 构建插入语句
+        const columns = [];
+        const values = [];
+        const params = [];
+        
+        validFields.forEach((field, index) => {
+          columns.push(field.EnglishName);
+          
+          let value = data[field.EnglishName];
+          
+          // 处理必填字段
+          if (field.IsRequired && (value === undefined || value === null || value === '')) {
+            if (field.DefaultValue !== null) {
+              value = field.DefaultValue;
+            } else {
+              throw new Error(`字段 ${field.ChineseName || field.EnglishName} 是必填项`);
+            }
+          }
+          
+          // 处理空值
+          if (value === undefined || value === null || value === '') {
+            const columnInfo = actualColumns.find(col => col.COLUMN_NAME === field.EnglishName);
+            if (columnInfo.IS_NULLABLE === 'NO') {
+              throw new Error(`字段 ${field.EnglishName} 不能为空`);
+            }
+            values.push('NULL');
+          } else {
+            const paramName = `@p${index}_${insertedCount}`;
+            params.push({ name: paramName, value: value });
+            values.push(paramName);
+          }
+        });
+        
+        const sql = `
+          INSERT INTO Project.dbo.ProjectData (${columns.join(', ')})
+          VALUES (${values.join(', ')})
+        `;
+        
+        const request = new sql.Request(transaction);
+        
+        // 添加参数
+        params.forEach(param => {
+          request.input(param.name, param.value);
+        });
+        
+        await request.query(sql);
+        insertedCount++;
+      }
+      
+      await transaction.commit();
+      
+      res.json({ 
+        success: true, 
+        message: `批量上传成功，共插入 ${insertedCount} 条数据`,
+        insertedCount 
+      });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  } catch (error) {
+    console.error('批量上传失败:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 获取表结构信息（调试用）
+app.get('/api/debug/tables', async (req, res) => {
+  try {
+    const request = pool.request();
+    const result = await request.query(`
+      SELECT 
+        TABLE_NAME,
+        COLUMN_NAME,
+        DATA_TYPE,
+        IS_NULLABLE,
+        CHARACTER_MAXIMUM_LENGTH
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = 'dbo' 
+      AND TABLE_NAME IN ('ProjectOption', 'ProjectData')
+      ORDER BY TABLE_NAME, ORDINAL_POSITION
+    `);
+    
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('获取表结构失败:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 简单的连接测试
+app.get('/api/test', async (req, res) => {
+  try {
+    const request = pool.request();
+    const result = await request.query('SELECT 1 as test');
+    res.json({ success: true, message: '数据库连接正常', data: result.recordset });
+  } catch (error) {
+    res.status(500).json({ success: false, message: '数据库连接失败: ' + error.message });
+  }
+});
+ 
+
+}
+
+
 // 启动服务器
 http.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
