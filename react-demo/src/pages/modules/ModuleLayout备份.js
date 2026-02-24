@@ -48,11 +48,6 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // 判断是否为 LookHousePricePicture 页面
-  const isLookHousePricePicture = useMemo(() => {
-    return location.pathname.includes('/app/office/LookHousePricePicture');
-  }, [location.pathname]);
-  
   // 使用配置获取菜单
   const menuItems = getModuleMenu(moduleKey);
 
@@ -78,11 +73,6 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
 
   // 更新 tabs（根据路由）
   useEffect(() => {
-    // 如果是 LookHousePricePicture 页面，不更新 tabs
-    if (isLookHousePricePicture) {
-      return;
-    }
-    
     const currentPath = location.pathname;
     const currentMenuItem = menuItems.find(item =>
       item.path === currentPath || currentPath.startsWith(item.path + '/')
@@ -101,15 +91,10 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
         return [...prev, currentMenuItem];
       });
     }
-  }, [location.pathname, menuItems, isLookHousePricePicture]);
+  }, [location.pathname, menuItems]);
 
   // 计算当前激活的 tab
   const activeTab = useMemo(() => {
-    // 如果是 LookHousePricePicture 页面，返回空字符串
-    if (isLookHousePricePicture) {
-      return '';
-    }
-    
     const currentPath = location.pathname;
     const menuItem = menuItems.find(item =>
       item.path === currentPath || currentPath.startsWith(item.path + '/')
@@ -120,39 +105,24 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
     }
 
     return menuItem ? menuItem.key : '';
-  }, [location.pathname, menuItems, isLookHousePricePicture]);
+  }, [location.pathname, menuItems]);
 
   // 菜单点击处理
   const handleMenuClick = useCallback((menuItem) => {
-    // 如果是 LookHousePricePicture 页面，不允许点击菜单
-    if (isLookHousePricePicture) {
-      return;
-    }
-    
     if (menuItem.showInTabs === false) {
       setTabs(prev => prev.filter(tab => tab.key !== menuItem.key));
     }
     navigate(menuItem.path);
-  }, [navigate, isLookHousePricePicture]);
+  }, [navigate]);
 
   // Tab 切换
   const handleTabChange = useCallback((tabKey) => {
-    // 如果是 LookHousePricePicture 页面，不允许切换 tab
-    if (isLookHousePricePicture) {
-      return;
-    }
-    
     const tab = menuItems.find(t => t.key === tabKey);
     if (tab) navigate(tab.path);
-  }, [menuItems, navigate, isLookHousePricePicture]);
+  }, [menuItems, navigate]);
 
   // 关闭 Tab
   const handleTabClose = useCallback((tabKey) => {
-    // 如果是 LookHousePricePicture 页面，不允许关闭 tab
-    if (isLookHousePricePicture) {
-      return;
-    }
-    
     if (tabs.length <= 1) return;
     setTabs(prev => {
       const newTabs = prev.filter(t => t.key !== tabKey);
@@ -166,15 +136,11 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
       }
       return newTabs;
     });
-  }, [tabs, activeTab, menuItems, navigate, isLookHousePricePicture]);
+  }, [tabs, activeTab, menuItems, navigate]);
 
   const toggleSidebar = useCallback(() => {
-    // 如果是 LookHousePricePicture 页面，不允许切换侧边栏
-    if (isLookHousePricePicture) {
-      return;
-    }
     setSidebarCollapsed(prev => !prev);
-  }, [isLookHousePricePicture]);
+  }, []);
 
   return (
     <>
@@ -186,46 +152,40 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
       {/* 主布局 */}
       <div className={`${styles.unifiedLayout} ${isMobile ? styles.isMobile : styles.isDesktop} ${sidebarCollapsed ? styles.sidebarCollapsed : ''} ${shouldShowPlayer ? styles.hasPlayer : styles.noPlayer}`}>
         
-        {/* Header（桌面端）- 在 LookHousePricePicture 页面隐藏 */}
-        {!isLookHousePricePicture && (
-          <div className={styles.headerContainer}>
-            <Header onLogout={onLogout} />
-          </div>
-        )}
+        {/* Header（桌面端） */}
+        <div className={styles.headerContainer}>
+          <Header onLogout={onLogout} />
+        </div>
 
-        {/* 侧边栏（桌面端）- 在 LookHousePricePicture 页面隐藏 */}
-        {!isLookHousePricePicture && (
-          <div className={styles.sidebarContainer}>
-            <Sidebar
-              menuItems={menuItems}
-              activeKey={activeTab}
-              onMenuClick={handleMenuClick}
-              collapsed={sidebarCollapsed}
-              onToggle={toggleSidebar}
-            />
-          </div>
-        )}
+        {/* 侧边栏（桌面端） */}
+        <div className={styles.sidebarContainer}>
+          <Sidebar
+            menuItems={menuItems}
+            activeKey={activeTab}
+            onMenuClick={handleMenuClick}
+            collapsed={sidebarCollapsed}
+            onToggle={toggleSidebar}
+          />
+        </div>
 
         {/* 主内容区 */}
-        <main className={`${styles.mainContentArea} ${isLookHousePricePicture ? styles.fullscreenContent : ''}`}>
-          {/* 公共消息 - 在 LookHousePricePicture 页面隐藏 */}
-          {!isLookHousePricePicture && showPublicMessage && (
+        <main className={styles.mainContentArea}>
+          {/* 公共消息 */}
+          {showPublicMessage && (
             <div className={styles.publicMessageContainer}>
               <PublicMessage onClose={() => setShowPublicMessage(false)} />
             </div>
           )}
 
-          {/* Tabs（桌面端）- 在 LookHousePricePicture 页面隐藏 */}
-          {!isLookHousePricePicture && (
-            <div className={styles.tabsContainer}>
-              <Tabs
-                tabs={tabs}
-                activeKey={activeTab}
-                onTabChange={handleTabChange}
-                onTabClose={handleTabClose}
-              />
-            </div>
-          )}
+          {/* Tabs（桌面端） */}
+          <div className={styles.tabsContainer}>
+            <Tabs
+              tabs={tabs}
+              activeKey={activeTab}
+              onTabChange={handleTabChange}
+              onTabClose={handleTabClose}
+            />
+          </div>
 
           {/* 路由出口 */}
           <div className={styles.pageContent}>
@@ -240,16 +200,14 @@ const ModuleLayout = ({ moduleKey, onLogout }) => {
           </div>
         )}
 
-        {/* 底部导航（移动端）- 在 LookHousePricePicture 页面隐藏 */}
-        {!isLookHousePricePicture && (
-          <div className={styles.bottomNavContainer}>
-            <BottomNav
-              menuItems={menuItems}
-              activeKey={activeTab}
-              onMenuClick={handleMenuClick}
-            />
-          </div>
-        )}
+        {/* 底部导航（移动端） */}
+        <div className={styles.bottomNavContainer}>
+          <BottomNav
+            menuItems={menuItems}
+            activeKey={activeTab}
+            onMenuClick={handleMenuClick}
+          />
+        </div>
       </div>
     </>
   );
