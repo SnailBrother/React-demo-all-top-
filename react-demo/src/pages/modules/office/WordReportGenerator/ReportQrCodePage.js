@@ -232,9 +232,9 @@ const ReportQrCodePage = () => {
       try {
        // const publicReportUrl = `http://www.cyywork.top/#/reportqrcodepage?reportsID=${reportData.reportsID}`;
         // const publicReportUrl = `/#/reportqrcodepage?reportsID=${reportData.reportsID}`;
-        // 动态获取当前域名，避免硬编码
+        // 动态获取当前域名，避免硬编码 app/office/reportqrcodepage
         const currentOrigin = window.location.origin;
-        const publicReportUrl = `${currentOrigin}/#/reportqrcodepage?reportsID=${reportData.reportsID}`;
+        const publicReportUrl = `${currentOrigin}/app/office/reportqrcodepage?reportsID=${reportData.reportsID}`;
         
         const qrCodeDataUrl = await QRCode.toDataURL(publicReportUrl, {
           width: 200,
