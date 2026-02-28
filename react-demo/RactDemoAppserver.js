@@ -7848,7 +7848,130 @@ app.put('/api/updateWordReport/:id', async (req, res) => {
         res.status(500).json({ message: '更新报告失败' });
     }
 });
+// 后端API - 生成加密链接（用于handleViewQRCode调用） 查看报告时候的编译
+app.post('/api/generateEncodedReportUrl', async (req, res) => {
+    const { reportsID, location } = req.body;
 
+    if (!reportsID) {
+        return res.status(400).json({ error: '缺少 reportsID' });
+    }
+
+    try {
+        const idString = reportsID.toString();
+        let encodedParts = [];
+
+        // 确保 pool 已定义
+        if (!pool) throw new Error('数据库连接池未初始化');
+
+        // 1. 获取所有映射关系 (0-9)
+        const mappingResult = await pool.request()
+            .query('SELECT OriginalValue, DecodedText FROM WebWordReports.dbo.ReportqrCodepageDecodeMapping WHERE OriginalValue BETWEEN 0 AND 9');
+        
+        const map = {};
+        mappingResult.recordset.forEach(row => {
+            map[row.OriginalValue] = row.DecodedText;
+        });
+
+        // 2. 遍历数字进行转换，并加入分隔符 '|'
+        for (let char of idString) {
+            const digit = parseInt(char, 10);
+            if (map.hasOwnProperty(digit)) {
+                encodedParts.push(map[digit]);
+            } else {
+                return res.status(500).json({ error: `数字 ${digit} 无映射` });
+            }
+        }
+
+        // 【关键】使用 '|' 连接每个部分 (例如: "Alpha|Beta")
+        const encodedId = encodedParts.join('|'); 
+
+        // 【修改点】不再构建 fullUrl，直接返回 encodedId
+        res.json({
+            success: true,
+            originalId: reportsID,
+            encodedId: encodedId  // 前端将使用这个值
+        });
+
+    } catch (error) {
+        console.error('API Error:', error);
+        res.status(500).json({ error: '内部服务器错误', details: error.message });
+    }
+});
+// 后端API - 解码接口
+// 后端 API - 修复后的解码接口
+app.get('/api/ReportqrCodepageDecodeMapping/:encodedValue', async (req, res) => {
+    try {
+        // 1. 获取参数并解码 URL 编码 (因为前端传过来时会被 encode)
+        let encodedValue = req.params.encodedValue;
+        try {
+            encodedValue = decodeURIComponent(encodedValue);
+        } catch (e) {
+            // 如果解码失败，保持原样尝试（以防万一）
+        }
+
+        if (!encodedValue) {
+            return res.status(400).json({ success: false, message: '编码值不能为空' });
+        }
+
+        if (!pool) throw new Error('数据库连接池未初始化');
+
+        // 2. 获取所有映射关系，构建反向查找表 (Text -> Value)
+        const result = await pool.request().query(`
+            SELECT OriginalValue, DecodedText 
+            FROM WebWordReports.dbo.ReportqrCodepageDecodeMapping 
+            WHERE OriginalValue BETWEEN 0 AND 9
+        `);
+
+        const reverseMap = {};
+        result.recordset.forEach(row => {
+            // key是长字符串(如"Alpha"), value是数字(如5)
+            reverseMap[row.DecodedText] = row.OriginalValue;
+        });
+
+        // 3. 【关键修改】按分隔符 '|' 分割字符串
+        const parts = encodedValue.split('|');
+
+        let originalIdString = '';
+
+        // 4. 遍历每一部分进行还原
+        for (let part of parts) {
+            // 去除可能的空白字符
+            const cleanPart = part.trim();
+            
+            if (!cleanPart) continue; // 跳过空项
+
+            if (reverseMap.hasOwnProperty(cleanPart)) {
+                originalIdString += reverseMap[cleanPart];
+            } else {
+                console.warn(`无法识别的编码段: ${cleanPart}`);
+                return res.status(400).json({
+                    success: false,
+                    message: `无效的编码格式：包含未知段 '${cleanPart}'`
+                });
+            }
+        }
+
+        if (!originalIdString) {
+             return res.status(400).json({ success: false, message: '解码结果为空' });
+        }
+
+        const originalValue = parseInt(originalIdString, 10);
+
+        res.json({
+            success: true,
+            originalValue: originalValue,
+            originalValueStr: originalIdString,
+            message: '解码成功'
+        });
+
+    } catch (error) {
+        console.error('解码API错误:', error);
+        res.status(500).json({
+            success: false,
+            message: '服务器内部错误: ' + error.message
+        });
+    }
+});
 //查找二维码信息报告  👇
 app.get('/api/searchWordReportsReportQrCode/:reportsID', async (req, res) => {
     const { reportsID } = req.params;

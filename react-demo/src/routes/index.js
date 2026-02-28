@@ -15,6 +15,7 @@ import Reportqrcodepag from '../pages/modules/office/WordReportGenerator/ReportQ
 
 // 导入 LookHousePricePicture 组件,无需保护路由
 import OfficeLookHousePricePicture from '../pages/modules/office/SearchPrice/LookHousePricePicture'
+
 // 导入配置
 import { moduleConfig, MODULE_KEYS } from '../config/moduleConfig';
 

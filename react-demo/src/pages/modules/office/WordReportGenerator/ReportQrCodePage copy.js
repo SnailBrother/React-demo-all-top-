@@ -14,14 +14,10 @@ const ReportQrCodePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isReportValid, setIsReportValid] = useState(false);
-  // 新增：存储原始reportsID
-  const [originalReportsId, setOriginalReportsId] = useState(null);
-  
   // 修改页面标题
   useEffect(() => {
     document.title = '重庆瑞达评估报告在线验证';
   }, []);
-  
   // 格式化报告日期函数
   // 修复后的格式化报告日期函数
   const formatReportDate = (dateString) => {
@@ -100,6 +96,8 @@ const ReportQrCodePage = () => {
     }
   };
 
+
+
   // 检查报告数据是否完整有效
   const checkReportValidity = (data) => {
     if (!data) return false;
@@ -174,59 +172,31 @@ const ReportQrCodePage = () => {
     };
   };
 
-  // 新增：解码函数 - 将加密的reportsID解码为原始ID
-  const decodeReportsId = async (encodedValue) => {
-    try {
-      // 调用解码API
-      const response = await axios.get(`/api/ReportqrCodepageDecodeMapping/${encodedValue}`);
-      
-      if (response.data && response.data.success) {
-        return response.data.originalValue;
-      } else {
-        throw new Error(response.data.message || '解码失败');
-      }
-    } catch (error) {
-      console.error('解码reportsID失败:', error);
-      throw error;
-    }
-  };
-
   useEffect(() => {
     const fetchReportData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // 步骤1: 从URL参数中解析加密的reportsID
+        // 步骤1: 从URL参数中解析reportsID
         const queryParams = new URLSearchParams(location.search);
-        const encodedReportsId = queryParams.get('reportsID'); // 这里拿到的是加密后的值，如 "q8S5mJ98"
+        const reportsID = queryParams.get('reportsID');
         const locationInfo = queryParams.get('location');
 
-        if (!encodedReportsId) {
+        if (!reportsID) {
           throw new Error('报告ID不能为空');
         }
 
-        // 新增步骤2: 解码加密的reportsID
-        let reportsID;
-        try {
-          reportsID = await decodeReportsId(encodedReportsId);
-          setOriginalReportsId(reportsID); // 保存原始ID供内部使用
-        } catch (decodeError) {
-          console.error('解码失败:', decodeError);
-          throw new Error('无效的报告ID');
-        }
-
-        // 步骤3: 调用API查询数据库中的数据（使用解码后的原始ID）
+        // 步骤2: 调用API查询数据库中的数据
         //const response = await axios.get(`http://121.4.22.55:5202/api/searchWordReportsReportQrCode/${reportsID}`);
         const response = await axios.get(`/api/searchWordReportsReportQrCode/${reportsID}`);
-        
         if (!response.data) {
           throw new Error('API返回数据为空');
         }
 
         if (response.data.success && response.data.data) {
-          // 步骤4: 格式化数据并设置到状态中
-          const formattedData = formatReportData(response.data.data, encodedReportsId, locationInfo);
+          // 步骤3: 格式化数据并设置到状态中
+          const formattedData = formatReportData(response.data.data, reportsID, locationInfo);
           setReportData(formattedData);
 
           // 检查报告有效性
@@ -241,9 +211,9 @@ const ReportQrCodePage = () => {
 
         // 错误时使用默认数据
         const queryParams = new URLSearchParams(location.search);
-        const encodedReportsId = queryParams.get('reportsID');
+        const reportsID = queryParams.get('reportsID');
         const locationInfo = queryParams.get('location');
-        const defaultData = getDefaultData(encodedReportsId, locationInfo);
+        const defaultData = getDefaultData(reportsID, locationInfo);
         setReportData(defaultData);
         setIsReportValid(false);
       } finally {
@@ -254,17 +224,16 @@ const ReportQrCodePage = () => {
     fetchReportData();
   }, [location]);
 
-  // 步骤5: 生成二维码（仅在报告有效时生成）- 修改为使用加密的reportsID
+  // 步骤4: 生成二维码（仅在报告有效时生成）
   useEffect(() => {
     if (!isReportValid || !reportData || !reportData.reportsID) return;
 
     const generateQRCode = async () => {
       try {
-        // 获取当前域名，避免硬编码
+       // const publicReportUrl = `http://www.cyywork.top/#/reportqrcodepage?reportsID=${reportData.reportsID}`;
+        // const publicReportUrl = `/#/reportqrcodepage?reportsID=${reportData.reportsID}`;
+        // 动态获取当前域名，避免硬编码 app/office/reportqrcodepage
         const currentOrigin = window.location.origin;
-        
-        // 关键修改：这里使用加密后的reportsID，而不是原始ID
-        // reportData.reportsID 现在存储的是加密后的值
         const publicReportUrl = `${currentOrigin}/app/office/reportqrcodepage?reportsID=${reportData.reportsID}`;
         
         const qrCodeDataUrl = await QRCode.toDataURL(publicReportUrl, {
